@@ -114,12 +114,12 @@ test('lab 04 motor: follows setpoint, loses speed under load without integral ac
 test('course map: 20 phases, expand, search, open an outline lesson', async ({ page }) => {
   await page.locator('#course').scrollIntoViewIfNeeded();
   await expect(page.getByTestId('phase')).toHaveCount(20);
-  const p13 = page.locator('[data-phase="p13"]');
-  await p13.getByTestId('phase-btn').click();
-  await expect(p13).toHaveClass(/open/);
-  await expect(p13.getByTestId('lesson')).toHaveCount(20);
-  await p13.getByTestId('phase-btn').click();
-  await expect(p13).not.toHaveClass(/open/);
+  const p14 = page.locator('[data-phase="p14"]');
+  await p14.getByTestId('phase-btn').click();
+  await expect(p14).toHaveClass(/open/);
+  await expect(p14.getByTestId('lesson')).toHaveCount(18);
+  await p14.getByTestId('phase-btn').click();
+  await expect(p14).not.toHaveClass(/open/);
   await page.getByTestId('search').fill('kalman');
   await expect(page.locator('#search-status')).toContainText('match');
   const n = +(await page.locator('#search-status').getAttribute('data-count'));
@@ -130,9 +130,9 @@ test('course map: 20 phases, expand, search, open an outline lesson', async ({ p
   await expect(page.locator('#search-status')).toContainText('0 lessons');
   await page.getByTestId('search').fill('');
   await expect(page.getByTestId('phase')).toHaveCount(20);
-  await p13.getByTestId('phase-btn').click();
-  await p13.locator('#lesson-p13-l07').getByTestId('lesson-link').click();
-  await expect(page).toHaveURL(/#\/learn\/p13-l07$/);
+  await p14.getByTestId('phase-btn').click();
+  await p14.locator('#lesson-p14-l07').getByTestId('lesson-link').click();
+  await expect(page).toHaveURL(/#\/learn\/p14-l07$/);
   await expect(page.getByTestId('coming-soon')).toContainText('Full lesson coming soon');
 });
 
