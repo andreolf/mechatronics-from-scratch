@@ -22,7 +22,11 @@ Bad memory accesses, undefined instructions, division by zero (when trapping is 
 |---|---|---|---|---|---|---|---|---|
 | register | r0 | r1 | r2 | r3 | r12 | LR | **PC** | xPSR |
 
-The stacked **PC** is the address of the instruction that faulted (for a precise fault), and the stacked **LR** is where that function would have returned. Bit 2 of the handler's own LR (EXC_RETURN) says which stack the frame is on: 0 for MSP, 1 for PSP (used by an RTOS's threads). A three-instruction assembly stub picks the right one and passes a pointer to C.
+The frame is eight words, 32 bytes, so the stacked PC sits at
+
+$$\text{PC}_{\text{fault}} = \text{mem}[\text{SP} + 24],$$
+
+where SP is the stack pointer the handler sees. The stacked **PC** is the address of the instruction that faulted (for a precise fault), and the stacked **LR** is where that function would have returned. Bit 2 of the handler's own LR (EXC_RETURN) says which stack the frame is on: 0 for MSP, 1 for PSP (used by an RTOS's threads). A three-instruction assembly stub picks the right one and passes a pointer to C.
 
 ## The fault status registers
 
