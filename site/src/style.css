@@ -246,7 +246,7 @@ mark { background: #c6ff1a40; color: inherit; border-radius: 3px; padding: 0 1px
 article.lesson-article { min-width: 0; max-width: 720px; }
 .lesson-kicker { font-size: var(--t-0); color: var(--fog); margin: 0 0 10px; }
 .lesson-kicker a { color: var(--fog); }
-.lesson-article h1 { font-size: var(--t-6); font-weight: 750; line-height: 1.04; letter-spacing: -0.03em; margin: 0 0 16px; }
+.lesson-article h1 { font-size: var(--t-6); font-weight: 750; line-height: 1.04; letter-spacing: -0.03em; margin: 0 0 16px; overflow-wrap: break-word; hyphens: auto; }
 .lesson-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
 .tldr { font-family: var(--serif); font-size: 20px; line-height: 1.5; color: #dfe2d8; border-left: 2px solid var(--lime); padding: 4px 0 4px 16px; margin: 0 0 32px; }
 .prose { font-family: var(--serif); font-size: 19px; line-height: 1.65; color: #e3e5dc; font-optical-sizing: auto; }

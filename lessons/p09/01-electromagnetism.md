@@ -8,7 +8,11 @@ summary: Every electric actuator rests on two laws. A current in a magnetic fiel
 
 A straight conductor of length $L$ carrying current $I$ across a uniform field $\mathbf B$ feels
 
-$$\mathbf F = I\,\mathbf L \times \mathbf B, \qquad |F| = B I L \text{ when } \mathbf L \perp \mathbf B.$$
+$$\mathbf F = I\,\mathbf L \times \mathbf B,$$
+
+so when $\mathbf L \perp \mathbf B$ the magnitude is
+
+$$|F| = B I L.$$
 
 The direction follows the right-hand rule: fingers along the current, bend them toward $\mathbf B$, and the thumb gives the force. A coil of $N$ turns, each with active length $L$ in the field, gives
 
