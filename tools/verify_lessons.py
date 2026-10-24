@@ -29,7 +29,9 @@ def run_py(src, label, cwd):
     if p.returncode != 0:
         fails.append(f"{label}: exit {p.returncode}\n{p.stderr[-1500:]}")
 
-for md in sorted(ROOT.glob("lessons/p[0-9][0-9]/*.md")):
+import sys
+PAT = sys.argv[1] if len(sys.argv) > 1 else "p[0-9][0-9]"   # e.g. p03 or p03/0[1-4]*
+for md in sorted(ROOT.glob(f"lessons/{PAT}*.md" if "/" in PAT else f"lessons/{PAT}/*.md")):
     text = md.read_text()
     lid = re.search(r"^id:\s*(\S+)", text, re.M).group(1)
     with tempfile.TemporaryDirectory() as tmp:

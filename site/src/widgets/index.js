@@ -1,5 +1,6 @@
 // Lesson widgets. Each one is touch-first: sliders and taps work everywhere; dragging on touch needs the "Drag" toggle.
 import { Plot, frame, slider, select, toggle, h, C, f3 } from './plot.js';
+import MORE from './signals.js';
 
 const W = {};
 const log10 = Math.log10;
@@ -307,6 +308,8 @@ W.gd = (el) => {
   ctrls.append(slider('Step size α', { min: 0.01, max: 0.22, step: 0.005, value: s.a, fmt: (v) => v.toFixed(3) }, (v) => { s.a = v; p.redraw(); }));
   p.redraw();
 };
+
+Object.assign(W, MORE);
 
 export function hydrateWidgets(root) {
   root.querySelectorAll('.widget[data-widget]').forEach((el) => {
