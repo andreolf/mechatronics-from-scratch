@@ -38,7 +38,7 @@ Always correct for the window's **coherent gain** $\frac1N\sum w[n]$ when readin
 A vibration sensor sees a 1 g tone at 101.7 Hz, sampled at 1024 Hz with $N = 1024$, so the bins are 1 Hz apart and the tone sits 0.3 bin off bin 102.
 
 1. Rectangular: the peak bin reads $|\operatorname{sinc}(0.3)| = 0.858$ g, which is −1.33 dB.
-2. Hann reads −0.53 dB.
+2. Hann reads −0.51 dB.
 3. Flat-top reads within 0.01 dB of 1 g.
 4. To *separate* two tones 2 Hz apart, flat-top's 10-bin main lobe is too wide; use Hann and a longer record.
 
