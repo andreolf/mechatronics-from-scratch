@@ -204,7 +204,7 @@ W.steppermiss = (el) => {
     const r = simStepper(s); P.axes({ xl: 't [ms]', yl: 'lag [full steps]' }); [4, 8, 12].forEach((v) => P.line([0, 150], [v, v], C.rule2, 1, [3, 4]));
     P.line(r.ts.map((t) => t * 1000), r.lag.map((v) => clamp(v, -2, 14)), C.lime, 2);
     const fin = r.lag[r.lag.length - 1]; const lost = 4 * Math.round(fin / 4); const need = 5e-5 * s.acc + s.TL;
-    read.innerHTML = `torque needed to accelerate J·α + T<sub>L</sub> = ${need.toFixed(2)} N·m against holding torque 0.50 N·m · final lag ${fin.toFixed(2)} steps · <b>${fin > 12 ? `lost synchronism and stalled, ${fin.toFixed(0)} steps behind` : lost > 0 ? `${lost} full steps missed` : 'no steps missed'}</b> (each slip loses a multiple of 4 full steps)`;
+    read.innerHTML = `J·α + T<sub>L</sub> = ${need.toFixed(2)} N·m, and with the abrupt ramp's overshoot 2J·α + T<sub>L</sub> = ${(need + 5e-5 * s.acc).toFixed(2)} N·m, against holding torque 0.50 N·m · final lag ${fin.toFixed(2)} steps · <b>${fin > 12 ? `lost synchronism and stalled, ${fin.toFixed(0)} steps behind` : lost > 0 ? `${lost} full steps missed` : 'no steps missed'}</b> (each slip loses a multiple of 4 full steps)`;
   };
   ctrls.append(slider('Acceleration', { min: 1000, max: 12000, step: 250, value: s.acc, fmt: (v) => v + ' rad/s²' }, (v) => { s.acc = v; p.redraw(); }),
     slider('Load torque', { min: 0, max: 0.45, step: 0.01, value: s.TL, fmt: (v) => v.toFixed(2) + ' N·m' }, (v) => { s.TL = v; p.redraw(); }));
