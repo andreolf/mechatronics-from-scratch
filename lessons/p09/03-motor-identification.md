@@ -29,7 +29,7 @@ $$J\frac{d\omega}{dt} = -b\omega - T_c \;\Rightarrow\; \omega(t) = \left(\omega_
 
 Fitting $\tau$ and knowing $b$ from test 2 gives $J = b\,\tau$. Spin-down is used for large machines too: it's how you measure the inertia of a generator or a flywheel.
 
-:::figure widget=motorid caption="Spin-down data with tachometer noise and the fitted model. The fit uses dω/dt against ω, a straight line whose slope is −1/τ."
+:::figure widget=motorid caption="Spin-down data with tachometer noise and the fitted model ω = A·e^(−t/τ) − B. For each trial τ the model is linear in A and B, so the fit scans τ and solves a small least-squares problem."
 :::end
 
 ## Worked example

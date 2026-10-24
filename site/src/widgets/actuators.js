@@ -62,14 +62,16 @@ W.motorid = (el) => {
   const p = new Plot(body, { aspect: 0.55, maxH: 300, x: [0, 3], y: [0, 550], label: 'Spin-down: measured speed (dots) and the fitted model (lime)' });
   p.draw = (P) => {
     const r = mulberry(s.seed); const tau = J / b, wc = Tc / b; const true_w = (t) => Math.max(0, (w0 + wc) * Math.exp(-t / tau) - wc);
-    const ts = [], ys = []; for (let t = 0; t < 3; t += 0.05) { const w = true_w(t); if (w <= 20) break; ts.push(t); ys.push(w + s.noise * randn(r)); }
-    // fit dw/dt = -(b/J) w - Tc/J by least squares on finite differences
-    let sxx = 0, sx = 0, sy = 0, sxy = 0, n = 0; for (let i = 1; i < ts.length - 1; i++) { const d = (ys[i + 1] - ys[i - 1]) / (ts[i + 1] - ts[i - 1]); sxx += ys[i] ** 2; sx += ys[i]; sy += d; sxy += ys[i] * d; n++; }
-    const sl = (n * sxy - sx * sy) / (n * sxx - sx * sx), ic = (sy - sl * sx) / n; const tauF = -1 / sl, wcF = ic / sl;
-    P.axes({ xl: 't [s]', yl: 'ω [rad/s]' }); ts.forEach((t, i) => P.dot(t, ys[i], C.signal, 2.5));
-    P.fn((t) => { const w = (w0 + wcF) * Math.exp(-t / tauF) - wcF; return w > 0 ? w : NaN; }, C.lime, 2);
+    const ts = [], ys = []; for (let t = 0; t < 3; t += 0.02) { const w = true_w(t); if (w <= 20) break; ts.push(t); ys.push(w + s.noise * randn(r)); }
+    // fit w = A exp(-t/tau) - B: for each trial tau the model is linear in A and B, so scan tau and solve 2x2 least squares
+    let best = [Infinity, 1, 0, 0];
+    for (let tau = 0.3; tau <= 4; tau += 0.002) { let see = 0, se = 0, sy = 0, sey = 0; const n = ts.length; for (let i = 0; i < n; i++) { const e = Math.exp(-ts[i] / tau); see += e * e; se += e; sy += ys[i]; sey += e * ys[i]; }
+      const det = see * n - se * se; const A = (sey * n - se * sy) / det, c = (see * sy - se * sey) / det; let sse = 0; for (let i = 0; i < n; i++) sse += (A * Math.exp(-ts[i] / tau) + c - ys[i]) ** 2; if (sse < best[0]) best = [sse, tau, A, -c]; }
+    const tauF = best[1], wcF = best[3];
+    P.axes({ xl: 't [s]', yl: 'ω [rad/s]' }); ts.forEach((t, i) => P.dot(t, ys[i], C.signal, 2));
+    P.fn((t) => { const w = best[2] * Math.exp(-t / tauF) - wcF; return w > 0 ? w : NaN; }, C.lime, 2);
     const e = (a, bb) => (100 * (a - bb) / bb).toFixed(1);
-    read.innerHTML = `true τ = J/b = ${tau.toFixed(2)} s, Coulomb speed T<sub>c</sub>/b = ${wc.toFixed(0)} rad/s · fitted τ = <b>${tauF.toFixed(2)} s</b> (${e(tauF, tau)} %), T<sub>c</sub>/b = <b>${wcF.toFixed(0)}</b> (${e(wcF, wc)} %) · with J known from geometry, b = J/τ and T<sub>c</sub> follow`;
+    read.innerHTML = `true τ = J/b = ${tau.toFixed(2)} s, Coulomb speed T<sub>c</sub>/b = ${wc.toFixed(0)} rad/s · fitted τ = <b>${tauF.toFixed(2)} s</b> (${e(tauF, tau)} %), T<sub>c</sub>/b = <b>${wcF.toFixed(0)}</b> (${e(wcF, wc)} %) · with b from the no-load tests, J = b·τ · τ and T<sub>c</sub>/b trade off against each other, so noise moves both`;
   };
   ctrls.append(slider('Tachometer noise', { min: 0, max: 30, step: 1, value: s.noise, fmt: (v) => v + ' rad/s' }, (v) => { s.noise = v; p.redraw(); }), row(btn('New data', () => { s.seed++; p.redraw(); }, 'mid-new')));
   p.redraw();
@@ -176,7 +178,7 @@ W.stepper = (el) => {
     const [a, b] = cur(s.k); const m = Math.hypot(a, b);
     pd.draw = (P) => { circle(P, 0, 0, 1, C.rule2); circle(P, 0, 0, Math.SQRT2, C.rule, 1); P.line([-1.5, 1.5], [0, 0], C.dim, 1); P.line([0, 0], [-1.5, 1.5], C.dim, 1); P.text('A', 1.5, 0.08, C.lime); P.text('B', 0.06, 1.45, C.signal); P.arrow(0, 0, a, b, C.bone, 3); };
     p.draw = (P) => {
-      P.axes({ xl: 'microstep (64 = one electrical cycle = 4 full steps)' }); const ks = [], A = [], B = []; for (let k = 0; k < 64; k++) { const c = cur(k); ks.push(k, k + 1); A.push(c[0], c[0]); B.push(c[1], c[1]); }
+      P.axes({ xl: 'microstep index' }); const ks = [], A = [], B = []; for (let k = 0; k < 64; k++) { const c = cur(k); ks.push(k, k + 1); A.push(c[0], c[0]); B.push(c[1], c[1]); }
       P.line(ks, A, C.lime, 2); P.line(ks, B, C.signal, 2); P.line([s.k + 0.5, s.k + 0.5], [-1.6, 1.6], C.dim, 1, [3, 3]);
     };
     pd.redraw(); p.redraw();
@@ -198,7 +200,7 @@ export function simStepper({ acc = 8000, TL = 0.1, w = 60, Th = 0.5, J = 5e-5, b
 }
 W.steppermiss = (el) => {
   const { body, read, ctrls } = frame(el);
-  const s = { acc: 6000, TL: 0.1 };
+  const s = { acc: 3000, TL: 0.1 };
   const p = new Plot(body, { aspect: 0.55, maxH: 300, x: [0, 150], y: [-2, 14], label: 'Rotor lag behind the commanded position, in full steps' });
   p.draw = (P) => {
     const r = simStepper(s); P.axes({ xl: 't [ms]', yl: 'lag [full steps]' }); [4, 8, 12].forEach((v) => P.line([0, 150], [v, v], C.rule2, 1, [3, 4]));
@@ -430,11 +432,11 @@ W.scooter = (el) => {
     pd.draw = (P) => { const c = Math.cos(th), sn = Math.sin(th); P.poly([[-1, 0], [3, 0], [3, 4 * sn / c]], '#1a1d16', C.rule2); const px = 1.2, py = (px + 1) * sn / c;
       const rot = (x, y) => [px + x * c - y * sn, py + x * sn + y * c]; P.poly([rot(-0.45, 0.12), rot(0.45, 0.12), rot(0.35, 0.4), rot(-0.3, 0.45)], '#2a3320', C.lime);
       [[-0.35, 0.12], [0.35, 0.12]].forEach(([x, y]) => { const [a, b] = rot(x, y); circle(P, a, b, 0.12, C.bone, 2); });
-      const [ax, ay] = rot(0, 0.3); const sc = 0.0018; P.arrow(ax, ay, ax - r.Fg * sc * c, ay - r.Fg * sc * sn, C.bad, 2.5); P.arrow(ax, ay + 0.25, ax - r.Fa * sc * c, ay + 0.25 - r.Fa * sc * sn, C.signal, 2.5);
+      const [ax, ay] = rot(0, 0.3); const sc = 0.004; P.arrow(ax, ay, ax - r.Fg * sc * c, ay - r.Fg * sc * sn, C.bad, 2.5); P.arrow(ax, ay + 0.25, ax - r.Fa * sc * c, ay + 0.25 - r.Fa * sc * sn, C.signal, 2.5);
       const pw = Math.min(r.P / 6000, 1); rect(P, 2.5, 1.0, 2.9, 1.75, '#14160f', C.rule2); rect(P, 2.5, 1.0, 2.9, 1.0 + 0.75 * pw, r.P > 4000 ? C.bad : C.lime); P.text('kW', 2.55, 0.9, C.fog); };
     pd.redraw();
     const Tw = r.F * rw, rpm = s.v / 3.6 / rw * 60 / TAU; const flat = roadLoad({ m: s.m, grade: 0, v: s.v / 3.6 });
-    read.innerHTML = `forces: rolling ${r.Fr.toFixed(0)} N, aero ${r.Fa.toFixed(0)} N (blue), grade ${r.Fg.toFixed(0)} N (red) · wheel power <b>${(r.P / 1000).toFixed(2)} kW</b> · hub torque ${Tw.toFixed(0)} N·m at ${rpm.toFixed(0)} rpm (0.25 m wheel radius) · on the flat ${(flat.P / 1000).toFixed(2)} kW, ${(flat.F / 3600).toFixed(1)} Wh/km at the wheel`;
+    read.innerHTML = `forces: rolling ${r.Fr.toFixed(0)} N, aero ${r.Fa.toFixed(0)} N (blue), grade ${r.Fg.toFixed(0)} N (red) · wheel power <b>${(r.P / 1000).toFixed(2)} kW</b> · hub torque ${Tw.toFixed(0)} N·m at ${rpm.toFixed(0)} rpm (0.25 m wheel radius) · on the flat ${(flat.P / 1000).toFixed(2)} kW, ${(flat.F * 1000 / 3600).toFixed(1)} Wh/km at the wheel`;
   };
   ctrls.append(slider('Grade', { min: 0, max: 25, step: 0.5, value: s.grade, fmt: (v) => v.toFixed(1) + ' %' }, (v) => { s.grade = v; draw(); }),
     slider('Speed', { min: 5, max: 70, step: 1, value: s.v, fmt: (v) => v + ' km/h' }, (v) => { s.v = v; draw(); }),
