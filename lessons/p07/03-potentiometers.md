@@ -1,7 +1,7 @@
 ---
 id: p07-l03
 minutes: 30
-summary: A potentiometer is a voltage divider whose ratio is the shaft position: the cheapest absolute angle sensor. You derive the loading error caused by whatever reads the wiper, find where it peaks, and show that a buffer brings it below 0.1 percent.
+summary: A potentiometer is a voltage divider whose ratio is the shaft position, which makes it the cheapest absolute angle sensor. You derive the loading error caused by whatever reads the wiper, find where it peaks, and show that a buffer brings it below 0.1 percent.
 ---
 
 ## A divider you can turn
