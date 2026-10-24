@@ -112,7 +112,7 @@ print("PASS")
 :::exercise
 The tuned $q$ came out at 1.6 rather than the true 2.0. Is that a failure?
 :::solution
-No. The average NIS is a statistic of a finite log, and $R$ was itself estimated (7 % high in standard deviation here, which pushes $q$ down to compensate). The filter's performance is flat near the optimum, so a factor of 1.3 in $q$ barely changes the error. What matters is that the consistency tests pass.
+No. The average NIS is a statistic of a finite log, and $R$ was itself estimated (about 2 % high in standard deviation here, 5 % in variance, which pushes $q$ down to compensate). The filter's performance is flat near the optimum, so a factor of 1.3 in $q$ barely changes the error. What matters is that the consistency tests pass.
 :::end
 
 :::exercise
