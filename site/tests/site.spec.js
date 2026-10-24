@@ -57,7 +57,7 @@ test('lab 01 pendulum: balances, then falls when D is switched off', async ({ pa
 test('lab 02 arm: tracks a target placed by tap or drag, sags when the elbow motor is killed', async ({ page, isMobile }) => {
   const lab = await gotoLab(page, 'arm');
   const view = page.getByTestId('lab-arm-3d');
-  await view.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await view.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
   await page.waitForTimeout(200);
   const box = await view.boundingBox();
   // first point that the canvas itself receives (the overlay toolbar can sit on top on short screens)

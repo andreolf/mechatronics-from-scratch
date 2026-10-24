@@ -92,7 +92,7 @@ def md(ph):
 def main():
     phases = parse()
     total = sum(len(p["lessons"]) for p in phases)
-    data = dict(name="Mechatronics from Scratch", version="0.1.0", license="MIT",
+    data = dict(name="Mechatronics from Scratch", version="0.2.0", license="MIT",
                 note="Course mappings flagged eth=true use real ETH Zurich course titles; others are generic topic names. Not affiliated with or endorsed by ETH Zurich.",
                 labs={"pendulum": "Self-balancing robot (inverted pendulum, PID)", "arm": "Robot arm inverse kinematics",
                       "quad": "Quadcopter attitude control", "motor": "DC motor + encoder speed control"},
