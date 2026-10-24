@@ -1,0 +1,193 @@
+var e={"p06-l01":[{id:`p06-l01-q1`,type:`num`,q:`<p>What is 0xB5 in decimal?</p>
+`,explain:`<p>11×16 + 5.</p>
+`,answer:181,tol:.001,unit:``},{id:`p06-l01-q2`,type:`num`,q:`<p>What signed value does the 16-bit pattern 0xFF38 hold?</p>
+`,explain:`<p>Subtract <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">16</span></span></span></span></span></span></span></span></span></span></span></span> because the MSB is set.</p>
+`,answer:-200,tol:.001,unit:``},{id:`p06-l01-q3`,type:`mc`,q:`<p>Two’s-complement negation is…</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">u</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7477em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">u</span></span></span></span>.</p>
+`,options:[`flip the MSB`,`invert every bit and add 1`,`subtract 1 and invert the MSB`,`reverse the bit order`],answer:1},{id:`p06-l01-q4`,type:`num`,q:`<p>What is the smallest 16-bit signed value?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span></span>.</p>
+`,answer:-32768,tol:.001,unit:``},{id:`p06-l01-q5`,type:`mc`,q:`<p>Signed addition overflows when…</p>
+`,explain:`<p>The carry out is the unsigned overflow rule.</p>
+`,options:[`there is a carry out of the top bit`,`both operands have the same sign and the result’s sign differs`,`the result is zero`,`one operand is negative`],answer:1},{id:`p06-l01-q6`,type:`num`,q:`<p>The 12-bit two’s-complement value 0xF9C, in decimal?</p>
+`,explain:`<p>Bit 11 is set.</p>
+`,answer:-100,tol:.001,unit:``}],"p06-l02":[{id:`p06-l02-q1`,type:`num`,q:`<p>What is 0.7 in Q15 (rounded)?</p>
+`,explain:`<p>Multiply by <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">15</span></span></span></span></span></span></span></span></span></span></span></span>.</p>
+`,answer:22938,tol:1e-4,unit:``},{id:`p06-l02-q2`,type:`num`,q:`<p>Q15 product of 22938 and −9830, with rounding?</p>
+`,explain:`<p>Add <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">14</span></span></span></span></span></span></span></span></span></span></span></span>, then floor-shift by 15.</p>
+`,answer:-6881,tol:1e-4,unit:``},{id:`p06-l02-q3`,type:`num`,q:`<p>What is one Q15 LSB as a decimal?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">15</span></span></span></span></span></span></span></span></span></span></span></span>.</p>
+`,answer:30518e-9,tol:.001,unit:``},{id:`p06-l02-q4`,type:`mc`,q:`<p>Saturation means…</p>
+`,explain:`<p>Wrapping flips the sign, which is dangerous in control.</p>
+`,options:[`wrapping around on overflow`,`clamping to the largest or smallest representable value`,`rounding to the nearest LSB`,`converting to float`],answer:1},{id:`p06-l02-q5`,type:`mc`,q:`<p>The only Q15 × Q15 product that overflows is…</p>
+`,explain:`<p>+1 isn’t representable in Q15.</p>
+`,options:[`0.5 × 0.5`,`−1 × −1`,`−1 × 1`,`1 × 1`],answer:1},{id:`p06-l02-q6`,type:`num`,q:`<p>Resolution in mA of Q6.9 for amps?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">9</span></span></span></span></span></span></span></span></span></span></span></span> A.</p>
+`,answer:1.9531,tol:.001,unit:`mA`}],"p06-l03":[{id:`p06-l03-q1`,type:`mc`,q:`<p>De Morgan’s law says (AB)′ equals…</p>
+`,explain:`<p>NOT-AND is OR of NOTs.</p>
+`,options:[`A′B′`,`A′ + B′`,`A + B`,`(A + B)′`],answer:1},{id:`p06-l03-q2`,type:`mc`,q:`<p>Minimal SOP for minterms {1, 3, 5, 7, 13, 15} of ABCD?</p>
+`,explain:`<p>Two groups of four.</p>
+`,options:[`A′D + BD`,`ABD + A′D`,`D`,`A′B′D + BD`],answer:0},{id:`p06-l03-q3`,type:`num`,q:`<p>How many variables does a group of 4 cells remove from a product term?</p>
+`,explain:`<p>A group of <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> cells removes <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span></span></span></span> variables.</p>
+`,answer:2,tol:.001,unit:``},{id:`p06-l03-q4`,type:`mc`,q:`<p>K-map rows and columns are ordered in Gray code so that…</p>
+`,explain:`<p>Adjacency equals a one-bit difference.</p>
+`,options:[`the map is sorted numerically`,`neighbouring cells differ in exactly one variable`,`don’t-cares are grouped`,`the map has fewer cells`],answer:1},{id:`p06-l03-q5`,type:`num`,q:`<p>How many minterms does a 4-input function have in total?</p>
+`,explain:`<p>One per input combination.</p>
+`,answer:16,tol:.001,unit:``},{id:`p06-l03-q6`,type:`mc`,q:`<p>An essential prime implicant is one that…</p>
+`,explain:`<p>It must appear in every minimal cover.</p>
+`,options:[`covers the most minterms`,`is the only prime covering some minterm`,`contains a don’t-care`,`has no complemented variables`],answer:1}],"p06-l04":[{id:`p06-l04-q1`,type:`mc`,q:`<p>In a CMOS NAND gate, the NMOS transistors are…</p>
+`,explain:`<p>The output is pulled low only when A and B are both high.</p>
+`,options:[`in parallel`,`in series`,`absent`,`connected to VDD`],answer:1},{id:`p06-l04-q2`,type:`mc`,q:`<p>A PMOS transistor conducts when its gate is…</p>
+`,explain:`<p>It’s the complement of NMOS.</p>
+`,options:[`high`,`low`,`floating`,`at mid-rail only`],answer:1},{id:`p06-l04-q3`,type:`num`,q:`<p>Dynamic power in mW for C = 1 nF, V = 1.2 V, f = 48 MHz?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.0085em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.2222em;">V</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span></span></span></span>.</p>
+`,answer:69.12,tol:.001,unit:`mW`},{id:`p06-l04-q4`,type:`num`,q:`<p>Ratio of dynamic power at 0.9 V to 1.2 V?</p>
+`,explain:`<p>Power scales with <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.2222em;">V</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>.</p>
+`,answer:.5625,tol:.001,unit:``},{id:`p06-l04-q5`,type:`mc`,q:`<p>The static power of an ideal CMOS gate is…</p>
+`,explain:`<p>Only leakage remains.</p>
+`,options:[`large`,`nearly zero, because one network is always off`,`proportional to frequency`,`the same as dynamic power`],answer:1},{id:`p06-l04-q6`,type:`num`,q:`<p>How many transistors does a 2-input CMOS NOR gate use?</p>
+`,explain:`<p>Two NMOS in parallel and two PMOS in series.</p>
+`,answer:4,tol:.001,unit:``}],"p06-l05":[{id:`p06-l05-q1`,type:`mc`,q:`<p>The carry-out of a full adder is…</p>
+`,explain:`<p>Generate, or propagate an incoming carry.</p>
+`,options:[`a ⊕ b ⊕ c`,`ab + c(a ⊕ b)`,`a + b + c`,`(ab)′`],answer:1},{id:`p06-l05-q2`,type:`num`,q:`<p>In this model, when does the top sum bit of a 4-bit ripple adder settle (gate delays)?</p>
+`,explain:`<p>About 2 delays per bit.</p>
+`,answer:8,tol:.001,unit:``},{id:`p06-l05-q3`,type:`num`,q:`<p>And with carry look-ahead?</p>
+`,explain:`<p>Carries at 3, then one XOR.</p>
+`,answer:4,tol:.001,unit:``},{id:`p06-l05-q4`,type:`mc`,q:`<p>The propagate term p_i is…</p>
+`,explain:`<p>The bit passes a carry when exactly one input is 1.</p>
+`,options:[`a_i b_i`,`a_i ⊕ b_i`,`a_i + b_i + c_i`,`c_i`],answer:1},{id:`p06-l05-q5`,type:`num`,q:`<p>Delay in ns of a 32-bit ripple adder at 20 ps per gate (2 gates per bit)?</p>
+`,explain:`<p>64 gate delays.</p>
+`,answer:1.28,tol:.001,unit:`ns`},{id:`p06-l05-q6`,type:`num`,q:`<p>How many select lines does a 16:1 multiplexer need?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> inputs need <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span></span></span></span> selects.</p>
+`,answer:4,tol:.001,unit:``}],"p06-l06":[{id:`p06-l06-q1`,type:`mc`,q:`<p>An event-driven simulator does work…</p>
+`,explain:`<p>Unchanged inputs need no re-evaluation.</p>
+`,options:[`at every fixed time step`,`only when a net changes value`,`only at clock edges`,`once per truth-table row`],answer:1},{id:`p06-l06-q2`,type:`num`,q:`<p>Glitch width in ns for Y = A·A′ with a 2 ns inverter?</p>
+`,explain:`<p>Both inputs are 1 until the inverter catches up.</p>
+`,answer:2,tol:.001,unit:`ns`},{id:`p06-l06-q3`,type:`num`,q:`<p>At what time (ns) does Y first go high if A rises at 5 ns and the AND delay is 1 ns?</p>
+`,explain:`<p>The AND sees (1, 1) immediately.</p>
+`,answer:6,tol:.001,unit:`ns`},{id:`p06-l06-q4`,type:`mc`,q:`<p>A static-1 hazard can be removed by…</p>
+`,explain:`<p>The redundant term covers the transition.</p>
+`,options:[`adding the consensus term`,`removing the inverter`,`slowing the clock`,`using a NOR gate`],answer:0},{id:`p06-l06-q5`,type:`mc`,q:`<p>Glitches are harmless in synchronous logic when…</p>
+`,explain:`<p>Flip-flops only sample at the edge.</p>
+`,options:[`they are shorter than 1 ns`,`outputs settle before the next clock edge`,`the circuit uses NAND gates`,`the supply is 3.3 V`],answer:1},{id:`p06-l06-q6`,type:`num`,q:`<p>Worst-case ripple carry-out time (gate delays) for the 4-bit netlist?</p>
+`,explain:`<p>Carry c_i is ready at 2i + 1.</p>
+`,answer:9,tol:.001,unit:``}],"p06-l07":[{id:`p06-l07-q1`,type:`mc`,q:`<p>With S = R = 0, an SR latch…</p>
+`,explain:`<p>The cross-coupled feedback remembers.</p>
+`,options:[`resets`,`holds its previous state`,`sets`,`oscillates`],answer:1},{id:`p06-l07-q2`,type:`mc`,q:`<p>A D latch with enable high is…</p>
+`,explain:`<p>It’s level-sensitive.</p>
+`,options:[`edge-triggered`,`[object Object]`,`frozen`,`in the forbidden state`],answer:1},{id:`p06-l07-q3`,type:`mc`,q:`<p>A master-slave D flip-flop captures D…</p>
+`,explain:`<p>The master closes and the slave copies.</p>
+`,options:[`continuously`,`at the rising clock edge`,`while the clock is low`,`at the falling edge only if D is 1`],answer:1},{id:`p06-l07-q4`,type:`num`,q:`<p>How many gates in a NOR-based SR latch?</p>
+`,explain:`<p>Two cross-coupled NORs.</p>
+`,answer:2,tol:.001,unit:``},{id:`p06-l07-q5`,type:`num`,q:`<p>In the worked example, Q after the edge at t = 3?</p>
+`,explain:`<p>The pulse didn’t span an edge.</p>
+`,answer:0,tol:.001,unit:``},{id:`p06-l07-q6`,type:`mc`,q:`<p>Setup time is…</p>
+`,explain:`<p>Hold time is the stability required after the edge.</p>
+`,options:[`how long D must be stable before the clock edge`,`the clock period`,`the gate delay of the slave`,`how long after the edge Q changes`],answer:0}],"p06-l08":[{id:`p06-l08-q1`,type:`mc`,q:`<p>In a Moore machine, outputs depend on…</p>
+`,explain:`<p>Mealy outputs also depend on inputs.</p>
+`,options:[`the state only`,`the state and the current inputs`,`the inputs only`,`the clock frequency`],answer:0},{id:`p06-l08-q2`,type:`num`,q:`<p>Flip-flops needed for 5 states with binary encoding?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">⌈</span><span class="mop"><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.207em;"><span style="top:-2.4559em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2441em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">5</span><span class="mclose">⌉</span></span></span></span>.</p>
+`,answer:3,tol:.001,unit:``},{id:`p06-l08-q3`,type:`num`,q:`<p>How many (state, obstacle) pairs does the guarded controller actually reach?</p>
+`,explain:`<p>All but (CLOSING, obstacle present).</p>
+`,answer:9,tol:.001,unit:``},{id:`p06-l08-q4`,type:`mc`,q:`<p>A timeout transition protects against…</p>
+`,explain:`<p>E.g. a broken limit switch.</p>
+`,options:[`a slow clock`,`a failed sensor leaving the machine waiting forever`,`glitches`,`too many states`],answer:1},{id:`p06-l08-q5`,type:`mc`,q:`<p>Exhaustive exploration of reachable states proves a property because…</p>
+`,explain:`<p>For a finite machine the reachable set is finite and fully enumerated.</p>
+`,options:[`it tests random inputs`,`it visits every state any input sequence can reach`,`it uses one-hot encoding`,`it runs on hardware`],answer:1},{id:`p06-l08-q6`,type:`num`,q:`<p>Flip-flops needed for 5 states with one-hot encoding?</p>
+`,explain:`<p>One per state.</p>
+`,answer:5,tol:.001,unit:``}],"p06-l09":[{id:`p06-l09-q1`,type:`num`,q:`<p>Counts per revolution of a 500-line encoder with 4× decoding?</p>
+`,explain:`<p>Every edge of A and B.</p>
+`,answer:2e3,tol:.001,unit:``},{id:`p06-l09-q2`,type:`num`,q:`<p>Edge rate in kHz at 6000 rpm?</p>
+`,explain:`<p>Counts per rev × rev per second.</p>
+`,answer:200,tol:.001,unit:`kHz`},{id:`p06-l09-q3`,type:`mc`,q:`<p>If both A and B change between two samples, the decoder should…</p>
+`,explain:`<p>The direction is ambiguous.</p>
+`,options:[`count +2`,`flag an error, because a state was skipped`,`count −1`,`ignore it silently`],answer:1},{id:`p06-l09-q4`,type:`mc`,q:`<p>The A/B state sequence is a Gray code, meaning…</p>
+`,explain:`<p>That’s what makes direction and error detection possible.</p>
+`,options:[`both bits change at each step`,`only one bit changes per step`,`it counts in binary`,`the states are random`],answer:1},{id:`p06-l09-q5`,type:`num`,q:`<p>Distance per count in mm, 1024 lines, 100 mm wheel?</p>
+`,explain:`<p>Circumference over counts per rev.</p>
+`,answer:.076699,tol:.002,unit:`mm`},{id:`p06-l09-q6`,type:`num`,q:`<p>Revolutions before a signed 16-bit counter wraps (2000 counts/rev)?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">15</span></span></span></span></span></span></span></span></span><span class="mord">/2000</span></span></span></span>.</p>
+`,answer:16.384,tol:.001,unit:``}],"p06-l10":[{id:`p06-l10-q1`,type:`num`,q:`<p>Maximal period of an 8-bit LFSR?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7477em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>.</p>
+`,answer:255,tol:.001,unit:``},{id:`p06-l10-q2`,type:`mc`,q:`<p>The 74HC595’s RCLK pin…</p>
+`,explain:`<p>Outputs change all at once.</p>
+`,options:[`shifts in one bit`,`copies the shift register to the outputs`,`resets the chip`,`sets the output enable`],answer:1},{id:`p06-l10-q3`,type:`num`,q:`<p>Period of the 4-bit LFSR with taps 4 and 2 from state 0001?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">4</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> isn’t primitive.</p>
+`,answer:6,tol:.001,unit:``},{id:`p06-l10-q4`,type:`num`,q:`<p>Time in µs to shift 32 bits at 8 MHz?</p>
+`,explain:`<p>One bit per clock.</p>
+`,answer:4,tol:.001,unit:`µs`},{id:`p06-l10-q5`,type:`mc`,q:`<p>An LFSR has maximal period when its feedback polynomial is…</p>
+`,explain:`<p>That’s the algebraic condition.</p>
+`,options:[`even`,`primitive over GF(2)`,`of degree 1`,`all ones`],answer:1},{id:`p06-l10-q6`,type:`num`,q:`<p>Pins needed to drive 64 outputs with chained 595s?</p>
+`,explain:`<p>SER, SRCLK and RCLK.</p>
+`,answer:3,tol:.001,unit:``}],"p06-l11":[{id:`p06-l11-q1`,type:`num`,q:`<p>MTBF in seconds of one flop with no settling time, 100 MHz clock, 1 MHz data, T0 = 100 ps?</p>
+`,explain:`<p>Just the denominator.</p>
+`,answer:1e-4,tol:.001,unit:`s`},{id:`p06-l11-q2`,type:`num`,q:`<p>The exponent t_r/τ for t_r = 9 ns and τ = 20 ps?</p>
+`,explain:`<p>It’s the exponent that makes synchronisers work.</p>
+`,answer:450,tol:.001,unit:``},{id:`p06-l11-q3`,type:`mc`,q:`<p>An async input should go through how many synchronisers before use?</p>
+`,explain:`<p>Otherwise the users can disagree.</p>
+`,options:[`one per flop that uses it`,`exactly one, then fan out the synchronised signal`,`none if the logic is fast`,`two in parallel`],answer:1},{id:`p06-l11-q4`,type:`num`,q:`<p>MTBF in years at 500 MHz, τ = 60 ps, t_r = 1.8 ns, 1 MHz data, T0 = 100 ps?</p>
+`,explain:`<p>Fine for one unit, poor for a fleet.</p>
+`,answer:6.79,tol:.02,unit:`years`},{id:`p06-l11-q5`,type:`mc`,q:`<p>The maximum clock frequency inside one clock domain is set by…</p>
+`,explain:`<p>Static timing.</p>
+`,options:[`the slowest flop-to-flop path including setup time`,`the metastability τ`,`the number of flip-flops`,`the supply voltage only`],answer:0},{id:`p06-l11-q6`,type:`num`,q:`<p>Fraction (in %) of input changes on which two flops with 0.3 ns skew disagree at 100 MHz?</p>
+`,explain:`<p>Skew times clock frequency.</p>
+`,answer:3,tol:.001,unit:`%`}],"p06-l12":[{id:`p06-l12-q1`,type:`num`,q:`<p>Debounce latency in ms for N = 8 at 1 kHz sampling?</p>
+`,explain:`<p>N sample periods.</p>
+`,answer:8,tol:.001,unit:`ms`},{id:`p06-l12-q2`,type:`mc`,q:`<p>The integrator debouncer differs from the reset counter because…</p>
+`,explain:`<p>One spike only moves it one step.</p>
+`,options:[`it needs no sampling`,`it counts up and down, giving hysteresis against isolated spikes`,`it has no latency`,`it uses interrupts`],answer:1},{id:`p06-l12-q3`,type:`num`,q:`<p>RC time constant in ms for 10 kΩ and 1 µF?</p>
+`,explain:`<p>R × C.</p>
+`,answer:10,tol:.001,unit:`ms`},{id:`p06-l12-q4`,type:`mc`,q:`<p>A required agreement time of 30 ms or more is generally…</p>
+`,explain:`<p>Keep it just above the bounce.</p>
+`,options:[`needed for every switch`,`noticeable to the user as sluggish`,`too short`,`required by USB`],answer:1},{id:`p06-l12-q5`,type:`num`,q:`<p>Rising edges seen after perfect debouncing of 50 presses?</p>
+`,explain:`<p>One per press.</p>
+`,answer:50,tol:.001,unit:``},{id:`p06-l12-q6`,type:`num`,q:`<p>Time in ms for an RC with τ = 10 ms to reach 2/3 of the supply from 0?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">ln</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">3</span></span></span></span>.</p>
+`,answer:10.986,tol:.005,unit:`ms`}],"p06-l13":[{id:`p06-l13-q1`,type:`mc`,q:`<p>Programming a flash cell can…</p>
+`,explain:`<p>Setting bits back to 1 needs an erase of the whole page.</p>
+`,options:[`set bits 0 to 1`,`only clear bits from 1 to 0`,`change any bit freely`,`erase a page`],answer:1},{id:`p06-l13-q2`,type:`num`,q:`<p>Saves before a fixed page wears out (16 records per page, 10 000 erases)?</p>
+`,explain:`<p>Records per erase × endurance.</p>
+`,answer:16e4,tol:.001,unit:``},{id:`p06-l13-q3`,type:`num`,q:`<p>Erases per page for 10 million saves over a ring of 64 pages (16 records each)?</p>
+`,explain:`<p>Just under the endurance.</p>
+`,answer:9765.6,tol:.001,unit:``},{id:`p06-l13-q4`,type:`mc`,q:`<p>At boot the store returns…</p>
+`,explain:`<p>Sequence numbers order the log.</p>
+`,options:[`the first record in flash`,`the valid record with the highest sequence number`,`the last physical slot`,`the average of all records`],answer:1},{id:`p06-l13-q5`,type:`num`,q:`<p>Years to make 10 million saves at one every 10 s?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">8</span></span></span></span></span></span></span></span></span></span></span> s.</p>
+`,answer:3.17,tol:.01,unit:`years`},{id:`p06-l13-q6`,type:`mc`,q:`<p>SRAM keeps its data…</p>
+`,explain:`<p>It’s a latch.</p>
+`,options:[`for 10 years without power`,`only while powered`,`for 10 000 writes`,`only when erased first`],answer:1}],"p06-l14":[{id:`p06-l14-q1`,type:`num`,q:`<p>LSB in mV of an 8-bit ADC with a 3.3 V reference?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.2222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight" style="margin-right:0.1076em;">f</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span>.</p>
+`,answer:12.891,tol:.001,unit:`mV`},{id:`p06-l14-q2`,type:`num`,q:`<p>Output code for 2.137 V, 8 bits, 3.3 V reference?</p>
+`,explain:`<p>SAR truncates.</p>
+`,answer:165,tol:.001,unit:``},{id:`p06-l14-q3`,type:`mc`,q:`<p>DNL of −1 LSB at a code means…</p>
+`,explain:`<p>Zero width.</p>
+`,options:[`the code is twice as wide`,`the code never appears (missing code)`,`the code is ideal`,`offset error`],answer:1},{id:`p06-l14-q4`,type:`num`,q:`<p>Comparator decisions for a 12-bit SAR conversion?</p>
+`,explain:`<p>One per bit.</p>
+`,answer:12,tol:.001,unit:``},{id:`p06-l14-q5`,type:`num`,q:`<p>Extra width in LSB of code 127 when the MSB weight is 1 % high (8 bits)?</p>
+`,explain:`<p>The MSB transition moves up by 1.28 LSB.</p>
+`,answer:1.28,tol:.001,unit:`LSB`},{id:`p06-l14-q6`,type:`mc`,q:`<p>The ramp histogram test estimates code widths because…</p>
+`,explain:`<p>A uniform ramp spends time in each code proportional to its width.</p>
+`,options:[`each code’s hit count is proportional to its width`,`it measures the comparator`,`it averages noise`,`it removes the reference`],answer:0}],"p06-l15":[{id:`p06-l15-q1`,type:`num`,q:`<p>Output voltage for code 165, 8 bits, 3.3 V reference?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.2222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight" style="margin-right:0.1076em;">f</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">code</span></span><span class="mord">/</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span>.</p>
+`,answer:2.127,tol:.001,unit:`V`},{id:`p06-l15-q2`,type:`num`,q:`<p>Output resistance of an R-2R ladder with R = 10 kΩ?</p>
+`,explain:`<p>It’s <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0077em;">R</span></span></span></span> for every code.</p>
+`,answer:10,tol:.001,unit:`kΩ`},{id:`p06-l15-q3`,type:`mc`,q:`<p>The worst DNL of a binary DAC is usually at…</p>
+`,explain:`<p>All bits switch at once.</p>
+`,options:[`code 0`,`the major carry at mid-scale`,`full scale`,`a random code`],answer:1},{id:`p06-l15-q4`,type:`mc`,q:`<p>A non-monotonic DAC in a control loop…</p>
+`,explain:`<p>A higher command gives a lower output.</p>
+`,options:[`is harmless`,`can locally reverse the loop gain’s sign`,`improves stability`,`only adds offset`],answer:1},{id:`p06-l15-q5`,type:`num`,q:`<p>Relative accuracy needed on the MSB weight for ±0.5 LSB at the major carry, 8 bits (in %)?</p>
+`,explain:`<p>Half an LSB out of 128.</p>
+`,answer:.39,tol:.01,unit:`%`},{id:`p06-l15-q6`,type:`num`,q:`<p>Resistors in a 12-bit R-2R ladder?</p>
+`,explain:`<p>11 series and 13 legs including the termination.</p>
+`,answer:24,tol:.001,unit:``}],"p06-l16":[{id:`p06-l16-q1`,type:`num`,q:`<p>Blink frequency in Hz from bit q[23] of a counter on 12 MHz?</p>
+`,explain:`<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.0991em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1076em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">c</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">l</span><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span></span>.</p>
+`,answer:.71526,tol:.001,unit:`Hz`},{id:`p06-l16-q2`,type:`num`,q:`<p>Period of q[3] in clock cycles?</p>
+`,explain:`<p>It toggles every 8 cycles.</p>
+`,answer:16,tol:.001,unit:``},{id:`p06-l16-q3`,type:`mc`,q:`<p>In Verilog, <code>q &lt;= q + 1</code> inside <code>always @(posedge clk)</code> describes…</p>
+`,explain:`<p>A non-blocking assignment in a clocked block makes flip-flops.</p>
+`,options:[`a loop that runs forever`,`a register updated at each clock edge`,`combinational logic`,`a delay`],answer:1},{id:`p06-l16-q4`,type:`num`,q:`<p>Debounce time in ms for 2^16 cycles at 12 MHz?</p>
+`,explain:`<p>Cycles over clock rate.</p>
+`,answer:5.461,tol:.002,unit:`ms`},{id:`p06-l16-q5`,type:`num`,q:`<p>Terminal count M for a toggled output of exactly 1 Hz from 12 MHz?</p>
+`,explain:`<p>Toggle every half period.</p>
+`,answer:6e6,tol:.001,unit:``},{id:`p06-l16-q6`,type:`mc`,q:`<p>A testbench is…</p>
+`,explain:`<p>It never becomes hardware.</p>
+`,options:[`the synthesised circuit`,`simulation code that drives inputs and checks outputs automatically`,`the FPGA pin map`,`a timing report`],answer:1}]};export{e as default};
