@@ -200,4 +200,167 @@ W.regview = (el) => {
   p.redraw();
 };
 
+// p10-l07: clock tree with PLL limits
+W.clocktree = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { hse: 8, m: 4, n: 168, p: 2, q: 7 };
+  const p = new Plot(body, { aspect: 0.7, maxH: 330, x: [0, 4], y: [0, 2.6], label: 'STM32F407 clock tree from the crystal to the buses' });
+  p.draw = (P) => {
+    const vin = s.hse / s.m, vco = vin * s.n, sys = vco / s.p, usb = vco / s.q;
+    const okIn = vin >= 1 && vin <= 2, okV = vco >= 100 && vco <= 432, okS = sys <= 168, okU = Math.abs(usb - 48) < 1e-9;
+    const st = (ok) => (ok ? C.lime : C.bad);
+    const b2 = (x0, y0, x1, y1, t, sub, ok) => { rect(P, x0, y0, x1, y1, ok ? 'rgba(198,255,26,.10)' : 'rgba(255,107,91,.15)', st(ok)); P.text(t, (x0 + x1) / 2, (y0 + y1) / 2 + 0.03, C.bone, 'center'); P.text(sub, (x0 + x1) / 2, y0 - 0.16, ok ? C.fog : C.bad, 'center'); };
+    b2(0.05, 1.9, 0.75, 2.3, 'HSE', s.hse + ' MHz', true); P.arrow(0.78, 2.1, 0.95, 2.1, C.fog, 1.5);
+    b2(1.0, 1.9, 1.5, 2.3, '/M', vin.toFixed(2) + ' MHz', okIn); P.arrow(1.53, 2.1, 1.7, 2.1, C.fog, 1.5);
+    b2(1.75, 1.9, 2.55, 2.3, '×N VCO', vco.toFixed(0) + ' MHz', okV);
+    P.line([2.15, 2.15], [1.9, 1.35], C.fog, 1.5); P.line([2.15, 3.1], [1.6, 1.6], C.fog, 1.5);
+    b2(1.75, 0.95, 2.55, 1.35, '/P', sys.toFixed(1) + ' MHz', okS); b2(3.0, 1.6, 3.6, 2.0, '/Q', usb.toFixed(1) + ' MHz', okU);
+    P.line([2.15, 2.15], [0.95, 0.75], C.fog, 1.5); P.line([0.4, 3.6], [0.75, 0.75], C.fog, 1.5);
+    const ahb = sys, apb2 = sys / 2, apb1 = sys / 4;
+    b2(0.1, 0.2, 1.2, 0.55, 'AHB /1', ahb.toFixed(0) + ' MHz', ahb <= 168); b2(1.45, 0.2, 2.55, 0.55, 'APB2 /2', apb2.toFixed(0) + ' MHz', apb2 <= 84); b2(2.8, 0.2, 3.9, 0.55, 'APB1 /4', apb1.toFixed(0) + ' MHz', apb1 <= 42);
+    [0.65, 2.0, 3.35].forEach((x) => P.line([x, x], [0.75, 0.55], C.fog, 1.5));
+    const ws = Math.ceil(sys / 30) - 1; const cfg = (s.m | (s.n << 6) | ((s.p / 2 - 1) << 16) | (1 << 22) | (s.q << 24)) >>> 0;
+    const bad = [!okIn && 'VCO input must be 1–2 MHz', !okV && 'VCO must be 100–432 MHz', !okS && 'SYSCLK over 168 MHz', !okU && 'USB is not 48 MHz'].filter(Boolean);
+    read.innerHTML = `SYSCLK = ${s.hse}·${s.n}/(${s.m}·${s.p}) = <b>${sys.toFixed(2)} MHz</b> · flash wait states ${Math.max(0, ws)} · APB1 timers ${(apb1 * 2).toFixed(0)} MHz · RCC_PLLCFGR = ${hex(cfg)} · ${bad.length ? '<b>' + bad.join('; ') + '</b>' : 'all stages inside their limits'}`;
+  };
+  ctrls.append(select('Crystal (HSE)', [['8', '8 MHz'], ['25', '25 MHz'], ['12', '12 MHz']], '8', (v) => { s.hse = +v; p.redraw(); }, 'clk-hse'),
+    slider('M', { min: 2, max: 63, step: 1, value: s.m, fmt: (v) => String(v) }, (v) => { s.m = v; p.redraw(); }),
+    slider('N', { min: 50, max: 432, step: 1, value: s.n, fmt: (v) => String(v) }, (v) => { s.n = v; p.redraw(); }),
+    select('P', [['2', '2'], ['4', '4'], ['6', '6'], ['8', '8']], '2', (v) => { s.p = +v; p.redraw(); }, 'clk-p'),
+    slider('Q', { min: 2, max: 15, step: 1, value: s.q, fmt: (v) => String(v) }, (v) => { s.q = v; p.redraw(); }));
+  p.redraw();
+};
+
+// p10-l08: timer sawtooth and update events
+W.timerpsc = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { psc: 83, arr: 999, target: 1000 };
+  const p = new Plot(body, { aspect: 0.5, maxH: 280, x: [0, 5], y: [0, 1.15], label: 'Timer counter value over time with update events' });
+  p.draw = (P) => {
+    const fclk = 84e6; const f = fclk / ((s.psc + 1) * (s.arr + 1)); const T = 1 / f; const span = 5 / s.target;
+    P.axes({ xl: 't [ms]', yl: 'CNT / ARR' });
+    const xs = [], ys = [];
+    for (let i = 0; i <= 600; i++) { const t = span * i / 600; const ph = (t % T) / T; xs.push(t * s.target); ys.push(ph); }
+    P.line(xs, ys, C.lime, 2);
+    for (let k = 1; k * T <= span; k++) P.dot(k * T * s.target, 0, C.warn, 4);
+    for (let k = 1; k <= 5; k++) P.line([k, k], [0, 1.1], C.rule2, 1, [3, 4]);
+    const err = (f - s.target) / s.target * 100;
+    read.innerHTML = `f<sub>update</sub> = 84 MHz / ((${s.psc}+1)(${s.arr}+1)) = <b>${f.toFixed(3)} Hz</b> · target ${s.target} Hz (dashed grid, x-axis in target periods) · error ${err.toFixed(4)} % ${Math.abs(err) < 0.1 ? '✓ within 0.1 %' : ''} · counter tick ${((s.psc + 1) / 84).toFixed(3)} µs, ${s.arr + 1} steps of resolution`;
+  };
+  ctrls.append(select('Target', [['1000', '1 kHz control tick'], ['20000', '20 kHz PWM'], ['44100', '44.1 kHz audio'], ['50', '50 Hz servo frame']], '1000', (v) => { s.target = +v; p.redraw(); }, 'tim-target'),
+    slider('PSC', { min: 0, max: 1000, step: 1, value: s.psc, fmt: (v) => String(v) }, (v) => { s.psc = v; p.redraw(); }),
+    slider('ARR', { min: 99, max: 65535, step: 1, value: s.arr, fmt: (v) => String(v) }, (v) => { s.arr = v; p.redraw(); }),
+    row(btn('Best split', () => {
+      let best = [1e9, 0, 0]; const K = 84e6 / s.target;
+      for (let psc = 0; psc <= 65535; psc++) { const a = Math.round(K / (psc + 1)); if (a < 1 || a > 65536) continue; const e = Math.abs(84e6 / ((psc + 1) * a) - s.target); if (e < best[0] - 1e-9) best = [e, psc, a - 1]; }
+      s.psc = best[1]; s.arr = best[2]; const inp = ctrls.querySelectorAll('input[type=range]'); inp[0].value = Math.min(1000, s.psc); inp[1].value = s.arr; inp[0].dispatchEvent(new Event('input')); inp[1].dispatchEvent(new Event('input')); s.psc = best[1]; p.redraw();
+    }, 'tim-best')));
+  p.redraw();
+};
+
+// p10-l09: NVIC timeline
+W.nvictl = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { uartHi: false, crit: 0 };
+  const p = new Plot(body, { aspect: 0.55, maxH: 290, x: [0, 3000], y: [0, 3.3], label: 'Timeline of main loop, timer ISR and UART ISR' });
+  p.draw = (P) => {
+    // time in µs; timer ISR every 1000 µs lasting 60; UART ISR at 900 and 1950 lasting 180; main critical section of s.crit µs starting at 960 and 2990-...
+    const tim = [], uart = [[900, 180], [1940, 180]], crit = s.crit ? [[970, s.crit], [1985, s.crit]] : [];
+    const busy = []; const starts = [];
+    for (let k = 0; k < 3; k++) {
+      const due = 1000 * k + 30; let start = due;
+      crit.forEach(([a, d]) => { if (start >= a && start < a + d) start = a + d; });
+      uart.forEach(([a, d]) => { if (s.uartHi && start >= a && start < a + d) start = a + d; });
+      starts.push([due, start]); tim.push([start, 60]);
+    }
+    const row = (y, segs, c, lab) => { P.text(lab, 10, y + 0.45, C.fog); segs.forEach(([a, d]) => rect(P, a, y, a + d, y + 0.3, c + '66', c)); };
+    P.axes({ xl: 't [µs]' });
+    row(2.4, tim, C.lime, 'timer ISR (1 kHz)'); row(1.4, uart, C.signal, `UART ISR (${s.uartHi ? 'more urgent' : 'less urgent'})`);
+    row(0.4, crit, C.bad, 'main: interrupts disabled');
+    starts.forEach(([due, st]) => { P.line([due, due], [2.3, 2.85], C.warn, 1, [3, 3]); });
+    if (s.uartHi) tim.forEach(([a]) => uart.forEach(([u, d]) => { if (a >= u && a < u + d) P.text('waits', a, 2.15, C.bad); }));
+    const lat = starts.map(([d, st]) => st - d); const per = [starts[1][1] - starts[0][1], starts[2][1] - starts[1][1]];
+    read.innerHTML = `timer ISR start delays: ${lat.map((v) => v.toFixed(0)).join(', ')} µs · periods ${per.map((v) => v.toFixed(0)).join(', ')} µs · jitter <b>${(Math.max(...lat) - Math.min(...lat)).toFixed(0)} µs</b> · ${s.uartHi ? 'the UART ISR is more urgent, so a timer tick that arrives while it runs must wait' : 'the timer is more urgent and preempts the UART ISR (lower number = more urgent)'}${s.crit ? ' · a critical section holds off every interrupt until it ends' : ''}`;
+  };
+  ctrls.append(row(toggle('UART more urgent than timer', false, (v) => { s.uartHi = v; p.redraw(); }, { id: 'nvic-uart' })),
+    slider('Critical section in main', { min: 0, max: 120, step: 5, value: s.crit, fmt: (v) => v + ' µs' }, (v) => { s.crit = v; p.redraw(); }));
+  p.redraw();
+};
+
+// p10-l10: race interleaving
+W.racetime = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { at: 1, kind: 'read', fix: false };
+  const p = new Plot(body, { aspect: 0.6, maxH: 300, x: [0, 8], y: [0, 2.2], label: 'Main loop instructions with an interrupt inserted between two of them' });
+  p.draw = (P) => {
+    const prog = s.kind === 'read' ? (s.fix ? ['ldr hi', 'ldr lo', 'ldr hi', 'cmp', 'bne retry'] : ['ldr lo', 'ldr hi']) : (s.fix ? ['cpsid i', 'ldr flags', 'orr', 'str flags', 'cpsie i'] : ['ldr flags', 'orr #1', 'str flags']);
+    const n = prog.length; const at = Math.min(s.at, n); let x = 0.2;
+    for (let i = 0; i <= n; i++) {
+      if (i === at) { const masked = s.kind === 'rmw' && s.fix && i > 0 && i < n; rect(P, x, 1.25, x + 1.1, 1.75, masked ? '#2a1a14' : 'rgba(255,181,71,.25)', masked ? C.bad : C.warn); P.text(masked ? 'ISR pending' : 'ISR', x + 0.55, 1.42, C.bone, 'center'); x += 1.25; }
+      if (i < n) { rect(P, x, 0.45, x + 1.1, 0.95, '#15170f', C.rule2); P.text(prog[i], x + 0.55, 0.62, C.bone, 'center'); x += 1.25; }
+    }
+    let msg;
+    if (s.kind === 'read') {
+      if (!s.fix) msg = at === 1 ? 'main read lo = 0xFFFFFFFF (old) and hi = 6 (new): <b>6:0xFFFFFFFF, 2³² ms in the future</b>' : `consistent read: ${at === 0 ? '6:0x00000000 (new)' : '5:0xFFFFFFFF (old)'}`;
+      else msg = at >= 1 && at <= 2 ? 'hi changed between the two hi reads, so the loop <b>retries</b> and returns 6:0x00000000' : 'both hi reads agree: consistent value';
+    } else {
+      if (!s.fix) msg = at === 1 || at === 2 ? "the ISR set bit 1 after main's load; main's store writes the stale copy: <b>ISR bit lost</b>" : 'flags = 0b11, both bits kept';
+      else msg = at >= 1 && at <= 4 ? 'interrupts are masked, the ISR stays pending and runs after cpsie: flags = 0b11' : 'flags = 0b11, both bits kept';
+    }
+    read.innerHTML = `${s.kind === 'read' ? '64-bit counter at 5:0xFFFFFFFF; the ISR wraps lo and increments hi' : 'main sets bit 0, the ISR sets bit 1'} · ISR after instruction ${at} · ${msg}`;
+  };
+  ctrls.append(select('Hazard', [['read', 'Torn 64-bit read'], ['rmw', 'Lost read-modify-write']], 'read', (v) => { s.kind = v; p.redraw(); }, 'race-kind'),
+    slider('ISR fires after instruction', { min: 0, max: 5, step: 1, value: s.at, fmt: (v) => String(v) }, (v) => { s.at = v; p.redraw(); }),
+    row(toggle('Apply the fix', false, (v) => { s.fix = v; p.redraw(); }, { id: 'race-fix' })));
+  p.redraw();
+};
+
+// p10-l11: complementary PWM with dead time
+const dtgDecode = (d) => ((d & 0x80) === 0 ? d : (d & 0xc0) === 0x80 ? (64 + (d & 0x3f)) * 2 : (d & 0xe0) === 0xc0 ? (32 + (d & 0x1f)) * 8 : (32 + (d & 0x1f)) * 16);
+W.pwmdead = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { duty: 30, dt: 1000 }; const ARR = 4200, F = 168e6;
+  const p = new Plot(body, { aspect: 0.62, maxH: 320, x: [0, 2 * 2 * ARR], y: [0, 4.3], label: 'Centre-aligned counter, reference and complementary outputs' });
+  p.draw = (P) => {
+    const ccr = Math.round(s.duty / 100 * ARR); const want = Math.ceil(s.dt * 1e-9 * F - 1e-6);
+    let code = -1, best = 1e9; for (let d = 0; d < 256; d++) { const v = dtgDecode(d); if (v >= want && v < best) { best = v; code = d; } }
+    const dt = code < 0 ? 0 : best; const N = 4 * ARR;
+    const ts = [], cnt = [], ref = [], ch = [], chn = []; let prev = 0, since = 1e9;
+    for (let t = 0; t < N; t += 6) { const tt = t % (2 * ARR); const c = tt <= ARR ? tt : 2 * ARR - tt; const r = c < ccr ? 1 : 0; if (r !== prev) { since = 0; prev = r; } else since += 6; ts.push(t); cnt.push(3.3 + 0.9 * c / ARR); ref.push(2.3 + 0.6 * r); ch.push(1.3 + 0.6 * (r && since >= dt ? 1 : 0)); chn.push(0.3 + 0.6 * (!r && since >= dt ? 1 : 0)); }
+    P.line(ts, cnt, C.fog, 1.5); P.line([0, N], [3.3 + 0.9 * ccr / ARR, 3.3 + 0.9 * ccr / ARR], C.warn, 1, [4, 3]);
+    P.line(ts, ref, C.bone, 1.5); P.line(ts, ch, C.lime, 2); P.line(ts, chn, C.signal, 2);
+    P.text('CNT', 40, 4.05, C.fog); P.text('OC1REF', 40, 3.0, C.bone); P.text('CH1', 40, 2.0, C.lime); P.text('CH1N', 40, 1.0, C.signal);
+    const hi = Math.max(0, 2 * ccr - dt);
+    read.innerHTML = `ARR ${ARR} (20 kHz), CCR = <b>${ccr}</b> · dead time ${s.dt} ns = ${want} counts → DTG <b>${code < 0 ? 'out of range' : hex(code, 2)}</b> = ${dt} counts (${(dt / F * 1e9).toFixed(0)} ns, rounded up) · CH1 high ≈ ${hi} of ${2 * ARR} counts (${(100 * hi / (2 * ARR)).toFixed(1)} %) · CH1 and CH1N never overlap`;
+  };
+  ctrls.append(slider('Duty', { min: 0, max: 100, step: 1, value: s.duty, fmt: (v) => v + ' %' }, (v) => { s.duty = v; p.redraw(); }),
+    slider('Dead time', { min: 0, max: 6000, step: 50, value: s.dt, fmt: (v) => v + ' ns' }, (v) => { s.dt = v; p.redraw(); }));
+  p.redraw();
+};
+
+// p10-l12: encoder counter and the two speed estimates
+W.encodermode = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { rpm: 7 }; const CPR = 4000;
+  const p = new Plot(body, { aspect: 0.62, maxH: 320, x: [0, 100], y: [-0.1, 3.3], label: 'Encoder counter and speed estimates over 100 ms' });
+  p.draw = (P) => {
+    const w = s.rpm / 60; // rev/s
+    P.axes({ xl: 't [ms]' });
+    // counter (16-bit, shown mod 65536 scaled), starting near wrap
+    const xs = [], cs = [], ms = [], tsv = []; let prevC = Math.floor(65400);
+    for (let t = 0; t <= 100; t += 1) { const c = Math.floor(65400 + w * CPR * t / 1000); xs.push(t); cs.push(2.2 + ((c % 65536) / 65536)); if (t > 0) { const dn = ((c - prevC) % 65536 + 65536) % 65536; ms.push([t, dn / CPR / 1e-3 * 60]); } prevC = c; }
+    P.line(xs, cs, C.fog, 1.5); P.text('CNT (16-bit)', 2, 3.15, C.fog);
+    const ymax = Math.max(s.rpm * 2.2, 40); const sc = (v) => 0.1 + 1.8 * v / ymax;
+    P.line([0, 100], [sc(s.rpm), sc(s.rpm)], C.dim, 1, [4, 3]);
+    P.line(ms.map((m) => m[0]), ms.map((m) => sc(m[1])), C.warn, 1.5);
+    const period = 60 / (s.rpm * 1000); const tEst = 60 / (Math.round(period * 1e6) * 1e-6 * 1000);
+    P.line([0, 100], [sc(tEst), sc(tEst)], C.lime, 2);
+    P.text('M (amber) vs T (lime)', 2, 2.0, C.fog);
+    const per = w * CPR * 1e-3; const vals = ms.map((m) => m[1]); const spread = Math.max(...vals) - Math.min(...vals);
+    read.innerHTML = `${s.rpm} rpm, 1000 lines x4 · ${per.toFixed(2)} counts per 1 ms sample · M estimates jump by ${spread.toFixed(0)} rpm (one count = 15 rpm) · T estimate from a ${(period * 1e3).toFixed(3)} ms captured period: <b>${tEst.toFixed(3)} rpm</b>`;
+  };
+  ctrls.append(slider('Speed', { min: 1, max: 600, step: 1, value: s.rpm, fmt: (v) => v + ' rpm' }, (v) => { s.rpm = v; p.redraw(); }));
+  p.redraw();
+};
+
 export default W;
