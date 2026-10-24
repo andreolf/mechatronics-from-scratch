@@ -448,7 +448,7 @@ W.powerprofile = (el) => {
     P.axes({ xl: 't [ms]', yl: 'I [mA]' });
     const seg = [[0, 5, s.sleep / 1000], [5, 7, 3], [7, 27, 5], [27, 57, 20], [57, 80, s.sleep / 1000]];
     seg.forEach(([a, b, i], k) => { rect(P, a, 1e-3, b, i, (k === 3 ? C.signal : k === 0 || k === 4 ? C.dim : C.lime) + '55', k === 3 ? C.signal : C.lime); });
-    P.text('wake', 5, 4.5, C.fog); P.text('measure', 9, 7, C.fog); P.text('radio', 30, 24, C.signal); P.text('sleep', 60, s.sleep / 1000 * 1.5, C.fog);
+    P.text('wake+measure', 5, 9, C.fog); P.text('radio', 30, 24, C.signal); P.text('sleep', 60, s.sleep / 1000 * 1.5, C.fog);
     const q = 3 * 2 + 5 * 20 + 20 * 30 / s.txEvery + s.sleep * (s.period * 1e3 - 22 - 30 / s.txEvery) / 1e3; const iavg = q / s.period;
     const yrs = 1800 / (iavg / 1000) / 8766; const sleepShare = s.sleep * s.period / q * 100;
     read.innerHTML = `average current = Σ duty·I = <b>${iavg.toFixed(2)} µA</b> (sleep is ${sleepShare.toFixed(0)} % of the charge) · 2400 mAh × 0.75 lasts <b>${yrs.toFixed(1)} years</b> ${yrs >= 5 ? '✓ meets 5 years' : '✗ misses 5 years'} · illustrative budget, not a specific part`;
@@ -464,7 +464,7 @@ W.cyclebars = (el) => {
   const { body, read, ctrls } = frame(el);
   const s = { trunc: false, clk: 72 };
   const data = [['M3 float (soft)', 547.1, C.bad], ['M3 Q15', 37.0, C.lime], ['M4F float (FPU)', 41.0, C.signal], ['M4F Q15', 37.0, C.lime]];
-  const p = new Plot(body, { aspect: 0.55, maxH: 290, x: [0, 4], y: [1, 1000], logy: true, label: 'Instructions per PID step, log scale' });
+  const p = new Plot(body, { aspect: 0.55, maxH: 290, x: [0, 4], y: [1, 4000], logy: true, label: 'Instructions per PID step, log scale' });
   p.draw = (P) => {
     P.axes({ yl: 'instructions / step' });
     data.forEach(([n, v, c], i) => { rect(P, i + 0.15, 1, i + 0.85, v, c + '66', c); P.text(String(v), i + 0.5, v * 1.25, C.bone, 'center'); P.text(n.split(' ')[0], i + 0.5, 1.4, C.fog, 'center'); P.text(n.split(' ').slice(1).join(' '), i + 0.5, 2.1, C.fog, 'center'); });
@@ -479,7 +479,7 @@ W.cyclebars = (el) => {
 // p10-l18: SPSC ring buffer
 W.ringbuf = (el) => {
   const { body, read, ctrls } = frame(el);
-  const s = { prod: 12, cons: 10, t: 20 }; const N = 16;
+  const s = { prod: 8, cons: 10, t: 20 }; const N = 16;
   const p = new Plot(body, { aspect: 0.75, maxH: 320, x: [-1.3, 1.3], y: [-1.15, 1.15], equal: true, label: 'Ring buffer with head and tail indices' });
   const sim = () => { let head = 0, tail = 0, dropped = 0, pa = 0, ca = 0; for (let k = 0; k < s.t * 10; k++) { pa += s.prod / 10; ca += (k % 50 < 25 ? s.cons * 1.6 : s.cons * 0.4) / 10; while (pa >= 1) { pa -= 1; if (head - tail === N) dropped++; else head++; } while (ca >= 1 && tail < head) { ca -= 1; tail++; } if (tail === head) ca = 0; } return { head, tail, dropped }; };
   p.draw = (P) => {
@@ -496,6 +496,99 @@ W.ringbuf = (el) => {
   ctrls.append(slider('Producer rate', { min: 1, max: 30, step: 1, value: s.prod, fmt: (v) => v + ' B/tick' }, (v) => { s.prod = v; p.redraw(); }),
     slider('Consumer average rate', { min: 1, max: 30, step: 1, value: s.cons, fmt: (v) => v + ' B/tick' }, (v) => { s.cons = v; p.redraw(); }),
     slider('Time', { min: 0, max: 40, step: 1, value: s.t, fmt: (v) => v + ' ticks' }, (v) => { s.t = v; p.redraw(); }));
+  p.redraw();
+};
+
+// p10-l19: super-loop vs rate groups
+const RG = [['control', 1, 0, 200, C.lime], ['filter', 10, 1, 300, C.signal], ['comms', 20, 2, 500, C.warn], ['logging', 100, 3, 600, C.bad], ['ui', 100, 4, 400, C.bone]];
+W.rategroups = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { mode: 'rg', offsets: true };
+  const p = new Plot(body, { aspect: 0.55, maxH: 300, x: [0, 20], y: [0, 6], label: 'Tasks per 1 ms tick' });
+  p.draw = (P) => {
+    P.axes({ xl: 't [ms]' }); RG.forEach(([n, , , , c], i) => P.text(n, 0.1, 5.55 - i, c));
+    let worst = 0, over = 0, ctrlRuns = 0;
+    if (s.mode === 'sl') {
+      let t = 0; while (t < 20) { RG.forEach(([n, , , w, c], i) => { if (t < 20) rect(P, t, 4.6 - i, Math.min(20, t + w / 1000), 5.2 - i, c + '88', c); if (i === 0) ctrlRuns++; t += w / 1000; }); }
+      read.innerHTML = `super-loop: every task back to back, loop period 2.0 ms · control ran <b>${ctrlRuns}</b> times in 20 ms (needs 20) · its period is the sum of all task times`;
+    } else {
+      for (let k = 0; k < 20; k++) {
+        let t = k, load = 0;
+        RG.forEach(([n, per, off, w, c], i) => { const o = s.offsets ? off : 0; if (k % per === o % per) { rect(P, t, 4.6 - i, t + w / 1000, 5.2 - i, c + '88', c); t += w / 1000; load += w; if (i === 0) ctrlRuns++; } });
+        if (load > worst) worst = load; if (load > 1000) { over++; P.line([k, k + 1], [0.1, 0.1], C.bad, 4); }
+      }
+      for (let k = 0; k <= 20; k++) P.line([k, k], [0, 5.3], C.rule2, 1, [2, 4]);
+      read.innerHTML = `rate groups on a 1 ms tick ${s.offsets ? 'with offsets 0–4' : 'all at offset 0'} · worst tick load <b>${worst} µs</b> of 1000 · ${over ? `<b>${over} overrun tick(s)</b> (red)` : 'no overruns'} · control runs every tick, utilisation 0.265`;
+    }
+  };
+  ctrls.append(select('Structure', [['rg', 'Rate groups'], ['sl', 'Super-loop']], 'rg', (v) => { s.mode = v; p.redraw(); }, 'rg-mode'),
+    row(toggle('Offsets', true, (v) => { s.offsets = v; p.redraw(); }, { id: 'rg-off' })));
+  p.redraw();
+};
+
+// p10-l20: time-triggered schedule Gantt
+const TT = [['A', 1, 0, 250, C.lime], ['B', 5, 1, 400, C.signal], ['C', 10, 2, 500, C.warn], ['D', 20, 3, 300, C.bone]];
+W.ttgantt = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { tick: 12, extra: 400 };
+  const p = new Plot(body, { aspect: 0.5, maxH: 280, x: [0, 20], y: [0, 4.6], label: 'Gantt chart of a time-triggered schedule' });
+  p.draw = (P) => {
+    P.axes({ xl: 'tick (1 ms)' }); TT.forEach(([n, , , , c], i) => P.text(n, 0.1, 4.1 - i, c));
+    let busy = 0; const log = [];
+    for (let k = 0; k < 20; k++) {
+      const start = k; if (busy > start + 1e-9) { log.push(`tick ${k}: overrun, skipped`); P.line([k, k + 1], [0.05, 0.05], C.bad, 4); continue; }
+      let t = start + 0.02;
+      TT.forEach(([n, per, off, w, c], i) => { if (k >= off && (k - off) % per === 0) { const dt = (k === s.tick && n === 'C' ? w + s.extra : w - 10) / 1000; rect(P, t, 3.6 - i, t + dt, 4.2 - i, (dt * 1000 > w ? C.bad : c) + '88', dt * 1000 > w ? C.bad : c); if (dt * 1000 > w) log.push(`tick ${k}: task ${n} over budget by ${(dt * 1000 - w).toFixed(0)} µs`); t += dt; } });
+      busy = t;
+      P.line([k, k], [0, 4.3], C.rule2, 1, [2, 4]);
+    }
+    read.innerHTML = `static table, hyperperiod 20 ticks, worst planned load 770 µs · injected: task C +${s.extra} µs at tick ${s.tick} · log: ${log.length ? '<b>' + log.join('; ') + '</b>' : 'empty'}`;
+  };
+  ctrls.append(slider('Fault tick (C runs at 2, 12)', { min: 2, max: 12, step: 10, value: s.tick, fmt: (v) => String(v) }, (v) => { s.tick = v; p.redraw(); }),
+    slider('Extra time for C', { min: 0, max: 900, step: 50, value: s.extra, fmt: (v) => v + ' µs' }, (v) => { s.extra = v; p.redraw(); }));
+  p.redraw();
+};
+
+// p10-l21: HardFault decoder
+const FAULTS = {
+  div: { pc: 0x19c, fn: 'divide', cfsr: 1 << 25, bfar: null, bits: ['DIVBYZERO (UFSR bit 25)'], why: 'integer division by zero with CCR.DIV_0_TRP set' },
+  bus: { pc: 0x18c, fn: 'peek', cfsr: (1 << 9) | (1 << 15), bfar: 0xf0000000, bits: ['PRECISERR (bit 9)', 'BFARVALID (bit 15)'], why: 'load from an address with no memory behind it' },
+  udf: { pc: 0x1a8, fn: 'bad_opcode', cfsr: 1 << 16, bfar: null, bits: ['UNDEFINSTR (bit 16)'], why: 'undefined instruction (udf, or a jump into data)' },
+  inv: { pc: 0x200001f0, fn: '(none: RAM)', cfsr: 1 << 17, bfar: null, bits: ['INVSTATE (bit 17)'], why: 'call through a function pointer with bit 0 clear' },
+  imp: { pc: 0x1c4, fn: 'after the culprit', cfsr: 1 << 10, bfar: null, bits: ['IMPRECISERR (bit 10)'], why: 'a buffered store failed later; the PC is past the guilty store' },
+};
+W.faultdecode = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { f: 'bus' };
+  const p = new Plot(body, { aspect: 1.0, maxH: 420, x: [0, 4], y: [0, 4], label: 'Stacked exception frame and fault status registers' });
+  p.draw = (P) => {
+    const f = FAULTS[s.f]; const regs = ['r0', 'r1', 'r2', 'r3', 'r12', 'lr', 'pc', 'xpsr'];
+    const vals = [0xa, 0, 0x20000ff0, 0, 0, f.pc + 0x15, f.pc, 0x01000000 | (s.f === 'inv' ? 0 : 0)];
+    P.text('stacked frame (SP + offset)', 0.1, 3.85, C.fog);
+    regs.forEach((r, i) => { const y = 3.55 - i * 0.26; const hl = r === 'pc'; rect(P, 0.1, y - 0.11, 3.9, y + 0.11, hl ? 'rgba(198,255,26,.18)' : '#15170f', hl ? C.lime : C.rule2); P.text(`+${(i * 4).toString().padStart(2, ' ')} ${r.padEnd(4)} ${hex(vals[i])}`, 0.16, y - 0.04, hl ? C.lime : C.bone); });
+    P.text('CFSR ' + hex(f.cfsr) + '  HFSR 0x40000000', 0.1, 1.25, C.warn);
+    f.bits.forEach((b, i) => P.text('• ' + b, 0.1, 0.97 - i * 0.26, C.bone));
+    if (f.bfar !== null) P.text('BFAR ' + hex(f.bfar), 2.3, 0.97, C.signal);
+    P.text('addr2line → ' + f.fn, 0.1, 0.2, C.lime);
+    read.innerHTML = `cause: <b>${f.why}</b> · stacked PC ${hex(f.pc)} → <b>${f.fn}</b> · the stub picks MSP or PSP from EXC_RETURN bit 2 and passes the frame to C`;
+  };
+  ctrls.append(select('Fault', [['bus', 'Read from 0xF0000000'], ['div', 'Divide by zero'], ['udf', 'Undefined instruction'], ['inv', 'Bad function pointer'], ['imp', 'Imprecise bus fault']], 'bus', (v) => { s.f = v; p.redraw(); }, 'fault-kind'));
+  p.redraw();
+};
+
+// p10-l22: test report
+const TESTS = ['led_starts_off', 'clean_press_toggles_once', 'bounce_is_ignored', 'short_glitch_does_nothing', 'two_presses_toggle_back', 'hold_enters_blink_at_2hz', 'millis_wraparound'];
+const BUGS = { none: [], debounce: ['clean_press_toggles_once', 'bounce_is_ignored', 'hold_enters_blink_at_2hz', 'millis_wraparound'], signed: ['millis_wraparound'], blink: ['hold_enters_blink_at_2hz'], noise: ['clean_press_toggles_once', 'bounce_is_ignored', 'short_glitch_does_nothing', 'hold_enters_blink_at_2hz', 'millis_wraparound'] };
+W.testreport = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { bug: 'none' };
+  const p = new Plot(body, { aspect: 0.6, maxH: 300, x: [0, 1], y: [0, 8.4], label: 'Unit test report' });
+  p.draw = (P) => {
+    const fails = new Set(BUGS[s.bug]);
+    TESTS.forEach((t, i) => { const y = 7.6 - i; const f = fails.has(t); rect(P, 0.02, y - 0.35, 0.98, y + 0.35, f ? 'rgba(255,107,91,.15)' : 'rgba(198,255,26,.08)', f ? C.bad : C.rule2); P.text((f ? 'FAIL  ' : 'PASS  ') + 'test_' + t, 0.05, y - 0.1, f ? C.bad : C.lime); });
+    read.innerHTML = `<b>${TESTS.length} Tests ${fails.size} Failures 0 Ignored · ${fails.size ? 'FAIL, exit code 1: the CI job goes red' : 'OK, exit code 0'}</b> · runs on the host in milliseconds, against fake GPIO and a fake clock`;
+  };
+  ctrls.append(select('Introduce a bug', [['none', 'No bug'], ['debounce', 'Debounce uses > instead of >='], ['signed', 'Time compared as now >= start + 20'], ['blink', 'Blink half-period 500 ms'], ['noise', 'No debounce at all']], 'none', (v) => { s.bug = v; p.redraw(); }, 'test-bug'));
   p.redraw();
 };
 
