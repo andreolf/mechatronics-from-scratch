@@ -2,12 +2,11 @@
 // Each joint is a simulated second-order servo (wn = 9 rad/s, zeta = 0.8) integrated with semi-implicit Euler,
 // so the motion is a real response to a moving setpoint rather than a keyframed animation.
 import * as THREE from 'three';
-import { Stage, register, fallback, mats, grid } from './stage.js';
+import { Stage, register, fallback, mats, reducedMotion } from './stage.js';
 
-export function hero(el, readout) {
-  const st = new Stage(el, { fov: 36, pos: [3.2, 2.5, 6.4], look: [0.9, 1.1, 0], offset: (w, h) => (w > 760 ? [-w * 0.2, 0] : [0, h * 0.17]) });
-  const narrow = () => el.clientWidth < 760;
-  const camBase = () => (narrow() ? [4.4, 3.3, 9.4] : [3.2, 2.5, 6.4]);
+export function hero(el, readout, pauseBtn) {
+  const st = new Stage(el, { fov: 34, pos: [3.6, 2.6, 6.6], look: [0.7, 1.15, 0], shadow: 4 });
+  const camBase = () => { const a = st.w / st.h; return a < 1.15 ? [4.6, 3.0, 8.4] : [3.6, 2.6, 6.6]; };
   const L1 = 1.35, L2 = 1.15, H0 = 0.55;
   const q = [0.4, 0.9, -1.4], qd = [0, 0, 0], qs = q.slice();
   const lim = [[-Math.PI, Math.PI], [-0.2, 2.6], [-2.6, -0.05]];
@@ -27,13 +26,12 @@ export function hero(el, readout) {
     return [yaw, q2, q3];
   };
 
-  if (!st.ok) { fallback(el, 'The rest of the site works without it.'); return; }
-  st.renderer.setClearColor(0x050505, 1);
+  if (!st.ok) { fallback(el, 'The rest of the site works without it.'); if (pauseBtn) pauseBtn.hidden = true; return; }
   const s = st.scene;
-  const g = grid(16, 32); s.add(g);
+  st.floor(16);
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.52, 64), new THREE.MeshBasicMaterial({ color: 0xc6ff1a, side: THREE.DoubleSide, transparent: true, opacity: 0.5 }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = 0.002; s.add(ring);
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(reachMax, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xc6ff1a, wireframe: true, transparent: true, opacity: 0.045 }));
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(reachMax, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xc6ff1a, wireframe: true, transparent: true, opacity: 0.03 }));
   dome.position.y = H0; s.add(dome);
 
   const base = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.46, 0.22, 48), mats.dark()); base.position.y = 0.11; s.add(base);
@@ -64,13 +62,16 @@ export function hero(el, readout) {
     const p = st.pick(e.clientX, e.clientY, plane);
     if (p) { p.y = Math.max(0.15, p.y); target.copy(p); lastMove = t; }
   };
-  window.addEventListener('pointermove', (e) => { if (e.clientY < el.getBoundingClientRect().bottom) onPointer(e); }, { passive: true });
+  const cv = st.renderer.domElement;
+  cv.addEventListener('pointermove', (e) => { if (e.pointerType !== 'touch') onPointer(e); }, { passive: true });
+  cv.addEventListener('pointerdown', onPointer, { passive: true });
 
+  const still = reducedMotion();
   const item = {
-    el, visible: true,
+    el, visible: true, paused: false,
     tick(dt) {
       t += dt;
-      if (t - lastMove > 2.5) { // idle: trace a lissajous so the scene is alive on touch devices
+      if (t - lastMove > 2.5 && !still) { // idle: trace a lissajous so the scene is alive on touch devices
         const a = t * 0.55;
         target.set(1.3 + 0.7 * Math.cos(a), 1.25 + 0.6 * Math.sin(2 * a), 0.9 * Math.sin(a));
       }
@@ -96,14 +97,17 @@ export function hero(el, readout) {
       for (let i = 0; i < N; i++) { const f = i / N; trailCol[i * 3] = 0.78 * f; trailCol[i * 3 + 1] = 1 * f; trailCol[i * 3 + 2] = 0.1 * f; }
       trailGeo.attributes.position.needsUpdate = true; trailGeo.attributes.color.needsUpdate = true;
       const err = tipW.distanceTo(target);
-      if (readout && Math.round(t * 10) % 3 === 0) readout.textContent = `IK 3-DOF · servo ωn=${wn} ζ=${zeta}\nq = [${q.map((v) => (v * 57.3).toFixed(0).padStart(4)).join(' ')}]°\n|e| = ${(err * 100).toFixed(1)} cm`;
+      if (readout && Math.round(t * 10) % 3 === 0) readout.textContent = `q = [${q.map((v) => (v * 57.3).toFixed(0).padStart(4)).join(' ')}]°\n|e| = ${(err * 100).toFixed(1)} cm`;
       el.dataset.err = err.toFixed(3);
       const cb = camBase();
-      st.camera.position.set(cb[0] + Math.sin(t * 0.12) * 0.5, cb[1], cb[2]);
+      st.camera.position.set(cb[0] + (still ? 0 : Math.sin(t * 0.12) * 0.4), cb[1], cb[2]);
       st.camera.lookAt(st.look);
       st.render();
     },
   };
+  st.shadows(s);
+  dome.castShadow = false; ring.castShadow = false; tgt.castShadow = false;
+  if (pauseBtn) pauseBtn.addEventListener('click', () => { item.paused = !item.paused; pauseBtn.setAttribute('aria-pressed', String(item.paused)); pauseBtn.textContent = item.paused ? 'Play' : 'Pause'; });
   register(item);
   window.__mfs = window.__mfs || {}; window.__mfs.hero = { target, q };
 }

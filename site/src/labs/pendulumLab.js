@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { PendulumSim, PENDULUM_DEFAULTS } from '../sim/pendulum.js';
 import { Stage, register, fallback, mats, grid } from '../stage.js';
 import { Scope } from '../scope.js';
-import { labShell, toggle, slider, group, row, button, setBadge } from '../ui.js';
+import { labShell, bindPause, toggle, slider, group, row, button, setBadge } from '../ui.js';
 
 export function pendulumLab(root) {
   const sim = new PendulumSim();
@@ -17,7 +17,7 @@ export function pendulumLab(root) {
     { label: 'θ sensed', color: '#5b6450', range: [-0.4, 0.4], width: 1 },
     { label: 'force', color: '#ff9f1c', range: [-32, 32], width: 1.2 },
   ]);
-  L.note.textContent = 'RK4 · 1 kHz physics';
+  L.note.textContent = 'Physics: RK4 at 1 kHz. Control: PID at 200 Hz.';
 
   // controls
   const c = sim.c;
@@ -33,7 +33,7 @@ export function pendulumLab(root) {
     group('Break it',
       slider('Sensor noise σ', { min: 0, max: 5, step: 0.1, value: 0, fmt: (v) => v.toFixed(1) + '°', id: 'pend-noise' }, (v) => (c.noiseDeg = v)),
       slider('Sensor latency', { min: 0, max: 120, step: 5, value: 0, fmt: (v) => v + ' ms', id: 'pend-delay' }, (v) => (c.delayMs = v))),
-    row(button('Kick ⟶', () => sim.kick(1.1), 'pend-kick'), button('Reset', () => { sim.reset(); scope.clear(); }, 'pend-reset'),
+    row(button('Kick', () => sim.kick(1.1), 'pend-kick'), button('Reset', () => { sim.reset(); scope.clear(); }, 'pend-reset'),
       button('Defaults', () => { Object.assign(c, PENDULUM_DEFAULTS); [tP, tI, tD, tF].forEach((t, i) => t.set([c.P, c.I, c.D, c.dFilter][i])); sim.reset(); scope.clear(); syncSliders(); }, 'pend-defaults')),
   );
   function syncSliders() {
@@ -47,7 +47,7 @@ export function pendulumLab(root) {
   let cart, pole, arrow;
   if (st.ok) {
     const s = st.scene;
-    const g = grid(12, 24); s.add(g);
+    st.floor(12);
     const rail = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.04, 0.12), mats.dark()); rail.position.y = 0.02; s.add(rail);
     for (const x of [-2.3, 2.3]) { const stop = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.2, 0.2), mats.metal()); stop.position.set(x, 0.1, 0); s.add(stop); }
     cart = new THREE.Group(); s.add(cart);
@@ -84,6 +84,8 @@ export function pendulumLab(root) {
       }
     },
   };
+  if (st.ok) st.shadows(st.scene);
+  bindPause(L, item);
   register(item);
   return item;
 }

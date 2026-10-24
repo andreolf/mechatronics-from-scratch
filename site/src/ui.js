@@ -31,21 +31,37 @@ export const group = (title, ...kids) => h('div', { class: 'ctrl-group' }, h('h4
 export const row = (...kids) => h('div', { class: 'toggles' }, ...kids);
 export function button(label, onClick, id) { const b = h('button', { class: 'btn small', type: 'button', 'data-testid': id }); b.textContent = label; b.addEventListener('click', onClick); return b; }
 
-// Build the standard lab shell and return handles.
-export function labShell({ id, num, title, blurb, lessons }) {
+// Build the standard lab shell and return handles. Controls sit below the canvas on phones.
+export function labShell({ id, num, title, blurb, lessons, interact = false }) {
   const view3d = h('div', { class: 'lab-3d', 'data-testid': `lab-${id}-3d` });
-  const badge = h('div', { class: 'badge', 'data-testid': `lab-${id}-status` }, 'RUNNING');
-  const note = h('div', { class: 'view-note' });
-  const readouts = h('div', { class: 'readouts', 'data-testid': `lab-${id}-readouts` });
-  view3d.append(badge, note, readouts);
-  const scope = h('div', { class: 'scope' });
+  const badge = h('div', { class: 'badge', 'data-testid': `lab-${id}-status`, role: 'status' }, 'Running');
+  const tools = h('div', { class: 'lab-tools' });
+  const pause = h('button', { class: 'icon-btn', type: 'button', 'aria-pressed': 'false', 'data-testid': `lab-${id}-pause` }, 'Pause');
+  tools.append(pause);
+  let interactBtn = null;
+  if (interact) {
+    interactBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-pressed': 'false', 'data-testid': `lab-${id}-interact` }, 'Drag mode');
+    tools.prepend(interactBtn);
+  }
+  const readouts = h('div', { class: 'readouts', 'data-testid': `lab-${id}-readouts`, 'aria-live': 'off' });
+  view3d.append(h('div', { class: 'lab-overlay' }, badge, tools), readouts);
+  const note = h('span', { class: 'view-note' });
+  const scope = h('div', { class: 'scope', 'aria-hidden': 'true' });
   const controls = h('div', { class: 'controls' });
-  const links = h('div', { class: 'lesson-links' }, 'Lessons: ', ...lessons.map(([lid, t]) => h('a', { href: `#lesson-${lid}`, 'data-lesson': lid }, `${lid} ${t}`)));
-  const sec = h('article', { class: `lab lab-${id}`, id: `lab-${id}`, 'data-testid': `lab-${id}` },
-    h('div', { class: 'lab-head' }, h('div', {}, h('span', { class: 'lab-tag' }, `LAB ${num} · break the machine`), h('h3', {}, title), h('p', {}, blurb))),
-    h('div', { class: 'lab-body' }, h('div', { class: 'lab-view' }, view3d, scope), h('div', { class: 'controls-wrap' }, controls)));
-  controls.after(links);
-  links.style.marginTop = '10px';
-  return { sec, view3d, badge, note, readouts, scope, controls };
+  const links = h('div', { class: 'lesson-links' }, h('span', {}, 'Lessons:'), ...lessons.map(([lid, t]) => h('a', { href: `#/learn/${lid}`, 'data-lesson': lid }, t)));
+  const sec = h('article', { class: `lab lab-${id}`, id: `lab-${id}`, 'data-testid': `lab-${id}`, 'aria-labelledby': `lab-${id}-title` },
+    h('div', { class: 'lab-head' }, h('span', { class: 'lab-num' }, `Lab ${num}`), h('h3', { id: `lab-${id}-title` }, title), h('p', {}, blurb)),
+    h('div', { class: 'lab-body' }, h('div', { class: 'lab-view' }, view3d, scope, note), h('div', { class: 'controls-wrap' }, controls, links)));
+  return { sec, view3d, badge, note, readouts, scope, controls, pause, interactBtn };
 }
-export function setBadge(badge, text, kind = '') { badge.textContent = text; badge.className = 'badge' + (kind ? ' ' + kind : ''); badge.dataset.state = text; }
+export function bindPause(L, item) {
+  const set = (v) => { item.paused = v; L.pause.setAttribute('aria-pressed', String(v)); L.pause.textContent = v ? 'Play' : 'Pause'; };
+  L.pause.addEventListener('click', () => set(!item.paused));
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) set(true);
+  return set;
+}
+const LABEL = { RUNNING: 'Running' };
+export function setBadge(badge, text, kind = '') {
+  if (badge.dataset.state === text && badge.dataset.kind === kind) return;
+  badge.textContent = text.charAt(0) + text.slice(1).toLowerCase(); badge.className = 'badge' + (kind ? ' ' + kind : ''); badge.dataset.state = text; badge.dataset.kind = kind;
+}

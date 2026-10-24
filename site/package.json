@@ -6,17 +6,26 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "python3 ../tools/build_curriculum.py && vite build",
+    "build": "python3 ../tools/build_curriculum.py && node scripts/build-lessons.mjs && vite build",
     "preview": "vite preview --port 4791 --strictPort",
     "test": "vite build && playwright test",
     "test:sim": "node --test tests-unit/",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "lessons": "node scripts/build-lessons.mjs",
+    "verify:lessons": "python3 ../tools/verify_lessons.py"
   },
   "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/newsreader": "^5.3.0",
+    "@fontsource-variable/schibsted-grotesk": "^5.3.0",
+    "katex": "^0.19.1",
     "three": "^0.186.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "highlight.js": "^11.12.0",
+    "js-yaml": "^5.5.0",
+    "marked": "^18.1.1",
     "vite": "^8.3.5"
   }
 }

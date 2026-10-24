@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { MotorSim } from '../sim/motor.js';
 import { Stage, register, fallback, mats, grid } from '../stage.js';
 import { Scope } from '../scope.js';
-import { labShell, toggle, slider, select, group, row, button, setBadge } from '../ui.js';
+import { labShell, bindPause, toggle, slider, select, group, row, button, setBadge } from '../ui.js';
 
 export function motorLab(root) {
   const sim = new MotorSim();
@@ -18,7 +18,7 @@ export function motorLab(root) {
     { label: 'speed measured', color: '#5ee7ff', range: [-200, 5000], width: 1 },
     { label: 'current', color: '#ff9f1c', range: [-12, 12], width: 1 },
   ]);
-  L.note.textContent = 'display slowed ×1/25 to avoid strobing';
+  L.note.textContent = 'Rotation shown at 1/25 speed so the wheel doesn’t strobe. Physics: RK4 at 20 kHz.';
   const c = sim.c;
   L.controls.append(
     group('Command',
@@ -36,7 +36,7 @@ export function motorLab(root) {
   const st = new Stage(L.view3d, { fov: 36, pos: [2.2, 1.6, 3.6], look: [0.2, 0.55, 0] });
   let rotor, encoder, brake, brakeMat;
   if (st.ok) {
-    const s = st.scene; s.add(grid(10, 20));
+    const s = st.scene; st.floor(10);
     const can = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.9, 40), mats.metal()); can.rotation.z = Math.PI / 2; can.position.set(-0.55, 0.55, 0); s.add(can);
     const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.06, 40), mats.lime()); cap.rotation.z = Math.PI / 2; cap.position.set(-0.08, 0.55, 0); s.add(cap);
     const foot = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.24, 0.5), mats.dark()); foot.position.set(-0.55, 0.12, 0); s.add(foot);
@@ -82,6 +82,8 @@ export function motorLab(root) {
       }
     },
   };
+  if (st.ok) st.shadows(st.scene);
+  bindPause(L, item);
   register(item);
   return item;
 }

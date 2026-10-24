@@ -2,13 +2,14 @@ import * as THREE from 'three';
 import { ArmSim, ARM_LIMITS } from '../sim/arm.js';
 import { Stage, register, fallback, mats, grid } from '../stage.js';
 import { Scope } from '../scope.js';
-import { labShell, toggle, slider, select, group, row, button, setBadge } from '../ui.js';
+import { labShell, bindPause, toggle, slider, select, group, row, button, setBadge } from '../ui.js';
 
 export function armLab(root) {
   const sim = new ArmSim();
   const L = labShell({
     id: 'arm', num: '02', title: 'Robot arm: inverse kinematics with real joints',
     blurb: 'Two links in a vertical plane with full M(q), C(q,q̇), g(q) dynamics. Drag the target. Compare analytic and damped-least-squares IK, switch off gravity compensation or joint limits, or kill the elbow motor.',
+    interact: true,
     lessons: [['p15-l06', 'Analytic IK'], ['p15-l08', 'Damped least squares'], ['p15-l11', 'Joint limits'], ['p15-l13', 'Lagrangian dynamics']],
   });
   root.append(L.sec);
@@ -17,7 +18,7 @@ export function armLab(root) {
     { label: 'τ shoulder', color: '#5ee7ff', range: [-50, 50], width: 1.2 },
     { label: 'τ elbow', color: '#ff9f1c', range: [-50, 50], width: 1.2 },
   ]);
-  L.note.textContent = 'drag in the view to move the target';
+  L.note.textContent = 'Tap or click to place the target. On a phone, switch on Drag mode to drag it.';
   const c = sim.c;
   let auto = true, autoT = 0;
   const tAuto = toggle('Auto target', true, (v) => (auto = v), { id: 'arm-auto' });
@@ -37,7 +38,7 @@ export function armLab(root) {
   const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
   const ORIGIN_Y = 0.1;
   if (st.ok) {
-    const s = st.scene; s.add(grid(10, 20));
+    const s = st.scene; st.floor(10);
     const table = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 0.1, 32), mats.dark()); table.position.y = 0.05; s.add(table);
     // workspace annulus
     const { l1, l2 } = sim.p;
@@ -52,12 +53,23 @@ export function armLab(root) {
     const tip = new THREE.Mesh(new THREE.SphereGeometry(0.06, 20, 14), mats.dark()); tip.position.x = l2; link2.add(tip);
     tgt = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.018, 12, 40), new THREE.MeshBasicMaterial({ color: 0xc6ff1a })); s.add(tgt);
     const cv = st.renderer.domElement;
-    let dragging = false;
-    const move = (e) => { const p = st.pick(e.clientX, e.clientY, plane); if (p) { sim.setTarget(p.x, p.y - ORIGIN_Y); } };
-    cv.addEventListener('pointerdown', (e) => { dragging = true; auto = false; tAuto.set(false); cv.setPointerCapture(e.pointerId); move(e); });
-    cv.addEventListener('pointermove', (e) => { if (dragging) move(e); });
-    cv.addEventListener('pointerup', () => (dragging = false));
-    cv.addEventListener('pointercancel', () => (dragging = false));
+    cv.tabIndex = 0; cv.setAttribute('aria-label', 'Arm workspace. Tap to place the target, or use the arrow keys.');
+    let dragging = false, downAt = null, interactive = false;
+    const place = (e) => { const p = st.pick(e.clientX, e.clientY, plane); if (p) { auto = false; tAuto.set(false); sim.setTarget(p.x, p.y - ORIGIN_Y); } };
+    const setInteract = (v) => { interactive = v; L.view3d.classList.toggle('interacting', v); L.interactBtn.setAttribute('aria-pressed', String(v)); L.interactBtn.textContent = v ? 'Done' : 'Drag mode'; };
+    L.interactBtn.addEventListener('click', () => setInteract(!interactive));
+    // mouse and pen drag directly; touch drags only in drag mode so the page can still scroll
+    cv.addEventListener('pointerdown', (e) => {
+      downAt = [e.clientX, e.clientY];
+      if (e.pointerType !== 'touch' || interactive) { dragging = true; cv.setPointerCapture(e.pointerId); place(e); }
+    });
+    cv.addEventListener('pointermove', (e) => { if (dragging) place(e); });
+    cv.addEventListener('pointerup', (e) => { if (!dragging && downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) < 10) place(e); dragging = false; downAt = null; });
+    cv.addEventListener('pointercancel', () => { dragging = false; downAt = null; });
+    cv.addEventListener('keydown', (e) => {
+      const d = { ArrowLeft: [-0.05, 0], ArrowRight: [0.05, 0], ArrowUp: [0, 0.05], ArrowDown: [0, -0.05] }[e.key];
+      if (!d) return; e.preventDefault(); auto = false; tAuto.set(false); sim.setTarget(sim.target[0] + d[0], sim.target[1] + d[1]);
+    });
   } else fallback(L.view3d, 'Simulation, IK and scope still run; use Auto target.');
 
   const item = {
@@ -83,6 +95,8 @@ export function armLab(root) {
       }
     },
   };
+  if (st.ok) st.shadows(st.scene);
+  bindPause(L, item);
   register(item);
   return item;
 }

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { QuadSim, quatToMat } from '../sim/quad.js';
 import { Stage, register, fallback, mats, grid } from '../stage.js';
 import { Scope } from '../scope.js';
-import { labShell, toggle, slider, select, group, row, button, setBadge } from '../ui.js';
+import { labShell, bindPause, toggle, slider, select, group, row, button, setBadge } from '../ui.js';
 
 // sim frame: x forward, y left, z up  ->  three: x right, y up, z toward viewer
 const toThree = (p) => new THREE.Vector3(p[0], p[2], -p[1]);
@@ -20,7 +20,7 @@ export function quadLab(root) {
     { label: 'roll est.', color: '#5ee7ff', range: [-0.6, 0.6], width: 1.2 },
     { label: 'accel tilt', color: '#4b5340', range: [-0.6, 0.6], width: 1 },
   ]);
-  L.note.textContent = 'semi-implicit Euler · 1 kHz';
+  L.note.textContent = 'Physics: semi-implicit Euler at 1 kHz. Position comes from an ideal motion-capture system.';
   const c = sim.c;
   const kills = [0, 1, 2, 3].map((i) => toggle(`M${i + 1}`, false, (v) => (c.kill[i] = v), { id: `quad-kill-${i + 1}`, danger: true }));
   L.controls.append(
@@ -40,7 +40,7 @@ export function quadLab(root) {
   let drone, rotors = [], ghost, targetDot, trail, trailN = 0;
   const TRAIL = 240;
   if (st.ok) {
-    const s = st.scene; s.add(grid(10, 20));
+    const s = st.scene; st.floor(10);
     const cage = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(3.5, 3.5, 3, 24, 1, true)), new THREE.LineBasicMaterial({ color: 0x1d2410 }));
     cage.position.y = 1.5; s.add(cage);
     drone = new THREE.Group(); s.add(drone);
@@ -113,6 +113,8 @@ export function quadLab(root) {
       }
     },
   };
+  if (st.ok) st.shadows(st.scene);
+  bindPause(L, item);
   register(item);
   return item;
 }
