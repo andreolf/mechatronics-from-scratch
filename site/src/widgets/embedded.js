@@ -363,4 +363,140 @@ W.encodermode = (el) => {
   p.redraw();
 };
 
+// p10-l13: circular DMA buffer as a ring
+W.adcring = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { k: 12, slow: false };
+  const NCH = 4, SC = 8, N = NCH * SC;
+  const p = new Plot(body, { aspect: 0.75, maxH: 330, x: [-1.3, 1.3], y: [-1.15, 1.15], equal: true, label: 'Circular DMA buffer with the write pointer and the half being processed' });
+  const cols = [C.lime, C.signal, C.warn, C.bone];
+  p.draw = (P) => {
+    const w = s.k % N; const half = Math.floor(s.k / (N / 2)) % 2; const processing = s.k >= N / 2 ? 1 - half : -1;
+    for (let i = 0; i < N; i++) {
+      const a0 = Math.PI / 2 - (i / N) * 2 * Math.PI, a1 = Math.PI / 2 - ((i + 1) / N) * 2 * Math.PI; const r0 = 0.62, r1 = 0.98;
+      const pts = []; for (let t = 0; t <= 4; t++) { const a = a0 + (a1 - a0) * t / 4; pts.push([r1 * Math.cos(a), r1 * Math.sin(a)]); } for (let t = 4; t >= 0; t--) { const a = a0 + (a1 - a0) * t / 4; pts.push([r0 * Math.cos(a), r0 * Math.sin(a)]); }
+      const filled = s.k >= N || i < w; const inProc = processing >= 0 && Math.floor(i / (N / 2)) === processing;
+      const violated = inProc && s.slow && Math.floor(w / (N / 2)) === processing;
+      P.poly(pts, filled ? cols[i % NCH] + (inProc ? 'cc' : '44') : '#15170f', violated ? C.bad : inProc ? C.bone : C.rule2);
+    }
+    const aw = Math.PI / 2 - (w / N) * 2 * Math.PI; P.arrow(0, 0, 0.58 * Math.cos(aw), 0.58 * Math.sin(aw), C.lime, 3);
+    P.text('HT', -0.12, -1.1, C.fog); P.text('TC', -0.12, 1.02, C.fog);
+    const evt = s.k >= N / 2 ? (half === 1 ? 'HT fired: CPU processes the first half' : 'TC fired: CPU processes the second half') : 'filling the first half';
+    read.innerHTML = `${s.k} conversions (scan ${Math.floor(s.k / NCH)}, channel ${s.k % NCH}) · DMA writes slot ${w} · ${evt}${s.slow ? ' · <b>slow handler: the DMA has wrapped into the half still being read</b>' : ''} · colours: channels 0–3`;
+  };
+  ctrls.append(slider('Conversions so far', { min: 0, max: 3 * N, step: 1, value: s.k, fmt: (v) => String(v) }, (v) => { s.k = v; p.redraw(); }),
+    row(toggle('Handler too slow', false, (v) => { s.slow = v; p.redraw(); }, { id: 'adc-slow', danger: true })));
+  p.redraw();
+};
+
+// p10-l14: DDS phase accumulator
+W.dds = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { f: 1000, fs: 100e3 };
+  const p = new Plot(body, { aspect: 0.6, maxH: 310, x: [0, 2e-3], y: [-1.2, 2.4], label: 'Phase accumulator sawtooth and the DAC output' });
+  p.draw = (P) => {
+    const M = Math.round(s.f * 2 ** 32 / s.fs) >>> 0; const fout = M * s.fs / 2 ** 32; const n = Math.round(2e-3 * s.fs);
+    P.axes({ xl: 't [s]' });
+    let acc = 0; const ts = [], ph = [], out = [];
+    for (let k = 0; k < n; k++) { ts.push(k / s.fs); ph.push(1.2 + 1.1 * acc / 2 ** 32); const idx = acc >>> 24; out.push(Math.sin(2 * Math.PI * idx / 256)); acc = (acc + M) >>> 0; }
+    const sx = [], sy = []; for (let k = 0; k < n; k++) { sx.push(ts[k], ts[k] + 1 / s.fs); sy.push(out[k], out[k]); }
+    P.line(ts, ph, C.fog, 1.5); P.line(sx, sy, C.lime, 2); P.fn((t) => Math.sin(2 * Math.PI * fout * t), 'rgba(111,211,255,.5)', 1);
+    read.innerHTML = `M = round(f·2³²/f<sub>s</sub>) = <b>${M}</b> · f<sub>out</sub> = M·f<sub>s</sub>/2³² = <b>${fout.toFixed(6)} Hz</b> · resolution ${(s.fs / 2 ** 32 * 1e6).toFixed(2)} µHz · ${(s.fs / s.f).toFixed(1)} samples per cycle${s.f > 0.4 * s.fs ? ' · <b>too close to Nyquist</b>' : ''}`;
+  };
+  ctrls.append(slider('Target frequency', { min: 100, max: 45000, step: 50, value: s.f, fmt: (v) => v + ' Hz' }, (v) => { s.f = v; p.redraw(); }),
+    select('Sample rate', [['100000', '100 kHz'], ['48000', '48 kHz'], ['1000000', '1 MHz']], '100000', (v) => { s.fs = +v; p.redraw(); }, 'dds-fs'));
+  p.redraw();
+};
+
+// p10-l15: watchdog countdown
+W.watchdog = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { hang: true, win: false, early: false, lsi: 32 };
+  const p = new Plot(body, { aspect: 0.55, maxH: 290, x: [0, 600], y: [0, 1.1], label: 'Watchdog counter over time with kicks and resets' });
+  p.draw = (P) => {
+    P.axes({ xl: 't [ms]', yl: 'counter' });
+    const timeout = s.win ? 49.9 : 3200 / s.lsi; const winOpen = 25;
+    let last = 0, resetAt = -1; const xs = [], ys = []; const kicks = [];
+    const loop = s.early ? 15 : 40;
+    for (let t = 0; t <= 600; t += 0.5) {
+      const hung = s.hang && t >= 300;
+      if (!hung && t > 0 && Math.abs(t % loop) < 0.25 && resetAt < 0) {
+        if (s.win && t - last < winOpen) { resetAt = t; } else { kicks.push(t); last = t; }
+      }
+      const v = 1 - (t - last) / timeout;
+      if (resetAt < 0 && v <= 0) resetAt = t;
+      xs.push(t); ys.push(resetAt >= 0 && t >= resetAt ? NaN : Math.max(0, v));
+      if (resetAt >= 0 && t >= resetAt) break;
+    }
+    P.line(xs, ys, C.lime, 2); kicks.forEach((k) => P.dot(k, 1, C.signal, 3));
+    if (s.win) P.line([0, 600], [1 - winOpen / timeout, 1 - winOpen / timeout], C.warn, 1, [4, 3]);
+    if (resetAt >= 0) { P.line([resetAt, resetAt], [0, 1.1], C.bad, 2); P.text('RESET', resetAt + 5, 0.9, C.bad); }
+    if (s.hang) P.line([300, 300], [0, 1.1], C.fog, 1, [3, 3]);
+    read.innerHTML = `${s.win ? 'window watchdog: refresh accepted only below the amber line (≥ 25 ms after the last), reset after 49.9 ms' : `IWDG PR=1 RL=399 at LSI ${s.lsi} kHz: timeout ${timeout.toFixed(1)} ms`} · main loop kicks every ${loop} ms (blue) · ${resetAt >= 0 ? `<b>reset at ${resetAt.toFixed(1)} ms</b>${s.win && s.early && (!s.hang || resetAt < 300) ? ' (refreshed too early)' : ' (counter ran out)'}` : 'no reset'}`;
+  };
+  ctrls.append(row(toggle('Inject hang at 300 ms', true, (v) => { s.hang = v; p.redraw(); }, { id: 'wd-hang', danger: true }), toggle('Window watchdog', false, (v) => { s.win = v; p.redraw(); }, { id: 'wd-win' }), toggle('Loop too fast (15 ms)', false, (v) => { s.early = v; p.redraw(); }, { id: 'wd-early' })),
+    slider('LSI frequency', { min: 17, max: 47, step: 1, value: s.lsi, fmt: (v) => v + ' kHz' }, (v) => { s.lsi = v; p.redraw(); }));
+  p.redraw();
+};
+
+// p10-l16: current profile and battery life
+W.powerprofile = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { period: 60, sleep: 3, txEvery: 10 };
+  const p = new Plot(body, { aspect: 0.55, maxH: 290, x: [0, 80], y: [1e-3, 30], logy: true, label: 'Current over one wake-up, log scale' });
+  p.draw = (P) => {
+    P.axes({ xl: 't [ms]', yl: 'I [mA]' });
+    const seg = [[0, 5, s.sleep / 1000], [5, 7, 3], [7, 27, 5], [27, 57, 20], [57, 80, s.sleep / 1000]];
+    seg.forEach(([a, b, i], k) => { rect(P, a, 1e-3, b, i, (k === 3 ? C.signal : k === 0 || k === 4 ? C.dim : C.lime) + '55', k === 3 ? C.signal : C.lime); });
+    P.text('wake', 5, 4.5, C.fog); P.text('measure', 9, 7, C.fog); P.text('radio', 30, 24, C.signal); P.text('sleep', 60, s.sleep / 1000 * 1.5, C.fog);
+    const q = 3 * 2 + 5 * 20 + 20 * 30 / s.txEvery + s.sleep * (s.period * 1e3 - 22 - 30 / s.txEvery) / 1e3; const iavg = q / s.period;
+    const yrs = 1800 / (iavg / 1000) / 8766; const sleepShare = s.sleep * s.period / q * 100;
+    read.innerHTML = `average current = Σ duty·I = <b>${iavg.toFixed(2)} µA</b> (sleep is ${sleepShare.toFixed(0)} % of the charge) · 2400 mAh × 0.75 lasts <b>${yrs.toFixed(1)} years</b> ${yrs >= 5 ? '✓ meets 5 years' : '✗ misses 5 years'} · illustrative budget, not a specific part`;
+  };
+  ctrls.append(slider('Wake-up interval', { min: 1, max: 600, step: 1, value: s.period, fmt: (v) => v + ' s' }, (v) => { s.period = v; p.redraw(); }),
+    slider('Sleep current', { min: 0.5, max: 100, step: 0.5, value: s.sleep, fmt: (v) => v + ' µA' }, (v) => { s.sleep = v; p.redraw(); }),
+    slider('Transmit every Nth wake-up', { min: 1, max: 20, step: 1, value: s.txEvery, fmt: (v) => String(v) }, (v) => { s.txEvery = v; p.redraw(); }));
+  p.redraw();
+};
+
+// p10-l17: instruction bars (values measured in QEMU by the lesson's run.py)
+W.cyclebars = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { trunc: false, clk: 72 };
+  const data = [['M3 float (soft)', 547.1, C.bad], ['M3 Q15', 37.0, C.lime], ['M4F float (FPU)', 41.0, C.signal], ['M4F Q15', 37.0, C.lime]];
+  const p = new Plot(body, { aspect: 0.55, maxH: 290, x: [0, 4], y: [1, 1000], logy: true, label: 'Instructions per PID step, log scale' });
+  p.draw = (P) => {
+    P.axes({ yl: 'instructions / step' });
+    data.forEach(([n, v, c], i) => { rect(P, i + 0.15, 1, i + 0.85, v, c + '66', c); P.text(String(v), i + 0.5, v * 1.25, C.bone, 'center'); P.text(n.split(' ')[0], i + 0.5, 1.4, C.fog, 'center'); P.text(n.split(' ').slice(1).join(' '), i + 0.5, 2.1, C.fog, 'center'); });
+    const us = 547.1 / s.clk; const err = s.trunc ? 1.57 : 0.033;
+    read.innerHTML = `measured in QEMU (-icount: instructions, not cycles) · M3 soft-float step ≈ ${us.toFixed(1)} µs at ${s.clk} MHz and 1 instruction/cycle, ${(us * 20e3 / 1e4).toFixed(1)} % CPU at 20 kHz · Q15 vs float worst difference <b>${err} %</b> of full scale ${s.trunc ? '(truncating >> 15: the −0.5 LSB bias accumulates in the integrator)' : '(rounded)'}`;
+  };
+  ctrls.append(row(toggle('Q15 truncates instead of rounding', false, (v) => { s.trunc = v; p.redraw(); }, { id: 'cyc-trunc', danger: true })),
+    slider('M3 clock', { min: 16, max: 120, step: 4, value: s.clk, fmt: (v) => v + ' MHz' }, (v) => { s.clk = v; p.redraw(); }));
+  p.redraw();
+};
+
+// p10-l18: SPSC ring buffer
+W.ringbuf = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { prod: 12, cons: 10, t: 20 }; const N = 16;
+  const p = new Plot(body, { aspect: 0.75, maxH: 320, x: [-1.3, 1.3], y: [-1.15, 1.15], equal: true, label: 'Ring buffer with head and tail indices' });
+  const sim = () => { let head = 0, tail = 0, dropped = 0, pa = 0, ca = 0; for (let k = 0; k < s.t * 10; k++) { pa += s.prod / 10; ca += (k % 50 < 25 ? s.cons * 1.6 : s.cons * 0.4) / 10; while (pa >= 1) { pa -= 1; if (head - tail === N) dropped++; else head++; } while (ca >= 1 && tail < head) { ca -= 1; tail++; } if (tail === head) ca = 0; } return { head, tail, dropped }; };
+  p.draw = (P) => {
+    const r = sim(); const cnt = r.head - r.tail;
+    for (let i = 0; i < N; i++) {
+      const a = Math.PI / 2 - (i + 0.5) / N * 2 * Math.PI; const used = ((i - r.tail) % N + N) % N < cnt;
+      P.dot(0.85 * Math.cos(a), 0.85 * Math.sin(a), used ? C.warn : C.rule2, 11);
+      P.text(String(i), 0.85 * Math.cos(a), 0.85 * Math.sin(a) - 0.03, used ? C.bg : C.dim, 'center');
+    }
+    const ah = Math.PI / 2 - (r.head % N) / N * 2 * Math.PI, at = Math.PI / 2 - (r.tail % N) / N * 2 * Math.PI;
+    P.arrow(0, 0, 0.62 * Math.cos(ah), 0.62 * Math.sin(ah), C.lime, 3); P.arrow(0, 0, 0.5 * Math.cos(at), 0.5 * Math.sin(at), C.signal, 3);
+    read.innerHTML = `head = ${r.head} (slot ${r.head & (N - 1)}, lime) · tail = ${r.tail} (slot ${r.tail & (N - 1)}, blue) · count = head − tail = <b>${cnt}</b> of ${N} · dropped <b>${r.dropped}</b>${r.dropped ? ' (producer outran the consumer: make N bigger)' : ''}`;
+  };
+  ctrls.append(slider('Producer rate', { min: 1, max: 30, step: 1, value: s.prod, fmt: (v) => v + ' B/tick' }, (v) => { s.prod = v; p.redraw(); }),
+    slider('Consumer average rate', { min: 1, max: 30, step: 1, value: s.cons, fmt: (v) => v + ' B/tick' }, (v) => { s.cons = v; p.redraw(); }),
+    slider('Time', { min: 0, max: 40, step: 1, value: s.t, fmt: (v) => v + ' ticks' }, (v) => { s.t = v; p.redraw(); }));
+  p.redraw();
+};
+
 export default W;
