@@ -1,0 +1,451 @@
+var e=`p11-l05`,t=40,n=`RS-485 carries a UART over a twisted pair as a voltage difference, which shrugs off ground shifts and noise over a kilometre, and Modbus RTU is the simple master and slave protocol that most industrial pumps, drives and meters speak on it. You derive the differential margins, the frame layout and the 3.5-character silence that ends a frame, write a Modbus master, and test it against a simulated pump controller with a noisy line.`,r=`<h2 id="differential-signalling">Differential signalling</h2>
+<p>A UART at 3.3 V logic levels dies after a few metres: the ground at the far end isn’t the same as yours, and motor noise couples into the wire. <strong>RS-485</strong> sends each bit as the voltage difference between two wires, A and B, of a twisted pair:</p>
+<ul>
+<li>The driver puts at least ±1.5 V across a 54 Ω load (two 120 Ω terminators in parallel with the receivers).</li>
+<li>The receiver decides on the sign of <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.2222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.2222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0502em;">B</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> with only <strong>±200 mV</strong> threshold.</li>
+<li>Noise couples equally onto both twisted wires, so it cancels in the difference. The receiver tolerates a <strong>common-mode</strong> voltage from −7 V to +12 V, so a few volts of ground shift between cabinets don’t matter.</li>
+<li>It’s a <strong>multidrop</strong> bus: up to 32 unit loads, one twisted pair, 120 Ω termination at <strong>both</strong> ends to stop reflections, and failsafe biasing so an idle bus reads as a 1.</li>
+<li><strong>Half duplex</strong>: one pair, so only one node drives at a time. The master’s transceiver has a driver-enable pin, which it must release right after the last stop bit.</li>
+</ul>
+<h2 id="modbus-rtu">Modbus RTU</h2>
+<p>A master sends a request; exactly one addressed slave answers. An RTU frame is binary:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>field</th>
+<th>size</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>slave address (1–247)</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>function code</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>data</td>
+<td>0–252 bytes</td>
+</tr>
+<tr>
+<td>CRC-16/MODBUS, <strong>low byte first</strong></td>
+<td>2 bytes</td>
+</tr>
+</tbody></table></div>
+<p>Common functions: <strong>03</strong> read holding registers, <strong>04</strong> read input registers, <strong>06</strong> write one register, <strong>16</strong> (0x10) write several. Registers are 16-bit, big-endian. An error answer sets the top bit of the function code (03 → 83) and gives an exception code: 01 illegal function, 02 illegal data address, 03 illegal data value.</p>
+<p>There’s no length byte in a request and no start marker: a frame ends with <strong>silence of at least 3.5 character times</strong>. At 19 200 baud with 8E1 (11 bits per character), one character is 573 µs and the gap is 2.0 ms. Above 19 200 baud the standard fixes the gap at 1.75 ms.</p>
+<h2 id="timing-a-transaction">Timing a transaction</h2>
+<p>Reading <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> registers takes an 8-byte request and a <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord mathnormal">n</span></span></span></span> byte response. At 11 bits per byte:</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.113em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord">baud</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">11</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mopen">(</span><span class="mord">8</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">2</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">3.5</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">slave</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">.</span></span></span></span></span></div>
+<p>For 10 registers at 19 200 baud: 18.9 ms on the wire plus 4.0 ms of gaps plus the slave’s turnaround. Polling 20 such devices takes about half a second, which is why Modbus is fine for a pump’s flow reading and useless for a servo loop.</p>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="modbus" data-args="{}"></div></div><figcaption>A Modbus RTU transaction on an RS-485 bus: the master’s request, the 3.5-character silence, the pump controller’s response, and a CRC failure that triggers a retry. Change the baud rate and register count to see the cycle time.</figcaption></figure>
+<h2 id="worked-example">Worked example</h2>
+<p>Read the pump’s two input registers at address 0x0000 (flow ×0.1 L/min and pressure ×0.01 bar) from slave 0x11.</p>
+<ol>
+<li>Request: <code>11 04 00 00 00 02</code> then CRC. CRC-16/MODBUS of those six bytes is 0x5B73, sent low byte first: <code>73 5B</code>.</li>
+<li>Response: <code>11 04 04 01 F4 03 E8</code> + CRC. Byte count 4, then 0x01F4 = 500 → 50.0 L/min, and 0x03E8 = 1000 → 10.00 bar.</li>
+<li>At 19 200 baud the request is <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">8</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">11/19200</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">4.58</span></span></span></span> ms, the response <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">9</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">11/19200</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">5.16</span></span></span></span> ms.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">modbus.py</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-python"><span class="hljs-keyword">import</span> random, struct
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">crc16_modbus</span>(<span class="hljs-params">data</span>):
+    crc = <span class="hljs-number">0xFFFF</span>
+    <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> data:
+        crc ^= b
+        <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):
+            crc = (crc &gt;&gt; <span class="hljs-number">1</span>) ^ <span class="hljs-number">0xA001</span> <span class="hljs-keyword">if</span> crc &amp; <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> crc &gt;&gt; <span class="hljs-number">1</span>
+    <span class="hljs-keyword">return</span> crc
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">frame</span>(<span class="hljs-params">body</span>):
+    <span class="hljs-keyword">return</span> body + struct.pack(<span class="hljs-string">&quot;&lt;H&quot;</span>, crc16_modbus(body))         <span class="hljs-comment"># CRC low byte first</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">char_time</span>(<span class="hljs-params">baud, bits=<span class="hljs-number">11</span></span>):
+    <span class="hljs-keyword">return</span> bits / baud
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">t35</span>(<span class="hljs-params">baud</span>):
+    <span class="hljs-keyword">return</span> <span class="hljs-number">3.5</span> * char_time(baud) <span class="hljs-keyword">if</span> baud &lt;= <span class="hljs-number">19200</span> <span class="hljs-keyword">else</span> <span class="hljs-number">1.75e-3</span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">PumpController</span>:
+    <span class="hljs-string">&quot;&quot;&quot;a simulated Modbus slave: holding regs 0 = speed setpoint (rpm), 1 = mode; input regs 0..2&quot;&quot;&quot;</span>
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, addr=<span class="hljs-number">0x11</span></span>):
+        <span class="hljs-variable language_">self</span>.addr = addr
+        <span class="hljs-variable language_">self</span>.holding = [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>]
+        <span class="hljs-variable language_">self</span>.turnaround = <span class="hljs-number">1.2e-3</span>                                  <span class="hljs-comment"># seconds before it answers</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">inputs</span>(<span class="hljs-params">self</span>):
+        rpm = <span class="hljs-variable language_">self</span>.holding[<span class="hljs-number">0</span>] <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.holding[<span class="hljs-number">1</span>] == <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
+        flow = rpm * <span class="hljs-number">500</span> // <span class="hljs-number">1450</span>                                  <span class="hljs-comment"># 0.1 L/min per count</span>
+        pressure = rpm * <span class="hljs-number">1000</span> // <span class="hljs-number">1450</span>                             <span class="hljs-comment"># 0.01 bar per count</span>
+        <span class="hljs-keyword">return</span> [flow, pressure, <span class="hljs-number">412</span>]                              <span class="hljs-comment"># temperature 41.2 C</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">handle</span>(<span class="hljs-params">self, req</span>):
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(req) &lt; <span class="hljs-number">4</span> <span class="hljs-keyword">or</span> crc16_modbus(req[:-<span class="hljs-number">2</span>]) != struct.unpack(<span class="hljs-string">&quot;&lt;H&quot;</span>, req[-<span class="hljs-number">2</span>:])[<span class="hljs-number">0</span>]:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>                                           <span class="hljs-comment"># bad CRC: stay silent</span>
+        <span class="hljs-keyword">if</span> req[<span class="hljs-number">0</span>] != <span class="hljs-variable language_">self</span>.addr:
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        fn = req[<span class="hljs-number">1</span>]
+        <span class="hljs-keyword">def</span> <span class="hljs-title function_">exc</span>(<span class="hljs-params">code</span>):
+            <span class="hljs-keyword">return</span> frame(<span class="hljs-built_in">bytes</span>([<span class="hljs-variable language_">self</span>.addr, fn | <span class="hljs-number">0x80</span>, code]))
+        <span class="hljs-keyword">if</span> fn <span class="hljs-keyword">in</span> (<span class="hljs-number">3</span>, <span class="hljs-number">4</span>):
+            start, count = struct.unpack(<span class="hljs-string">&quot;&gt;HH&quot;</span>, req[<span class="hljs-number">2</span>:<span class="hljs-number">6</span>])
+            regs = <span class="hljs-variable language_">self</span>.holding <span class="hljs-keyword">if</span> fn == <span class="hljs-number">3</span> <span class="hljs-keyword">else</span> <span class="hljs-variable language_">self</span>.inputs()
+            <span class="hljs-keyword">if</span> count &lt; <span class="hljs-number">1</span> <span class="hljs-keyword">or</span> count &gt; <span class="hljs-number">125</span>:
+                <span class="hljs-keyword">return</span> exc(<span class="hljs-number">3</span>)
+            <span class="hljs-keyword">if</span> start + count &gt; <span class="hljs-built_in">len</span>(regs):
+                <span class="hljs-keyword">return</span> exc(<span class="hljs-number">2</span>)
+            data = <span class="hljs-string">b&quot;&quot;</span>.join(struct.pack(<span class="hljs-string">&quot;&gt;H&quot;</span>, v) <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> regs[start:start + count])
+            <span class="hljs-keyword">return</span> frame(<span class="hljs-built_in">bytes</span>([<span class="hljs-variable language_">self</span>.addr, fn, <span class="hljs-built_in">len</span>(data)]) + data)
+        <span class="hljs-keyword">if</span> fn == <span class="hljs-number">6</span>:
+            reg, val = struct.unpack(<span class="hljs-string">&quot;&gt;HH&quot;</span>, req[<span class="hljs-number">2</span>:<span class="hljs-number">6</span>])
+            <span class="hljs-keyword">if</span> reg &gt;= <span class="hljs-built_in">len</span>(<span class="hljs-variable language_">self</span>.holding):
+                <span class="hljs-keyword">return</span> exc(<span class="hljs-number">2</span>)
+            <span class="hljs-keyword">if</span> reg == <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> val &gt; <span class="hljs-number">3000</span>:
+                <span class="hljs-keyword">return</span> exc(<span class="hljs-number">3</span>)
+            <span class="hljs-variable language_">self</span>.holding[reg] = val
+            <span class="hljs-keyword">return</span> frame(req[:<span class="hljs-number">6</span>])                                 <span class="hljs-comment"># echo</span>
+        <span class="hljs-keyword">if</span> fn == <span class="hljs-number">16</span>:
+            start, count, nbytes = struct.unpack(<span class="hljs-string">&quot;&gt;HHB&quot;</span>, req[<span class="hljs-number">2</span>:<span class="hljs-number">7</span>])
+            vals = struct.unpack(<span class="hljs-string">&quot;&gt;&quot;</span> + <span class="hljs-string">&quot;H&quot;</span> * count, req[<span class="hljs-number">7</span>:<span class="hljs-number">7</span> + nbytes])
+            <span class="hljs-keyword">if</span> start + count &gt; <span class="hljs-built_in">len</span>(<span class="hljs-variable language_">self</span>.holding):
+                <span class="hljs-keyword">return</span> exc(<span class="hljs-number">2</span>)
+            <span class="hljs-variable language_">self</span>.holding[start:start + count] = vals
+            <span class="hljs-keyword">return</span> frame(req[:<span class="hljs-number">6</span>])
+        <span class="hljs-keyword">return</span> exc(<span class="hljs-number">1</span>)
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">ModbusError</span>(<span class="hljs-title class_ inherited__">Exception</span>):
+    <span class="hljs-keyword">pass</span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Bus</span>:
+    <span class="hljs-string">&quot;&quot;&quot;RS-485 half-duplex line: bytes take 11 bit times each; noise flips bits with some probability&quot;&quot;&quot;</span>
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, slave, baud=<span class="hljs-number">19200</span>, ber=<span class="hljs-number">0.0</span>, seed=<span class="hljs-number">1</span></span>):
+        <span class="hljs-variable language_">self</span>.slave, <span class="hljs-variable language_">self</span>.baud, <span class="hljs-variable language_">self</span>.ber = slave, baud, ber
+        <span class="hljs-variable language_">self</span>.rng = random.Random(seed)
+        <span class="hljs-variable language_">self</span>.t = <span class="hljs-number">0.0</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">corrupt</span>(<span class="hljs-params">self, data</span>):
+        out = <span class="hljs-built_in">bytearray</span>(data)
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-built_in">len</span>(out)):
+            <span class="hljs-keyword">for</span> bit <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):
+                <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.rng.random() &lt; <span class="hljs-variable language_">self</span>.ber:
+                    out[i] ^= <span class="hljs-number">1</span> &lt;&lt; bit
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">bytes</span>(out)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">send</span>(<span class="hljs-params">self, req, timeout</span>):
+        <span class="hljs-variable language_">self</span>.t += <span class="hljs-built_in">len</span>(req) * char_time(<span class="hljs-variable language_">self</span>.baud) + t35(<span class="hljs-variable language_">self</span>.baud)   <span class="hljs-comment"># request, then the end-of-frame silence</span>
+        resp = <span class="hljs-variable language_">self</span>.slave.handle(<span class="hljs-variable language_">self</span>.corrupt(req))
+        <span class="hljs-keyword">if</span> resp <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:
+            <span class="hljs-variable language_">self</span>.t += timeout
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>
+        <span class="hljs-variable language_">self</span>.t += <span class="hljs-variable language_">self</span>.slave.turnaround + <span class="hljs-built_in">len</span>(resp) * char_time(<span class="hljs-variable language_">self</span>.baud) + t35(<span class="hljs-variable language_">self</span>.baud)
+        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>.corrupt(resp)
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">ModbusMaster</span>:
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, bus, retries=<span class="hljs-number">3</span>, timeout=<span class="hljs-number">0.1</span></span>):
+        <span class="hljs-variable language_">self</span>.bus, <span class="hljs-variable language_">self</span>.retries, <span class="hljs-variable language_">self</span>.timeout = bus, retries, timeout
+        <span class="hljs-variable language_">self</span>.retried = <span class="hljs-number">0</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">transact</span>(<span class="hljs-params">self, addr, body, expect_len</span>):
+        req = frame(<span class="hljs-built_in">bytes</span>([addr]) + body)
+        <span class="hljs-keyword">for</span> attempt <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-variable language_">self</span>.retries + <span class="hljs-number">1</span>):
+            resp = <span class="hljs-variable language_">self</span>.bus.send(req, <span class="hljs-variable language_">self</span>.timeout)
+            <span class="hljs-keyword">if</span> resp <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span> <span class="hljs-keyword">or</span> <span class="hljs-built_in">len</span>(resp) &lt; <span class="hljs-number">5</span>:
+                <span class="hljs-variable language_">self</span>.retried += attempt &lt; <span class="hljs-variable language_">self</span>.retries
+                <span class="hljs-keyword">continue</span>
+            <span class="hljs-keyword">if</span> crc16_modbus(resp[:-<span class="hljs-number">2</span>]) != struct.unpack(<span class="hljs-string">&quot;&lt;H&quot;</span>, resp[-<span class="hljs-number">2</span>:])[<span class="hljs-number">0</span>] <span class="hljs-keyword">or</span> resp[<span class="hljs-number">0</span>] != addr:
+                <span class="hljs-variable language_">self</span>.retried += attempt &lt; <span class="hljs-variable language_">self</span>.retries
+                <span class="hljs-keyword">continue</span>
+            <span class="hljs-keyword">if</span> resp[<span class="hljs-number">1</span>] &amp; <span class="hljs-number">0x80</span>:
+                <span class="hljs-keyword">raise</span> ModbusError(<span class="hljs-string">f&quot;exception <span class="hljs-subst">{resp[<span class="hljs-number">2</span>]}</span>&quot;</span>)
+            <span class="hljs-keyword">if</span> expect_len <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span> <span class="hljs-keyword">and</span> <span class="hljs-built_in">len</span>(resp) != expect_len:
+                <span class="hljs-variable language_">self</span>.retried += attempt &lt; <span class="hljs-variable language_">self</span>.retries
+                <span class="hljs-keyword">continue</span>
+            <span class="hljs-keyword">return</span> resp
+        <span class="hljs-keyword">raise</span> TimeoutError(<span class="hljs-string">&quot;no valid response&quot;</span>)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">read_registers</span>(<span class="hljs-params">self, addr, start, count, fn=<span class="hljs-number">3</span></span>):
+        r = <span class="hljs-variable language_">self</span>.transact(addr, struct.pack(<span class="hljs-string">&quot;&gt;BHH&quot;</span>, fn, start, count), <span class="hljs-number">5</span> + <span class="hljs-number">2</span> * count)
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">list</span>(struct.unpack(<span class="hljs-string">&quot;&gt;&quot;</span> + <span class="hljs-string">&quot;H&quot;</span> * count, r[<span class="hljs-number">3</span>:<span class="hljs-number">3</span> + <span class="hljs-number">2</span> * count]))
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">write_register</span>(<span class="hljs-params">self, addr, reg, value</span>):
+        <span class="hljs-variable language_">self</span>.transact(addr, struct.pack(<span class="hljs-string">&quot;&gt;BHH&quot;</span>, <span class="hljs-number">6</span>, reg, value), <span class="hljs-number">8</span>)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">write_registers</span>(<span class="hljs-params">self, addr, start, values</span>):
+        body = struct.pack(<span class="hljs-string">&quot;&gt;BHHB&quot;</span>, <span class="hljs-number">16</span>, start, <span class="hljs-built_in">len</span>(values), <span class="hljs-number">2</span> * <span class="hljs-built_in">len</span>(values)) + <span class="hljs-string">b&quot;&quot;</span>.join(struct.pack(<span class="hljs-string">&quot;&gt;H&quot;</span>, v) <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> values)
+        <span class="hljs-variable language_">self</span>.transact(addr, body, <span class="hljs-number">8</span>)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_worked_example</span>():
+    <span class="hljs-keyword">assert</span> crc16_modbus(<span class="hljs-string">b&quot;123456789&quot;</span>) == <span class="hljs-number">0x4B37</span>
+    req = frame(<span class="hljs-built_in">bytes</span>([<span class="hljs-number">0x11</span>, <span class="hljs-number">0x04</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x02</span>]))
+    <span class="hljs-keyword">assert</span> req[-<span class="hljs-number">2</span>:] == <span class="hljs-built_in">bytes</span>([<span class="hljs-number">0x73</span>, <span class="hljs-number">0x5B</span>]), req.<span class="hljs-built_in">hex</span>()
+    <span class="hljs-keyword">assert</span> <span class="hljs-built_in">abs</span>(t35(<span class="hljs-number">19200</span>) - <span class="hljs-number">2.005e-3</span>) &lt; <span class="hljs-number">1e-5</span> <span class="hljs-keyword">and</span> t35(<span class="hljs-number">115200</span>) == <span class="hljs-number">1.75e-3</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_read_write</span>():
+    pump = PumpController()
+    m = ModbusMaster(Bus(pump))
+    <span class="hljs-keyword">assert</span> m.read_registers(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>) == [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>]
+    m.write_register(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1450</span>)
+    m.write_register(<span class="hljs-number">0x11</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>)
+    flow, pressure, temp = m.read_registers(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">3</span>, fn=<span class="hljs-number">4</span>)
+    <span class="hljs-keyword">assert</span> (flow / <span class="hljs-number">10</span>, pressure / <span class="hljs-number">100</span>, temp / <span class="hljs-number">10</span>) == (<span class="hljs-number">50.0</span>, <span class="hljs-number">10.0</span>, <span class="hljs-number">41.2</span>)
+    m.write_registers(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, [<span class="hljs-number">725</span>, <span class="hljs-number">1</span>])
+    <span class="hljs-keyword">assert</span> m.read_registers(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>) == [<span class="hljs-number">725</span>, <span class="hljs-number">1</span>]
+    <span class="hljs-keyword">assert</span> m.read_registers(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, fn=<span class="hljs-number">4</span>) == [<span class="hljs-number">250</span>, <span class="hljs-number">500</span>]
+    <span class="hljs-keyword">for</span> bad, code <span class="hljs-keyword">in</span> (((<span class="hljs-number">0x11</span>, <span class="hljs-number">5</span>, <span class="hljs-number">1</span>), <span class="hljs-number">2</span>), ((<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">200</span>), <span class="hljs-number">3</span>)):
+        <span class="hljs-keyword">try</span>:
+            m.read_registers(*bad)
+            <span class="hljs-keyword">raise</span> AssertionError(<span class="hljs-string">&quot;expected an exception response&quot;</span>)
+        <span class="hljs-keyword">except</span> ModbusError <span class="hljs-keyword">as</span> e:
+            <span class="hljs-keyword">assert</span> <span class="hljs-built_in">str</span>(e) == <span class="hljs-string">f&quot;exception <span class="hljs-subst">{code}</span>&quot;</span>
+    <span class="hljs-keyword">try</span>:
+        m.write_register(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">5000</span>)
+        <span class="hljs-keyword">raise</span> AssertionError
+    <span class="hljs-keyword">except</span> ModbusError <span class="hljs-keyword">as</span> e:
+        <span class="hljs-keyword">assert</span> <span class="hljs-built_in">str</span>(e) == <span class="hljs-string">&quot;exception 3&quot;</span>
+    <span class="hljs-keyword">try</span>:
+        m.read_registers(<span class="hljs-number">0x12</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>)                         <span class="hljs-comment"># nobody at 0x12</span>
+        <span class="hljs-keyword">raise</span> AssertionError
+    <span class="hljs-keyword">except</span> TimeoutError:
+        <span class="hljs-keyword">pass</span>
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;pump: write setpoint, read flow 50.0 L/min, 10.00 bar, 41.2 C; exceptions 02 and 03; timeout for absent slave&quot;</span>)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_timing</span>():
+    pump = PumpController()
+    bus = Bus(pump, baud=<span class="hljs-number">19200</span>)
+    m = ModbusMaster(bus)
+    m.read_registers(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>)
+    expect = <span class="hljs-number">11</span> * (<span class="hljs-number">8</span> + <span class="hljs-number">5</span> + <span class="hljs-number">2</span> * <span class="hljs-number">2</span>) / <span class="hljs-number">19200</span> + <span class="hljs-number">2</span> * t35(<span class="hljs-number">19200</span>) + pump.turnaround
+    <span class="hljs-keyword">assert</span> <span class="hljs-built_in">abs</span>(bus.t - expect) &lt; <span class="hljs-number">1e-12</span>
+    n10 = <span class="hljs-number">11</span> * (<span class="hljs-number">8</span> + <span class="hljs-number">5</span> + <span class="hljs-number">20</span>) / <span class="hljs-number">19200</span>
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;read 2 regs: <span class="hljs-subst">{bus.t * <span class="hljs-number">1e3</span>:<span class="hljs-number">.2</span>f}</span> ms; 10 regs on the wire <span class="hljs-subst">{n10 * <span class="hljs-number">1e3</span>:<span class="hljs-number">.1</span>f}</span> ms&quot;</span>)
+    <span class="hljs-keyword">assert</span> <span class="hljs-built_in">abs</span>(n10 - <span class="hljs-number">0.0189</span>) &lt; <span class="hljs-number">1e-4</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_noisy_line</span>():
+    pump = PumpController()
+    pump.holding = [<span class="hljs-number">1450</span>, <span class="hljs-number">1</span>]
+    m = ModbusMaster(Bus(pump, ber=<span class="hljs-number">2e-4</span>, seed=<span class="hljs-number">5</span>), retries=<span class="hljs-number">5</span>)
+    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">500</span>):
+        <span class="hljs-keyword">assert</span> m.read_registers(<span class="hljs-number">0x11</span>, <span class="hljs-number">0</span>, <span class="hljs-number">3</span>, fn=<span class="hljs-number">4</span>) == [<span class="hljs-number">500</span>, <span class="hljs-number">1000</span>, <span class="hljs-number">412</span>]
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;noisy line (BER 2e-4): 500 reads all correct, <span class="hljs-subst">{m.retried}</span> retries after CRC failures&quot;</span>)
+    <span class="hljs-keyword">assert</span> m.retried &gt; <span class="hljs-number">0</span>
+
+test_worked_example()
+test_read_write()
+test_timing()
+test_noisy_line()
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;PASS&quot;</span>)</code></pre></div>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>A Modbus network works on the bench but fails intermittently on a 200 m cable to the pump house. Name three things to check.</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>Termination: 120 Ω at both ends of the trunk, and nowhere else. Failsafe bias resistors so the idle line reads as a defined 1. A ground or common reference between the two ends (a third wire), because the common-mode range is only −7 to +12 V; motor ground currents can exceed it. Also stub lengths and the driver-enable timing at the master.</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>Why does the master need a response timeout, and how long should it be?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>A slave stays silent when it sees a bad CRC or a different address, so the master would wait forever. The timeout must cover the slave’s worst-case turnaround plus the longest response on the wire: for 125 registers at 19 200 baud that’s <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">255</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">11/19200</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">146</span></span></span></span> ms plus turnaround, so a few hundred milliseconds is typical. Too long a timeout slows the whole poll cycle when a device is offline.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p11-l05"></div>
+
+`,i=[{id:`differential-signalling`,title:`Differential signalling`},{id:`modbus-rtu`,title:`Modbus RTU`},{id:`timing-a-transaction`,title:`Timing a transaction`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p11-l05-q1`,type:`num`,q:`<p>One 8E1 character time at 19 200 baud, in µs?</p>
+`,explain:`<p>Eleven bits.</p>
+`,answer:572.9,tol:.001,unit:`µs`},{id:`p11-l05-q2`,type:`num`,q:`<p>The 3.5-character silence at 9600 baud with 11-bit characters, in ms?</p>
+`,explain:`<p>Below 19 200 baud it scales with the baud rate.</p>
+`,answer:4.01,tol:.001,unit:`ms`},{id:`p11-l05-q3`,type:`num`,q:`<p>Response length in bytes for reading 10 registers with function 03?</p>
+`,explain:`<p>Address, function, byte count, 20 data bytes, 2 CRC bytes.</p>
+`,answer:25,tol:0,unit:`bytes`},{id:`p11-l05-q4`,type:`num`,q:`<p>Load in ohms seen by the driver from two 120 Ω terminators?</p>
+`,explain:`<p>The standard’s 54 Ω also allows for the receivers.</p>
+`,answer:60,tol:0,unit:`Ω`},{id:`p11-l05-q5`,type:`mc`,q:`<p>A slave answers function 03 with function code 0x83 and data 02. What happened?</p>
+`,explain:`<p>Top bit set means an exception; code 02 is illegal data address.</p>
+`,options:[`illegal data address`,`CRC error`,`the slave is busy`,`success`],answer:0},{id:`p11-l05-q6`,type:`mc`,q:`<p>Why does RS-485 survive ground shifts that break a plain UART?</p>
+`,explain:`<p>Common-mode rejection.</p>
+`,options:[`the receiver looks only at the difference between A and B, within a wide common-mode range`,`it uses higher voltages`,`it’s optical`,`it has no ground`],answer:0}],o=[{file:`modbus.py`,lang:`python`,src:`import random, struct
+
+def crc16_modbus(data):
+    crc = 0xFFFF
+    for b in data:
+        crc ^= b
+        for _ in range(8):
+            crc = (crc >> 1) ^ 0xA001 if crc & 1 else crc >> 1
+    return crc
+
+def frame(body):
+    return body + struct.pack("<H", crc16_modbus(body))         # CRC low byte first
+
+def char_time(baud, bits=11):
+    return bits / baud
+
+def t35(baud):
+    return 3.5 * char_time(baud) if baud <= 19200 else 1.75e-3
+
+class PumpController:
+    """a simulated Modbus slave: holding regs 0 = speed setpoint (rpm), 1 = mode; input regs 0..2"""
+    def __init__(self, addr=0x11):
+        self.addr = addr
+        self.holding = [0, 0]
+        self.turnaround = 1.2e-3                                  # seconds before it answers
+
+    def inputs(self):
+        rpm = self.holding[0] if self.holding[1] == 1 else 0
+        flow = rpm * 500 // 1450                                  # 0.1 L/min per count
+        pressure = rpm * 1000 // 1450                             # 0.01 bar per count
+        return [flow, pressure, 412]                              # temperature 41.2 C
+
+    def handle(self, req):
+        if len(req) < 4 or crc16_modbus(req[:-2]) != struct.unpack("<H", req[-2:])[0]:
+            return None                                           # bad CRC: stay silent
+        if req[0] != self.addr:
+            return None
+        fn = req[1]
+        def exc(code):
+            return frame(bytes([self.addr, fn | 0x80, code]))
+        if fn in (3, 4):
+            start, count = struct.unpack(">HH", req[2:6])
+            regs = self.holding if fn == 3 else self.inputs()
+            if count < 1 or count > 125:
+                return exc(3)
+            if start + count > len(regs):
+                return exc(2)
+            data = b"".join(struct.pack(">H", v) for v in regs[start:start + count])
+            return frame(bytes([self.addr, fn, len(data)]) + data)
+        if fn == 6:
+            reg, val = struct.unpack(">HH", req[2:6])
+            if reg >= len(self.holding):
+                return exc(2)
+            if reg == 0 and val > 3000:
+                return exc(3)
+            self.holding[reg] = val
+            return frame(req[:6])                                 # echo
+        if fn == 16:
+            start, count, nbytes = struct.unpack(">HHB", req[2:7])
+            vals = struct.unpack(">" + "H" * count, req[7:7 + nbytes])
+            if start + count > len(self.holding):
+                return exc(2)
+            self.holding[start:start + count] = vals
+            return frame(req[:6])
+        return exc(1)
+
+class ModbusError(Exception):
+    pass
+
+class Bus:
+    """RS-485 half-duplex line: bytes take 11 bit times each; noise flips bits with some probability"""
+    def __init__(self, slave, baud=19200, ber=0.0, seed=1):
+        self.slave, self.baud, self.ber = slave, baud, ber
+        self.rng = random.Random(seed)
+        self.t = 0.0
+
+    def corrupt(self, data):
+        out = bytearray(data)
+        for i in range(len(out)):
+            for bit in range(8):
+                if self.rng.random() < self.ber:
+                    out[i] ^= 1 << bit
+        return bytes(out)
+
+    def send(self, req, timeout):
+        self.t += len(req) * char_time(self.baud) + t35(self.baud)   # request, then the end-of-frame silence
+        resp = self.slave.handle(self.corrupt(req))
+        if resp is None:
+            self.t += timeout
+            return None
+        self.t += self.slave.turnaround + len(resp) * char_time(self.baud) + t35(self.baud)
+        return self.corrupt(resp)
+
+class ModbusMaster:
+    def __init__(self, bus, retries=3, timeout=0.1):
+        self.bus, self.retries, self.timeout = bus, retries, timeout
+        self.retried = 0
+
+    def transact(self, addr, body, expect_len):
+        req = frame(bytes([addr]) + body)
+        for attempt in range(self.retries + 1):
+            resp = self.bus.send(req, self.timeout)
+            if resp is None or len(resp) < 5:
+                self.retried += attempt < self.retries
+                continue
+            if crc16_modbus(resp[:-2]) != struct.unpack("<H", resp[-2:])[0] or resp[0] != addr:
+                self.retried += attempt < self.retries
+                continue
+            if resp[1] & 0x80:
+                raise ModbusError(f"exception {resp[2]}")
+            if expect_len is not None and len(resp) != expect_len:
+                self.retried += attempt < self.retries
+                continue
+            return resp
+        raise TimeoutError("no valid response")
+
+    def read_registers(self, addr, start, count, fn=3):
+        r = self.transact(addr, struct.pack(">BHH", fn, start, count), 5 + 2 * count)
+        return list(struct.unpack(">" + "H" * count, r[3:3 + 2 * count]))
+
+    def write_register(self, addr, reg, value):
+        self.transact(addr, struct.pack(">BHH", 6, reg, value), 8)
+
+    def write_registers(self, addr, start, values):
+        body = struct.pack(">BHHB", 16, start, len(values), 2 * len(values)) + b"".join(struct.pack(">H", v) for v in values)
+        self.transact(addr, body, 8)
+
+def test_worked_example():
+    assert crc16_modbus(b"123456789") == 0x4B37
+    req = frame(bytes([0x11, 0x04, 0x00, 0x00, 0x00, 0x02]))
+    assert req[-2:] == bytes([0x73, 0x5B]), req.hex()
+    assert abs(t35(19200) - 2.005e-3) < 1e-5 and t35(115200) == 1.75e-3
+
+def test_read_write():
+    pump = PumpController()
+    m = ModbusMaster(Bus(pump))
+    assert m.read_registers(0x11, 0, 2) == [0, 0]
+    m.write_register(0x11, 0, 1450)
+    m.write_register(0x11, 1, 1)
+    flow, pressure, temp = m.read_registers(0x11, 0, 3, fn=4)
+    assert (flow / 10, pressure / 100, temp / 10) == (50.0, 10.0, 41.2)
+    m.write_registers(0x11, 0, [725, 1])
+    assert m.read_registers(0x11, 0, 2) == [725, 1]
+    assert m.read_registers(0x11, 0, 2, fn=4) == [250, 500]
+    for bad, code in (((0x11, 5, 1), 2), ((0x11, 0, 200), 3)):
+        try:
+            m.read_registers(*bad)
+            raise AssertionError("expected an exception response")
+        except ModbusError as e:
+            assert str(e) == f"exception {code}"
+    try:
+        m.write_register(0x11, 0, 5000)
+        raise AssertionError
+    except ModbusError as e:
+        assert str(e) == "exception 3"
+    try:
+        m.read_registers(0x12, 0, 1)                         # nobody at 0x12
+        raise AssertionError
+    except TimeoutError:
+        pass
+    print("pump: write setpoint, read flow 50.0 L/min, 10.00 bar, 41.2 C; exceptions 02 and 03; timeout for absent slave")
+
+def test_timing():
+    pump = PumpController()
+    bus = Bus(pump, baud=19200)
+    m = ModbusMaster(bus)
+    m.read_registers(0x11, 0, 2)
+    expect = 11 * (8 + 5 + 2 * 2) / 19200 + 2 * t35(19200) + pump.turnaround
+    assert abs(bus.t - expect) < 1e-12
+    n10 = 11 * (8 + 5 + 20) / 19200
+    print(f"read 2 regs: {bus.t * 1e3:.2f} ms; 10 regs on the wire {n10 * 1e3:.1f} ms")
+    assert abs(n10 - 0.0189) < 1e-4
+
+def test_noisy_line():
+    pump = PumpController()
+    pump.holding = [1450, 1]
+    m = ModbusMaster(Bus(pump, ber=2e-4, seed=5), retries=5)
+    for _ in range(500):
+        assert m.read_registers(0x11, 0, 3, fn=4) == [500, 1000, 412]
+    print(f"noisy line (BER 2e-4): 500 reads all correct, {m.retried} retries after CRC failures")
+    assert m.retried > 0
+
+test_worked_example()
+test_read_write()
+test_timing()
+test_noisy_line()
+print("PASS")`}],s={id:e,minutes:40,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};
