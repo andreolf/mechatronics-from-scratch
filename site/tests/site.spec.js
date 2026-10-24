@@ -1,6 +1,6 @@
 // Home page: hero, labs, course map, footer. Runs on every project (desktop + phones).
 import { test, expect } from '@playwright/test';
-import { watchConsole, litFraction, gotoLab, overflow } from './helpers.js';
+import { watchConsole, litFraction, gotoLab, overflow, fullIds } from './helpers.js';
 
 let errors;
 test.beforeEach(async ({ page }) => { errors = watchConsole(page); await page.goto('./'); });
@@ -14,7 +14,7 @@ test('home: hero, honest stats, tutor line and footer', async ({ page }) => {
   await expect(page.locator('h1:visible').first()).toContainText('Mechatronics');
   await expect(page.locator('#stats')).toContainText('352');
   await expect(page.locator('#stats')).toContainText('20');
-  await expect(page.getByTestId('full-count')).toHaveText('34');
+  await expect(page.getByTestId('full-count')).toHaveText(String(fullIds().length));
   await expect(page.getByTestId('tutor-cmd')).toContainText('npx skills add');
   const foot = page.locator('#colophon');
   await expect(foot).toContainText('no paywall, no signup');

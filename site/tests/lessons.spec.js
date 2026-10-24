@@ -1,6 +1,6 @@
 // Lessons, quizzes, progress, phase tests, certificates and verification. Runs on every project.
 import { test, expect } from '@playwright/test';
-import { watchConsole, overflow, quizBank, lessonData, answer } from './helpers.js';
+import { watchConsole, overflow, quizBank, lessonData, answer, fullIds } from './helpers.js';
 
 let errors;
 test.beforeEach(async ({ page }) => { errors = watchConsole(page); });
@@ -75,9 +75,9 @@ test('lesson progress and XP persist across reloads; prev/next navigation works'
 });
 
 test('unwritten lessons show an honest outline', async ({ page }) => {
-  await page.goto('./#/learn/p05-l01');
+  await page.goto('./#/learn/p20-l01');
   await expect(page.getByTestId('coming-soon')).toContainText('Full lesson coming soon');
-  await page.goto('./#/test/p05');
+  await page.goto('./#/test/p20');
   await expect(page.locator('h1:visible').first()).toBeVisible();
   await expect(page.getByTestId('phase-test')).toHaveCount(0);
 });
@@ -153,5 +153,21 @@ test('every key route: no horizontal overflow, no console errors, touch targets 
         .map((e) => e.outerHTML.slice(0, 80)));
       expect(small, r).toEqual([]);
     }
+  }
+});
+
+test('every full lesson renders its maths, code, quiz and widgets without errors', async ({ page }, info) => {
+  test.skip(['iphone-14', 'landscape'].includes(info.project.name), 'covered by iphone-13 and the other phones');
+  test.setTimeout(30_000 + fullIds().length * 4000);
+  for (const id of fullIds()) {
+    await page.goto('./#/learn/' + id);
+    await expect(page.getByTestId('lesson-title')).toBeVisible();
+    const body = page.getByTestId('lesson-body');
+    expect(await body.locator('.katex').count(), id).toBeGreaterThan(0);
+    await expect(page.getByTestId('quiz').getByTestId('question').first()).toBeVisible();
+    const missing = await body.locator('.widget').evaluateAll((els) => els.filter((e) => !e.querySelector('canvas') || /Missing widget/.test(e.textContent)).length);
+    expect(missing, id + ' widgets').toBe(0);
+    expect(await overflow(page), id + ' overflow').toBeLessThanOrEqual(0);
+    expect(errors, id + ' console').toEqual([]);
   }
 });

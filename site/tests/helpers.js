@@ -48,3 +48,4 @@ export async function answer(q, el, correct = true) {
     await el.getByTestId('num-input').fill(String(v));
   }
 }
+export const fullIds = () => Object.keys(JSON.parse(fs.readFileSync(path.join(GEN, 'index.json'), 'utf8')));

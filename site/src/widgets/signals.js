@@ -182,7 +182,7 @@ W.spectrum = (el) => {
     for (let n = 0; n < N; n++) { const t = n / fs; re[n] = 1.0 * Math.sin(TAU * f1 * t) + 0.4 * Math.sin(TAU * 2 * f1 * t + 1) + 0.25 * Math.sin(TAU * 5 * f1 * t) + s.noise * randn(r); }
     const win = (n) => 0.5 - 0.5 * Math.cos(TAU * n / N); for (let n = 0; n < N; n++) re[n] *= win(n) * 2; fft(re, im);
     const xs = [], ys = []; for (let k = 0; k <= N / 2; k++) { xs.push(k * fs / N); ys.push(2 * Math.hypot(re[k], im[k]) / N); } P.line(xs, ys, C.lime, 1.5);
-    for (const [m, c] of [[1, '1×'], [2, '2×'], [5, '5×']]) if (m * f1 < 1000) P.text(c, m * f1, 1.02, C.fog, 'center');
+    for (const [m, c, a] of [[1, '1×', 1], [2, '2×', 0.4], [5, '5×', 0.25]]) if (m * f1 < 1000) P.text(c, m * f1 + 14, Math.min(0.98, a + 0.04), C.fog, 'left');
     read.innerHTML = `shaft ${s.rpm} rpm = <b>${f1.toFixed(1)} Hz</b> · peaks at 1×, 2× and 5× (a 5-blade fan) · fs = ${fs} Hz, N = ${N}, Hann window, resolution ${(fs / N).toFixed(2)} Hz`;
   };
   ctrls.append(slider('Motor speed', { min: 600, max: 9000, step: 60, value: s.rpm, fmt: (v) => v + ' rpm' }, (v) => { s.rpm = v; p.redraw(); }), slider('Noise σ', { min: 0, max: 2, step: 0.05, value: s.noise, fmt: (v) => v.toFixed(2) }, (v) => { s.noise = v; p.redraw(); }));
