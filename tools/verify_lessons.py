@@ -4,6 +4,8 @@
   2. run each :::verify block (asserts that recompute the worked-example numbers),
   3. evaluate the `py:` expression of every numeric quiz question and compare with `answer` (relative tol, abs if answer==0),
   4. check multiple-choice answers have a valid index.
+Every code block is also written into the lesson's temp dir under its file= name, so a later python block can build
+cross-compiled firmware (blocks marked target=arm, linker scripts, Makefiles) and run it in QEMU.
 Exit code 1 on any failure."""
 import pathlib, re, subprocess, sys, tempfile, textwrap
 import yaml  # PyYAML
@@ -38,7 +40,12 @@ for md in sorted(ROOT.glob(f"lessons/{PAT}*.md" if "/" in PAT else f"lessons/{PA
         for kind, attrs, inner in blocks(text):
             if kind == "code":
                 m = re.search(r"```(\w+)\n([\s\S]*?)\n```", inner)
-                if m.group(1) == "python":
+                fn = re.search(r"file=(\S+)", attrs)
+                if fn:  # every block is also written to the lesson's temp dir, so later blocks (e.g. a build script) can use it
+                    (pathlib.Path(tmp) / pathlib.Path(fn.group(1)).name).write_text(m.group(2) + "\n")
+                if "target=arm" in attrs or m.group(1) not in ("python", "verilog", "c"):
+                    checked["files"] = checked.get("files", 0) + 1   # cross-compiled / support file: built by a later python block
+                elif m.group(1) == "python":
                     run_py(m.group(2), f"{lid} code {attrs}", tmp); checked["code"] += 1
                 elif m.group(1) == "verilog":
                     src = pathlib.Path(tmp) / "x.v"; src.write_text(m.group(2))

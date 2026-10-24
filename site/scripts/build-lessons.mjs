@@ -11,6 +11,9 @@ import python from 'highlight.js/lib/languages/python';
 import c from 'highlight.js/lib/languages/c';
 import bash from 'highlight.js/lib/languages/bash';
 import verilog from 'highlight.js/lib/languages/verilog';
+import makefile from 'highlight.js/lib/languages/makefile';
+hljs.registerLanguage('makefile', makefile);
+hljs.registerLanguage('ld', (hl) => ({ name: 'ld', contains: [hl.C_BLOCK_COMMENT_MODE, hl.C_NUMBER_MODE, { className: 'keyword', begin: /\b(ENTRY|MEMORY|SECTIONS|ORIGIN|LENGTH|ALIGN|KEEP|PROVIDE|LOADADDR|ADDR|SIZEOF)\b/ }, { className: 'string', begin: /\.[a-z_]+\b/ }] }));
 hljs.registerLanguage('python', python); hljs.registerLanguage('c', c); hljs.registerLanguage('bash', bash); hljs.registerLanguage('verilog', verilog);
 
 const here = path.dirname(fileURLToPath(import.meta.url));

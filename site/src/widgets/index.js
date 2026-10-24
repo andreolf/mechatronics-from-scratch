@@ -5,6 +5,7 @@ import CIRCUITS from './circuits.js';
 import DIGITAL from './digital.js';
 import SENSORS from './sensors.js';
 import DSP from './dsp.js';
+import ACTUATORS from './actuators.js';
 
 const W = {};
 const log10 = Math.log10;
@@ -313,7 +314,7 @@ W.gd = (el) => {
   p.redraw();
 };
 
-Object.assign(W, MORE, CIRCUITS, DIGITAL, SENSORS, DSP);
+Object.assign(W, MORE, CIRCUITS, DIGITAL, SENSORS, DSP, ACTUATORS);
 
 export function hydrateWidgets(root) {
   root.querySelectorAll('.widget[data-widget]').forEach((el) => {
