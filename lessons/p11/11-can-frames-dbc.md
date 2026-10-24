@@ -42,7 +42,7 @@ That's start bit 0, length 16, `@1` little-endian (Intel; `@0` is big-endian, Mo
 
 For Intel signals, the payload is a little-endian integer and the signal is $(\text{payload} \gg \text{start}) \mathbin{\&} (2^{len} - 1)$. For Motorola signals, the start bit names the signal's **most significant** bit in a numbering where bit 7 is the MSB of byte 0, and the signal continues into the following bytes: easy to get wrong, so test it.
 
-:::figure widget=candbc caption="A CAN frame's bits with the stuff bits highlighted, and the DBC signals decoded from the data bytes. Edit the data to see the stuffing change and the physical values update."
+:::figure widget=candbc caption="A CAN frame's bits with the stuff bits highlighted, and the DBC signals decoded from the data bytes. Change the signal values to see the data bytes, the stuffing and the decoded values update."
 :::end
 
 ## Worked example

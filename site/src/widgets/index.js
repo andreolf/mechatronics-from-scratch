@@ -7,6 +7,7 @@ import SENSORS from './sensors.js';
 import DSP from './dsp.js';
 import ACTUATORS from './actuators.js';
 import EMBEDDED from './embedded.js';
+import BUSES from './buses.js';
 
 const W = {};
 const log10 = Math.log10;
@@ -315,7 +316,7 @@ W.gd = (el) => {
   p.redraw();
 };
 
-Object.assign(W, MORE, CIRCUITS, DIGITAL, SENSORS, DSP, ACTUATORS, EMBEDDED);
+Object.assign(W, MORE, CIRCUITS, DIGITAL, SENSORS, DSP, ACTUATORS, EMBEDDED, BUSES);
 
 export function hydrateWidgets(root) {
   root.querySelectorAll('.widget[data-widget]').forEach((el) => {

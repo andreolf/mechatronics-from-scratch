@@ -22,7 +22,7 @@ Append those $r$ bits to the message and the whole codeword is divisible by $G$.
 - **Bursts** of length $\le r$: $E = x^j B(x)$ with $\deg B < r$, which $G$ (degree $r$, with a constant term) can't divide. Bursts of length $r+1$ slip through only when $B = G$: one pattern in $2^{r-1}$.
 - **Anything else**: about one in $2^r$ random errors survives.
 
-A byte sum (checksum-8) or XOR misses two flips of the same bit in different bytes whenever they cancel, which happens a lot. On a 16-byte message the code below finds that the byte sum misses 168 of the 10 296 possible double-bit errors, CRC-8 misses 9 (its generator repeats after 127 bits, shorter than the 136-bit codeword), and CRC-16 misses none.
+A byte sum (checksum-8) or XOR misses two flips of the same bit in different bytes whenever they cancel, which happens a lot. On a 16-byte message the code below finds that the byte sum misses 168 of the 9 180 possible double-bit errors in its 136-bit codeword, CRC-8 misses 9 of 9 180 (its generator repeats after 127 bits, shorter than the codeword), and CRC-16 misses none of 10 296.
 
 ## Table-driven
 
@@ -30,7 +30,7 @@ The bitwise loop does one shift and a conditional XOR per bit. Because the CRC i
 
 There are dozens of named CRCs that differ in polynomial, initial value, bit order (*reflected* or not) and a final XOR. Always check against the published **check value**, the CRC of the ASCII string "123456789".
 
-:::figure widget=crcdetect caption="Which errors each check catches. Pick an error type and a checksum; the bars show the fraction of error patterns that slip through, computed exhaustively for a 16-byte message."
+:::figure widget=crcdetect caption="Which errors each check catches. Pick an error type; the bars show the fraction of error patterns each check lets through on a 16-byte message, computed in your browser (exhaustively for single, double and short-burst errors, by random sampling otherwise)."
 :::end
 
 ## Worked example

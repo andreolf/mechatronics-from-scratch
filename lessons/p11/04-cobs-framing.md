@@ -22,7 +22,7 @@ Worst-case output is $n + \lfloor n/254 \rfloor + 1$ bytes, plus the trailing 00
 
 Decoding reverses it: read a code $c$, copy $c - 1$ bytes, then output a zero unless $c$ was FF or this is the end of the packet. A zero **inside** an encoded frame is an error, and is also where the next frame starts.
 
-:::figure widget=cobs caption="COBS step by step: the packet's zeros, the code bytes that replace them (each points to the next zero), and the decoded result. Type bytes to see the pointers move."
+:::figure widget=cobs caption="COBS step by step: the packet's zeros, the code bytes that replace them (each points to the next zero), and the decoded result. Pick a packet to see the pointers move."
 :::end
 
 ## Worked example
