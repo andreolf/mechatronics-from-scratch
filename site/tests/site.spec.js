@@ -5,7 +5,7 @@ test.describe('Mechatronics from Scratch', () => {
   let errors;
   test.beforeEach(async ({ page }) => {
     errors = watchConsole(page);
-    await page.goto('/');
+    await page.goto('./');
   });
   test.afterEach(async () => {
     expect(errors, 'console errors').toEqual([]);
@@ -152,7 +152,7 @@ test.describe('Mechatronics from Scratch', () => {
 
 test('graceful WebGL fallback still runs the simulations', async ({ page }) => {
   const errors = watchConsole(page);
-  await page.goto('/?nowebgl=1');
+  await page.goto('./?nowebgl=1');
   await expect(page.getByTestId('hero-canvas')).toHaveAttribute('data-webgl', 'off');
   await expect(page.locator('.nogl').first()).toBeVisible();
   const lab = await gotoLab(page, 'pendulum');

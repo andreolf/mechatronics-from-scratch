@@ -4,7 +4,7 @@ import { gotoLab } from './helpers.js';
 const OUT = '../screenshots';
 test('capture screenshots', async ({ page }, info) => {
   const tag = info.project.name;
-  await page.goto('/');
+  await page.goto('./');
   await page.waitForTimeout(1500);
   if (tag === 'desktop') { await page.mouse.move(980, 260); await page.mouse.move(960, 300, { steps: 10 }); }
   await page.waitForTimeout(1500);

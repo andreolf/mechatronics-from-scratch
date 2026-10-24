@@ -4,7 +4,9 @@
 
 Curated by Francesco Andreoli (ETH Zurich mechanical-engineering alumnus · `@francescoswiss` · YouTube `@swissintech`).
 
-> Status: local draft (v0.1.0). Nothing is published. The AI-tutor install command on the site is a **TBD placeholder**.
+> Live site: https://andreolf.github.io/mechatronics-from-scratch/
+
+> Status: draft (v0.1.0). The AI-tutor install command on the site is a **coming-soon placeholder** (no skill package is published yet).
 
 ## What every lesson contains
 
