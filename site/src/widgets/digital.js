@@ -218,7 +218,7 @@ W.mtbf = (el) => {
     P.axes({ xl: 'flip-flops in synchroniser', yl: 'MTBF [s]' }); P.line([0.5, 3.5], [3.15e7, 3.15e7], C.dim, 1, [4, 4]); P.text('1 year', 0.6, 6e7, C.dim);
     P.line([0.5, 3.5], [4.4e17, 4.4e17], C.dim, 1, [4, 4]); P.text('age of the universe', 0.6, 9e17, C.dim);
     [1, 2, 3].forEach((n) => { const m = Math.min(1e30, mtbf(n)); P.poly([[n - 0.25, 1e-6], [n - 0.25, m], [n + 0.25, m], [n + 0.25, 1e-6]], '#c6ff1a55', C.lime); });
-    const fmt = (v) => v > 3.15e7 ? (v / 3.15e7).toExponential(1) + ' years' : v.toExponential(1) + ' s';
+    const fmt = (v) => !isFinite(v) ? 'beyond 10^308 s' : v > 3.15e7 ? (v / 3.15e7).toExponential(1) + ' years' : v.toExponential(1) + ' s';
     read.innerHTML = `f<sub>clk</sub> ${s.fclk} MHz, data ${s.fd} MHz, τ ${s.tau} ps, T<sub>0</sub> 100 ps · 1 flop (no settling time): <b>${fmt(mtbf(1))}</b> · 2 flops: <b>${fmt(mtbf(2))}</b> · 3 flops: ${fmt(mtbf(3))}`;
   };
   ctrls.append(slider('Clock', { min: 10, max: 500, step: 10, value: s.fclk, fmt: (v) => v + ' MHz' }, (v) => { s.fclk = v; p.redraw(); }),
