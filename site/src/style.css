@@ -381,3 +381,7 @@ code, pre, kbd, .readout, .widget-read { font-variant-ligatures: none; font-feat
 .tldr code { font-size: .8em; }
 .tutor-grid > * { min-width: 0; }
 @media (max-width: 420px) { .lesson-bar .meter { display: none; } }
+/* widget button grids (Phase 06+) */
+.bit-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; grid-column: 1 / -1; }
+.bit-grid .tog { padding: 0 4px; font-family: var(--mono); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; }

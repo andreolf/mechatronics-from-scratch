@@ -2,6 +2,7 @@
 import { Plot, frame, slider, select, toggle, h, C, f3 } from './plot.js';
 import MORE from './signals.js';
 import CIRCUITS from './circuits.js';
+import DIGITAL from './digital.js';
 
 const W = {};
 const log10 = Math.log10;
@@ -310,7 +311,7 @@ W.gd = (el) => {
   p.redraw();
 };
 
-Object.assign(W, MORE, CIRCUITS);
+Object.assign(W, MORE, CIRCUITS, DIGITAL);
 
 export function hydrateWidgets(root) {
   root.querySelectorAll('.widget[data-widget]').forEach((el) => {

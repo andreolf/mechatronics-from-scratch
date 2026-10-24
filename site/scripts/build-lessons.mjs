@@ -10,7 +10,8 @@ import hljs from 'highlight.js/lib/core';
 import python from 'highlight.js/lib/languages/python';
 import c from 'highlight.js/lib/languages/c';
 import bash from 'highlight.js/lib/languages/bash';
-hljs.registerLanguage('python', python); hljs.registerLanguage('c', c); hljs.registerLanguage('bash', bash);
+import verilog from 'highlight.js/lib/languages/verilog';
+hljs.registerLanguage('python', python); hljs.registerLanguage('c', c); hljs.registerLanguage('bash', bash); hljs.registerLanguage('verilog', verilog);
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, '../..');

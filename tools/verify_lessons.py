@@ -40,6 +40,14 @@ for md in sorted(ROOT.glob(f"lessons/{PAT}*.md" if "/" in PAT else f"lessons/{PA
                 m = re.search(r"```(\w+)\n([\s\S]*?)\n```", inner)
                 if m.group(1) == "python":
                     run_py(m.group(2), f"{lid} code {attrs}", tmp); checked["code"] += 1
+                elif m.group(1) == "verilog":
+                    src = pathlib.Path(tmp) / "x.v"; src.write_text(m.group(2))
+                    c = subprocess.run(["iverilog", "-g2012", "-Wall", "-o", str(pathlib.Path(tmp) / "x.vvp"), str(src)], capture_output=True, text=True)
+                    if c.returncode: fails.append(f"{lid} Verilog compile: {c.stderr[-800:]}")
+                    else:
+                        r = subprocess.run(["vvp", "-n", str(pathlib.Path(tmp) / "x.vvp")], capture_output=True, text=True, timeout=60)
+                        if r.returncode or "FAIL" in r.stdout or "PASS" not in r.stdout: fails.append(f"{lid} Verilog run: {r.stdout[-600:]}{r.stderr[-400:]}")
+                    checked["code"] += 1
                 elif m.group(1) == "c":
                     src = pathlib.Path(tmp) / "x.c"; src.write_text(m.group(2))
                     c = subprocess.run(["gcc", "-std=c99", "-Wall", "-Werror", "-O1", "-o", str(pathlib.Path(tmp) / "x"), str(src), "-lm"], capture_output=True, text=True)
