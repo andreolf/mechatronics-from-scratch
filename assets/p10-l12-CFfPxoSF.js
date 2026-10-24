@@ -1,0 +1,171 @@
+var e=`p10-l12`,t=40,n=`Timers can measure as well as generate, and the two big uses are input capture, which latches the counter at an edge, and encoder mode, which counts quadrature edges in hardware. You derive speed from counts per sample and from captured periods, handle 16-bit wraparound with one signed subtraction, and test both methods against a simulated motor from 2 rpm to 6000 rpm.`,r=`<h2 id="encoder-mode">Encoder mode</h2>
+<p>A quadrature encoder (Phase 08) outputs two square waves A and B, 90° apart. A 1000-line encoder gives 1000 cycles per revolution; counting <strong>every edge of both channels</strong> (x4 mode) gives</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord text"><span class="mord">CPR</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">4</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1000</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord">4000</span><span class="mspace">\xA0</span><span class="mord text"><span class="mord">counts\xA0per\xA0revolution</span></span><span class="mpunct">,</span></span></span></span></span></div>
+<p>and the order of the edges gives the direction. In <strong>encoder mode</strong> an STM32 timer does this in hardware: the inputs clock the counter up or down, with digital input filters to reject glitches. The CPU only reads CNT.</p>
+<h2 id="speed-from-counts-the-m-method">Speed from counts: the M method</h2>
+<p>Read CNT every <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> (say 1 ms) and take the difference:</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.1963em;vertical-align:-0.836em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord">CPR</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.0359em;">π</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">Δ</span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.836em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></div>
+<p>The 16-bit counter wraps. If you compute <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> as a <strong>signed 16-bit difference</strong>, <code>(int16_t)(cnt_now - cnt_prev)</code>, the wrap cancels out automatically, as long as the true change between samples is less than 32 768 counts. At 4000 CPR and 1 ms that’s 8.2 revolutions per millisecond, about 490 000 rpm, so it’s safe.</p>
+<p>The weakness is resolution at low speed: one count per sample is <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.0359em;">π</span><span class="mord">/</span><span class="mopen">(</span><span class="mord">4000</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">0.001</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1.57</span></span></span></span> rad/s = 15 rpm. Below a few counts per sample the estimate jumps between integers.</p>
+<h2 id="speed-from-time-the-t-method">Speed from time: the T method</h2>
+<p><strong>Input capture</strong> latches the free-running counter into CCR at each edge. With a 1 MHz capture clock, the time between consecutive edges of one channel is measured to 1 µs. For one encoder cycle (4 counts) taking <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span></span></span></span>:</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.0074em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord">CPR</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.0359em;">π</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">4</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></div>
+<p>At 2 rpm an encoder cycle takes 30 ms, so the 1 µs resolution is 0.003 %. At high speed <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span></span></span></span> gets short and the resolution drops, the mirror image of the M method. Practical drives switch between the two (or combine them, the M/T method), using counts when there are many per sample and periods when there are few.</p>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="encodermode" data-args="{}"></div></div><figcaption>Quadrature pulses filling a 16-bit counter that wraps. Slide the speed: the M estimate (counts per 1 ms) gets coarse at low speed while the T estimate (captured period) stays smooth.</figcaption></figure>
+<h2 id="worked-example">Worked example</h2>
+<p>1000-line encoder, x4, 1 ms sampling, 1 MHz capture clock.</p>
+<ol>
+<li>At 3000 rpm = 50 rev/s, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> = 50 × 4000 × 0.001 = 200 counts per sample, so the M method’s resolution is 1/200 = 0.5 %.</li>
+<li>The counter goes from 65 500 to 164 (wrapped): <code>(int16_t)(164 - 65500)</code> = 200. Correct.</li>
+<li>At 2 rpm: 0.133 counts per sample, useless; an encoder cycle takes <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">60/</span><span class="mopen">(</span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1000</span><span class="mclose">)</span></span></span></span> = 30 ms = 30 000 capture ticks.</li>
+<li>A capture of 30 000 ± 1 ticks gives the speed to ±0.0033 %.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+<p>The program simulates a motor’s angle, generates the A/B edges the encoder would produce, runs a 16-bit x4 counter and a 1 MHz capture timer, and computes both estimates.</p>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">encoder_speed.c</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdint.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;math.h&gt;</span></span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> PI 3.14159265358979323846</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> LINES 1000</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> CPR (4 * LINES)</span>
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span> <span class="hljs-type">uint16_t</span> cnt; <span class="hljs-type">int32_t</span> pos; <span class="hljs-type">uint32_t</span> last_a_rise_us, period_us; <span class="hljs-type">int</span> have_period, a, b; } encoder_hw;
+
+<span class="hljs-comment">/* feed the true shaft angle at 1 us resolution; edges update the x4 counter and the capture on A rising */</span>
+<span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">encoder_step</span><span class="hljs-params">(encoder_hw *e, <span class="hljs-type">double</span> angle_rad, <span class="hljs-type">uint32_t</span> t_us)</span> {
+  <span class="hljs-type">int32_t</span> pos = (<span class="hljs-type">int32_t</span>)<span class="hljs-built_in">floor</span>(angle_rad / (<span class="hljs-number">2</span> * PI) * CPR);     <span class="hljs-comment">/* quadrature state index */</span>
+  <span class="hljs-keyword">while</span> (e-&gt;pos != pos) {
+    <span class="hljs-type">int</span> dir = pos &gt; e-&gt;pos ? <span class="hljs-number">1</span> : <span class="hljs-number">-1</span>; e-&gt;pos += dir;
+    <span class="hljs-type">int</span> phase = ((e-&gt;pos % <span class="hljs-number">4</span>) + <span class="hljs-number">4</span>) % <span class="hljs-number">4</span>;                         <span class="hljs-comment">/* 0:A0B0 1:A1B0 2:A1B1 3:A0B1 */</span>
+    <span class="hljs-type">int</span> a = phase == <span class="hljs-number">1</span> || phase == <span class="hljs-number">2</span>, b = phase &gt;= <span class="hljs-number">2</span>;
+    <span class="hljs-keyword">if</span> (a &amp;&amp; !e-&gt;a &amp;&amp; dir &gt; <span class="hljs-number">0</span>) {                                <span class="hljs-comment">/* input capture on A rising */</span>
+      <span class="hljs-keyword">if</span> (e-&gt;last_a_rise_us) { e-&gt;period_us = t_us - e-&gt;last_a_rise_us; e-&gt;have_period = <span class="hljs-number">1</span>; }
+      e-&gt;last_a_rise_us = t_us;
+    }
+    e-&gt;a = a; e-&gt;b = b; e-&gt;cnt = (<span class="hljs-type">uint16_t</span>)(e-&gt;cnt + dir);      <span class="hljs-comment">/* 16-bit hardware counter wraps */</span>
+  }
+}
+<span class="hljs-type">static</span> <span class="hljs-type">double</span> <span class="hljs-title function_">m_method</span><span class="hljs-params">(<span class="hljs-type">uint16_t</span> now, <span class="hljs-type">uint16_t</span> prev, <span class="hljs-type">double</span> ts)</span> {
+  <span class="hljs-type">int16_t</span> dn = (<span class="hljs-type">int16_t</span>)(<span class="hljs-type">uint16_t</span>)(now - prev);                 <span class="hljs-comment">/* signed difference absorbs the wrap */</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-number">2</span> * PI * dn / (CPR * ts);
+}
+<span class="hljs-type">static</span> <span class="hljs-type">double</span> <span class="hljs-title function_">t_method</span><span class="hljs-params">(<span class="hljs-type">uint32_t</span> period_us)</span> { <span class="hljs-keyword">return</span> <span class="hljs-number">2</span> * PI * <span class="hljs-number">4</span> / (CPR * period_us * <span class="hljs-number">1e-6</span>); }
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> CHECK(c) do { <span class="hljs-keyword">if</span> (!(c)) { printf(<span class="hljs-string">&quot;FAIL line %d: %s\\n&quot;</span>, __LINE__, #c); exit(1); } } while (0)</span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+  <span class="hljs-type">const</span> <span class="hljs-type">double</span> rpms[] = {<span class="hljs-number">2</span>, <span class="hljs-number">15</span>, <span class="hljs-number">300</span>, <span class="hljs-number">3000</span>, <span class="hljs-number">6000</span>};
+  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">5</span>; i++) {
+    <span class="hljs-type">double</span> w = rpms[i] * <span class="hljs-number">2</span> * PI / <span class="hljs-number">60</span>;                            <span class="hljs-comment">/* constant speed, rad/s */</span>
+    encoder_hw e = {<span class="hljs-number">0</span>}; e.cnt = <span class="hljs-number">65000</span>;                           <span class="hljs-comment">/* start near the wrap */</span>
+    <span class="hljs-type">double</span> sim_s = rpms[i] &lt; <span class="hljs-number">10</span> ? <span class="hljs-number">0.5</span> : <span class="hljs-number">0.2</span>;
+    <span class="hljs-type">uint16_t</span> prev = e.cnt; <span class="hljs-type">double</span> m_sum = <span class="hljs-number">0</span>; <span class="hljs-type">int</span> m_n = <span class="hljs-number">0</span>, wrapped = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">uint32_t</span> t = <span class="hljs-number">1</span>; t &lt;= (<span class="hljs-type">uint32_t</span>)(sim_s * <span class="hljs-number">1e6</span>); t++) {
+      <span class="hljs-type">uint16_t</span> before = e.cnt;
+      encoder_step(&amp;e, w * t * <span class="hljs-number">1e-6</span> + <span class="hljs-number">0.0001</span>, t);
+      <span class="hljs-keyword">if</span> (e.cnt &lt; before) wrapped = <span class="hljs-number">1</span>;
+      <span class="hljs-keyword">if</span> (t % <span class="hljs-number">1000</span> == <span class="hljs-number">0</span>) { m_sum += m_method(e.cnt, prev, <span class="hljs-number">1e-3</span>); m_n++; prev = e.cnt; }   <span class="hljs-comment">/* 1 kHz sampling */</span>
+    }
+    <span class="hljs-type">double</span> m_avg = m_sum / m_n, t_est = e.have_period ? t_method(e.period_us) : <span class="hljs-number">0</span>;
+    <span class="hljs-type">double</span> m_err = <span class="hljs-built_in">fabs</span>(m_avg - w) / w, t_err = <span class="hljs-built_in">fabs</span>(t_est - w) / w;
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%6.0f rpm: M %8.3f rad/s (%.3f %%), T %8.3f rad/s (%.4f %%)%s\\n&quot;</span>, rpms[i], m_avg, <span class="hljs-number">100</span> * m_err, t_est, <span class="hljs-number">100</span> * t_err, wrapped ? <span class="hljs-string">&quot;, counter wrapped&quot;</span> : <span class="hljs-string">&quot;&quot;</span>);
+    CHECK(e.have_period &amp;&amp; t_err &lt; <span class="hljs-number">0.005</span>);                       <span class="hljs-comment">/* T method good everywhere here (0.5 %) */</span>
+    <span class="hljs-keyword">if</span> (rpms[i] &gt;= <span class="hljs-number">300</span>) CHECK(m_err &lt; <span class="hljs-number">0.005</span>);                    <span class="hljs-comment">/* M method good at speed */</span>
+    <span class="hljs-keyword">if</span> (rpms[i] &gt;= <span class="hljs-number">3000</span>) CHECK(wrapped);                         <span class="hljs-comment">/* and the wrap was handled */</span>
+  }
+  <span class="hljs-comment">/* the wrap example: 65500 -&gt; 164 is +200 counts */</span>
+  CHECK((<span class="hljs-type">int16_t</span>)(<span class="hljs-type">uint16_t</span>)(<span class="hljs-number">164</span> - <span class="hljs-number">65500</span>) == <span class="hljs-number">200</span>);
+  CHECK(<span class="hljs-built_in">fabs</span>(m_method(<span class="hljs-number">164</span>, <span class="hljs-number">65500</span>, <span class="hljs-number">1e-3</span>) - <span class="hljs-number">2</span> * PI * <span class="hljs-number">50</span>) &lt; <span class="hljs-number">1e-9</span>);  <span class="hljs-comment">/* 3000 rpm */</span>
+  <span class="hljs-comment">/* low speed: one 1 ms sample of the M method is 0 or 1 count, i.e. 0 or 15 rpm */</span>
+  CHECK(<span class="hljs-built_in">fabs</span>(m_method(<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1e-3</span>) * <span class="hljs-number">60</span> / (<span class="hljs-number">2</span> * PI) - <span class="hljs-number">15</span>) &lt; <span class="hljs-number">1e-9</span>);
+  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PASS\\n&quot;</span>);
+  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}</code></pre></div>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>At 15 rpm, how many counts per 1 ms sample, and what do the individual M-method readings look like?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">15/60</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">4000</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.001</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> count per sample on average, so readings alternate between values like 0, 15 and 30 rpm. Averaging over 100 ms helps but adds lag; the T method gives one clean reading per encoder cycle (every 4 ms).</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>Why must the signed difference be done in 16 bits, not 32, when the counter is 16-bit?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p><code>(int32_t)164 - 65500</code> is −65 336, a huge negative speed. Subtracting in <code>uint16_t</code> and casting to <code>int16_t</code> computes the difference modulo 65 536 and then interprets it as signed, which recovers +200.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p10-l12"></div>
+
+`,i=[{id:`encoder-mode`,title:`Encoder mode`},{id:`speed-from-counts-the-m-method`,title:`Speed from counts: the M method`},{id:`speed-from-time-the-t-method`,title:`Speed from time: the T method`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p10-l12-q1`,type:`num`,q:`<p>Counts per revolution of a 2500-line encoder in x4 mode?</p>
+`,explain:`<p>Four edges per line.</p>
+`,answer:1e4,tol:.001,unit:``},{id:`p10-l12-q2`,type:`num`,q:`<p>1000 lines x4, 1 ms sampling, ΔN = 200. Speed in rpm?</p>
+`,explain:`<p>50 rev/s.</p>
+`,answer:3e3,tol:.001,unit:`rpm`},{id:`p10-l12-q3`,type:`num`,q:`<p>Signed 16-bit difference from 65500 to 164?</p>
+`,explain:`<p>Modulo 65 536.</p>
+`,answer:200,tol:.001,unit:`counts`},{id:`p10-l12-q4`,type:`num`,q:`<p>Capture ticks (1 MHz) for one encoder cycle at 2 rpm with 1000 lines?</p>
+`,explain:`<p>30 ms per line.</p>
+`,answer:3e4,tol:.001,unit:`ticks`},{id:`p10-l12-q5`,type:`mc`,q:`<p>Which method is better at very low speed?</p>
+`,explain:`<p>Few counts per sample but long, well-resolved periods.</p>
+`,options:[`neither works`,`counting edges per fixed sample (M)`,`measuring the time between edges (T)`,`both are equal`],answer:2},{id:`p10-l12-q6`,type:`mc`,q:`<p>The M method’s resolution is…</p>
+`,explain:`<p>2π/(CPR·Ts) per count.</p>
+`,options:[`one count per sample period`,`one revolution`,`one capture tick`,`set by the PWM frequency`],answer:0}],o=[{file:`encoder_speed.c`,lang:`c`,src:`#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define PI 3.14159265358979323846
+#define LINES 1000
+#define CPR (4 * LINES)
+
+typedef struct { uint16_t cnt; int32_t pos; uint32_t last_a_rise_us, period_us; int have_period, a, b; } encoder_hw;
+
+/* feed the true shaft angle at 1 us resolution; edges update the x4 counter and the capture on A rising */
+static void encoder_step(encoder_hw *e, double angle_rad, uint32_t t_us) {
+  int32_t pos = (int32_t)floor(angle_rad / (2 * PI) * CPR);     /* quadrature state index */
+  while (e->pos != pos) {
+    int dir = pos > e->pos ? 1 : -1; e->pos += dir;
+    int phase = ((e->pos % 4) + 4) % 4;                         /* 0:A0B0 1:A1B0 2:A1B1 3:A0B1 */
+    int a = phase == 1 || phase == 2, b = phase >= 2;
+    if (a && !e->a && dir > 0) {                                /* input capture on A rising */
+      if (e->last_a_rise_us) { e->period_us = t_us - e->last_a_rise_us; e->have_period = 1; }
+      e->last_a_rise_us = t_us;
+    }
+    e->a = a; e->b = b; e->cnt = (uint16_t)(e->cnt + dir);      /* 16-bit hardware counter wraps */
+  }
+}
+static double m_method(uint16_t now, uint16_t prev, double ts) {
+  int16_t dn = (int16_t)(uint16_t)(now - prev);                 /* signed difference absorbs the wrap */
+  return 2 * PI * dn / (CPR * ts);
+}
+static double t_method(uint32_t period_us) { return 2 * PI * 4 / (CPR * period_us * 1e-6); }
+#define CHECK(c) do { if (!(c)) { printf("FAIL line %d: %s\\n", __LINE__, #c); exit(1); } } while (0)
+
+int main(void) {
+  const double rpms[] = {2, 15, 300, 3000, 6000};
+  for (int i = 0; i < 5; i++) {
+    double w = rpms[i] * 2 * PI / 60;                            /* constant speed, rad/s */
+    encoder_hw e = {0}; e.cnt = 65000;                           /* start near the wrap */
+    double sim_s = rpms[i] < 10 ? 0.5 : 0.2;
+    uint16_t prev = e.cnt; double m_sum = 0; int m_n = 0, wrapped = 0;
+    for (uint32_t t = 1; t <= (uint32_t)(sim_s * 1e6); t++) {
+      uint16_t before = e.cnt;
+      encoder_step(&e, w * t * 1e-6 + 0.0001, t);
+      if (e.cnt < before) wrapped = 1;
+      if (t % 1000 == 0) { m_sum += m_method(e.cnt, prev, 1e-3); m_n++; prev = e.cnt; }   /* 1 kHz sampling */
+    }
+    double m_avg = m_sum / m_n, t_est = e.have_period ? t_method(e.period_us) : 0;
+    double m_err = fabs(m_avg - w) / w, t_err = fabs(t_est - w) / w;
+    printf("%6.0f rpm: M %8.3f rad/s (%.3f %%), T %8.3f rad/s (%.4f %%)%s\\n", rpms[i], m_avg, 100 * m_err, t_est, 100 * t_err, wrapped ? ", counter wrapped" : "");
+    CHECK(e.have_period && t_err < 0.005);                       /* T method good everywhere here (0.5 %) */
+    if (rpms[i] >= 300) CHECK(m_err < 0.005);                    /* M method good at speed */
+    if (rpms[i] >= 3000) CHECK(wrapped);                         /* and the wrap was handled */
+  }
+  /* the wrap example: 65500 -> 164 is +200 counts */
+  CHECK((int16_t)(uint16_t)(164 - 65500) == 200);
+  CHECK(fabs(m_method(164, 65500, 1e-3) - 2 * PI * 50) < 1e-9);  /* 3000 rpm */
+  /* low speed: one 1 ms sample of the M method is 0 or 1 count, i.e. 0 or 15 rpm */
+  CHECK(fabs(m_method(1, 0, 1e-3) * 60 / (2 * PI) - 15) < 1e-9);
+  printf("PASS\\n");
+  return 0;
+}`}],s={id:e,minutes:40,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};

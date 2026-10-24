@@ -1,0 +1,334 @@
+var e=`p10-l17`,t=40,n=`Fixed-point arithmetic used to be the only way to run a control loop fast on a small MCU, and on a core without an FPU it still is, but an M4F with a single-precision FPU changes the trade-off. You derive the Q15 PID step with rounding and saturation, cross-compile the same float and Q15 controllers for a Cortex-M3 and a Cortex-M4F, count their instructions in QEMU, and test that both agree within 0.1 % and that truncation instead of rounding breaks that.`,r=`<h2 id="the-trade-off">The trade-off</h2>
+<p>A PID step is a handful of multiplies and adds. How much it costs depends on the core:</p>
+<ul>
+<li><strong>Cortex-M3 or M0, no FPU</strong>: every <code>float</code> operation is a call into the compiler’s soft-float library (<code>__aeabi_fmul</code>, <code>__aeabi_fadd</code>, …), tens of instructions each;</li>
+<li><strong>Cortex-M4F/M7F</strong>: single-precision <code>float</code> is native: <code>vmul.f32</code>, <code>vadd.f32</code> and <code>vfma.f32</code> take about one cycle, but <code>double</code> is still emulated, so a stray <code>1.0</code> instead of <code>1.0f</code> costs a lot;</li>
+<li><strong>Q15 fixed point</strong> (Phase 08) is integer multiplies and shifts everywhere, and very fast, but you manage the scaling, rounding and saturation yourself.</li>
+</ul>
+<h2 id="the-q15-pid-step">The Q15 PID step</h2>
+<p>With error <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">e</span></span></span></span>, gains below 1 stored as Q15 integers <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">round</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">15</span></span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>, and the integrator <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">I</span></span></span></span> kept in a 32-bit integer:</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">I</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">←</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.4411em;vertical-align:-0.95em;"></span><span class="mop"><span class="mord mathrm">sat</span></span><span class="mspace" style="margin-right:-0.1667em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">(</span></span><span class="mord mathnormal" style="margin-right:0.0785em;">I</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4911em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">15</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal">e</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">14</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">)</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">u</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.4411em;vertical-align:-0.95em;"></span><span class="mop"><span class="mord mathrm">sat</span></span><span class="mspace" style="margin-right:-0.1667em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">(</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4911em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">15</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mord mathnormal">e</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">14</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">I</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4911em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">15</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">e</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">prev</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">14</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">)</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">.</span></span></span></span></span></div>
+<p>Each product of two Q15 numbers is Q30 in 32 bits; adding <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">14</span></span></span></span></span></span></span></span></span></span></span></span> before the shift by 15 <strong>rounds</strong> to nearest. A plain <code>&gt;&gt; 15</code> floors instead, which is a bias of −0.5 LSB on average <strong>every step</strong>, and the integrator accumulates it: after 1000 steps that’s about −500 LSB, 1.5 % of full scale. Saturation (and integrator clamping, which is anti-windup) keeps the result inside <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">−</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">1</span><span class="mclose">)</span></span></span></span>.</p>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="cyclebars" data-args="{}"></div></div><figcaption>Instructions per PID step for float and Q15 on a Cortex-M3 (soft-float) and a Cortex-M4F (hardware FPU), as measured in QEMU. Toggle truncation to see the Q15 error grow.</figcaption></figure>
+<h2 id="what-we-measure">What we measure</h2>
+<p>As in lesson 01, QEMU with <code>-icount shift=0</code> counts <strong>instructions</strong>, not cycles: it doesn’t model the FPU’s or the multiplier’s timing, flash wait states or the soft-float library’s branches. Instruction counts still show the big effect, the soft-float calls, and on hardware you confirm the cycles with DWT_CYCCNT. We run the same <code>pid.c</code> on QEMU’s MPS2-AN385 (Cortex-M3) and MPS2-AN386 (Cortex-M4 with FPU). Before any FPU instruction the firmware must enable the coprocessor by setting CP10 and CP11 to full access in <code>CPACR</code> (0xE000ED88), or the first <code>vmov</code> faults.</p>
+<h2 id="worked-example">Worked example</h2>
+<p>Gains <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9805em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0315em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.6</span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0315em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.05</span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0315em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.2</span></span></span></span>.</p>
+<ol>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">round</span></span><span class="mopen">(</span><span class="mord">0.6</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">32768</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">19</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">661</span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1638</span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">6554</span></span></span></span>.</li>
+<li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">e</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.25</span></span></span></span> is 8192 in Q15. <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mord mathnormal">e</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">161</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">062</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">912</span></span></span></span>; <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">161</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">062</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">912</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">16384</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≫</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">15</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">4915</span></span></span></span>, i.e. 0.15 (exactly <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">0.6</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.25</span></span></span></span> would be 4915.2).</li>
+<li>In QEMU the run measured about 37 instructions per Q15 step on both cores, about 41 per float step on the M4F, and about 547 per float step on the M3, where the time goes into soft-float calls (and the float loop also converts the integer error to float).</li>
+<li>At 1 instruction per cycle and 72 MHz, 547 instructions is 7.6 µs per step, still fine for a 1 kHz loop; at 20 kHz (a current loop) it uses 15 % of the CPU.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">link.ld</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-ld"><span class="hljs-comment">/* QEMU mps2-an385: code memory at 0x0, SRAM at 0x20000000 (we use 256 KiB and 64 KiB of them). */</span>
+<span class="hljs-keyword">MEMORY</span> {
+  FLASH (rx)  : <span class="hljs-keyword">ORIGIN</span> = <span class="hljs-number">0x00000000</span>, <span class="hljs-keyword">LENGTH</span> = <span class="hljs-number">256</span>K
+  RAM   (rwx) : <span class="hljs-keyword">ORIGIN</span> = <span class="hljs-number">0x20000000</span>, <span class="hljs-keyword">LENGTH</span> = <span class="hljs-number">64</span>K
+}
+<span class="hljs-keyword">ENTRY</span>(Reset_Handler)
+<span class="hljs-keyword">SECTIONS</span> {
+  <span class="hljs-string">.text</span> : { <span class="hljs-keyword">KEEP</span>(*(<span class="hljs-string">.vectors</span>)) *(<span class="hljs-string">.text</span>*) *(<span class="hljs-string">.rodata</span>*) . = <span class="hljs-keyword">ALIGN</span>(<span class="hljs-number">4</span>); } &gt; FLASH
+  <span class="hljs-string">.data</span> : { _sdata = .; *(<span class="hljs-string">.data</span>*) . = <span class="hljs-keyword">ALIGN</span>(<span class="hljs-number">4</span>); _edata = .; } &gt; RAM AT &gt; FLASH
+  _sidata = <span class="hljs-keyword">LOADADDR</span>(<span class="hljs-string">.data</span>);
+  <span class="hljs-string">.bss</span> (NOLOAD) : { _sbss = .; *(<span class="hljs-string">.bss</span>*) *(COMMON) . = <span class="hljs-keyword">ALIGN</span>(<span class="hljs-number">4</span>); _ebss = .; } &gt; RAM
+  _estack = <span class="hljs-keyword">ORIGIN</span>(RAM) + <span class="hljs-keyword">LENGTH</span>(RAM);
+}</code></pre></div>
+
+<div class="code-card" data-code="1"><div class="code-head"><span class="fname" translate="no">rt.c</span><button class="btn btn-quiet btn-small" type="button" data-copy="1">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="1">Download</button></div><pre tabindex="0"><code class="language-c"><span class="hljs-comment">/* rt.c: minimal Cortex-M runtime. Vector table, reset handler, semihosting print and exit. */</span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdint.h&gt;</span></span>
+<span class="hljs-keyword">extern</span> <span class="hljs-type">uint32_t</span> _sidata, _sdata, _edata, _sbss, _ebss, _estack;
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>;
+
+<span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">semihost</span><span class="hljs-params">(<span class="hljs-type">int</span> op, <span class="hljs-type">const</span> <span class="hljs-type">void</span> *arg)</span> {          <span class="hljs-comment">/* bkpt 0xAB traps to the debugger (QEMU) */</span>
+  <span class="hljs-keyword">register</span> <span class="hljs-type">int</span> r0 __asm__(<span class="hljs-string">&quot;r0&quot;</span>) = op;
+  <span class="hljs-keyword">register</span> <span class="hljs-type">const</span> <span class="hljs-type">void</span> *r1 __asm__(<span class="hljs-string">&quot;r1&quot;</span>) = arg;
+  __asm__ <span class="hljs-title function_">volatile</span><span class="hljs-params">(<span class="hljs-string">&quot;bkpt 0xAB&quot;</span> : <span class="hljs-string">&quot;+r&quot;</span>(r0) : <span class="hljs-string">&quot;r&quot;</span>(r1) : <span class="hljs-string">&quot;memory&quot;</span>)</span>;
+  <span class="hljs-keyword">return</span> r0;
+}
+<span class="hljs-type">void</span> <span class="hljs-title function_">rt_puts</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *s)</span> { semihost(<span class="hljs-number">0x04</span>, s); }      <span class="hljs-comment">/* SYS_WRITE0 */</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">rt_putu</span><span class="hljs-params">(<span class="hljs-type">uint32_t</span> v)</span> {
+  <span class="hljs-type">char</span> b[<span class="hljs-number">12</span>]; <span class="hljs-type">int</span> i = <span class="hljs-number">11</span>; b[i] = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">do</span> { b[--i] = (<span class="hljs-type">char</span>)(<span class="hljs-string">&#x27;0&#x27;</span> + v % <span class="hljs-number">10</span>); v /= <span class="hljs-number">10</span>; } <span class="hljs-keyword">while</span> (v);
+  rt_puts(&amp;b[i]);
+}
+<span class="hljs-type">void</span> <span class="hljs-title function_">rt_exit</span><span class="hljs-params">(<span class="hljs-type">int</span> code)</span> {                                <span class="hljs-comment">/* SYS_EXIT: QEMU exits 0 for &quot;application exit&quot;, 1 otherwise */</span>
+  semihost(<span class="hljs-number">0x18</span>, (<span class="hljs-type">const</span> <span class="hljs-type">void</span> *)(<span class="hljs-type">uintptr_t</span>)(code ? <span class="hljs-number">0x20024u</span> : <span class="hljs-number">0x20026u</span>));
+  <span class="hljs-keyword">for</span> (;;) {}
+}
+<span class="hljs-type">void</span> <span class="hljs-title function_">Default_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> { rt_puts(<span class="hljs-string">&quot;unexpected exception\\n&quot;</span>); rt_exit(<span class="hljs-number">3</span>); }
+<span class="hljs-type">void</span> <span class="hljs-title function_">HardFault_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> __<span class="hljs-title function_">attribute__</span><span class="hljs-params">((weak, alias(<span class="hljs-string">&quot;Default_Handler&quot;</span>)))</span>;
+<span class="hljs-type">void</span> <span class="hljs-title function_">SysTick_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>   __<span class="hljs-title function_">attribute__</span><span class="hljs-params">((weak, alias(<span class="hljs-string">&quot;Default_Handler&quot;</span>)))</span>;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">Reset_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+  <span class="hljs-type">uint32_t</span> *src = &amp;_sidata, *dst = &amp;_sdata;
+  <span class="hljs-keyword">while</span> (dst &lt; &amp;_edata) *dst++ = *src++;                <span class="hljs-comment">/* copy .data from flash to RAM */</span>
+  <span class="hljs-keyword">for</span> (dst = &amp;_sbss; dst &lt; &amp;_ebss;) *dst++ = <span class="hljs-number">0</span>;         <span class="hljs-comment">/* zero .bss */</span>
+  rt_exit(main());
+}
+__attribute__((section(<span class="hljs-string">&quot;.vectors&quot;</span>), used))
+<span class="hljs-type">static</span> <span class="hljs-title function_">void</span> <span class="hljs-params">(*<span class="hljs-type">const</span> vectors[<span class="hljs-number">16</span>])</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> = {
+  (<span class="hljs-type">void</span> (*)(<span class="hljs-type">void</span>))&amp;_estack, Reset_Handler, Default_Handler, HardFault_Handler,
+  Default_Handler, Default_Handler, Default_Handler, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,
+  Default_Handler, Default_Handler, <span class="hljs-number">0</span>, Default_Handler, SysTick_Handler,
+};</code></pre></div>
+
+<div class="code-card" data-code="2"><div class="code-head"><span class="fname" translate="no">pid.c</span><button class="btn btn-quiet btn-small" type="button" data-copy="2">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="2">Download</button></div><pre tabindex="0"><code class="language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdint.h&gt;</span></span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">rt_puts</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *s)</span>; <span class="hljs-type">void</span> <span class="hljs-title function_">rt_putu</span><span class="hljs-params">(<span class="hljs-type">uint32_t</span> v)</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> SYST_CSR (*(volatile uint32_t *)0xE000E010)</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> SYST_RVR (*(volatile uint32_t *)0xE000E014)</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> SYST_CVR (*(volatile uint32_t *)0xE000E018)</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> CPACR    (*(volatile uint32_t *)0xE000ED88)</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> N 1000</span>
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> TRUNCATE</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> RND 0                                <span class="hljs-comment">/* plain &gt;&gt; 15 floors: a bias of -0.5 LSB per step */</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">else</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> RND (1 &lt;&lt; 14)                        <span class="hljs-comment">/* add half an LSB first: round to nearest */</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+
+<span class="hljs-comment">/* float PID */</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span> <span class="hljs-type">float</span> kp, ki, kd, i, prev, lo, hi; } pid_f;
+__attribute__((noinline)) <span class="hljs-type">static</span> <span class="hljs-type">float</span> <span class="hljs-title function_">pid_f_step</span><span class="hljs-params">(pid_f *c, <span class="hljs-type">float</span> e)</span> {
+  c-&gt;i += c-&gt;ki * e;
+  <span class="hljs-keyword">if</span> (c-&gt;i &gt; c-&gt;hi) c-&gt;i = c-&gt;hi; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (c-&gt;i &lt; c-&gt;lo) c-&gt;i = c-&gt;lo;
+  <span class="hljs-type">float</span> u = c-&gt;kp * e + c-&gt;i + c-&gt;kd * (e - c-&gt;prev);
+  c-&gt;prev = e;
+  <span class="hljs-keyword">return</span> u &gt; c-&gt;hi ? c-&gt;hi : u &lt; c-&gt;lo ? c-&gt;lo : u;
+}
+<span class="hljs-comment">/* Q15 PID: gains Q15 (&lt;1), integrator Q15 in int32, output saturated to Q15 */</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span> <span class="hljs-type">int16_t</span> kp, ki, kd; <span class="hljs-type">int32_t</span> i; <span class="hljs-type">int16_t</span> prev; } pid_q;
+<span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">int16_t</span> <span class="hljs-title function_">sat16</span><span class="hljs-params">(<span class="hljs-type">int32_t</span> v)</span> { <span class="hljs-keyword">return</span> v &gt; <span class="hljs-number">32767</span> ? <span class="hljs-number">32767</span> : v &lt; <span class="hljs-number">-32768</span> ? <span class="hljs-number">-32768</span> : (<span class="hljs-type">int16_t</span>)v; }
+__attribute__((noinline)) <span class="hljs-type">static</span> <span class="hljs-type">int16_t</span> <span class="hljs-title function_">pid_q_step</span><span class="hljs-params">(pid_q *c, <span class="hljs-type">int16_t</span> e)</span> {
+  c-&gt;i += ((<span class="hljs-type">int32_t</span>)c-&gt;ki * e + RND) &gt;&gt; <span class="hljs-number">15</span>;                  <span class="hljs-comment">/* round, don&#x27;t truncate */</span>
+  <span class="hljs-keyword">if</span> (c-&gt;i &gt; <span class="hljs-number">32767</span>) c-&gt;i = <span class="hljs-number">32767</span>; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (c-&gt;i &lt; <span class="hljs-number">-32768</span>) c-&gt;i = <span class="hljs-number">-32768</span>;
+  <span class="hljs-type">int32_t</span> u = (((<span class="hljs-type">int32_t</span>)c-&gt;kp * e + RND) &gt;&gt; <span class="hljs-number">15</span>) + c-&gt;i + (((<span class="hljs-type">int32_t</span>)c-&gt;kd * (e - c-&gt;prev) + RND) &gt;&gt; <span class="hljs-number">15</span>);
+  c-&gt;prev = e;
+  <span class="hljs-keyword">return</span> sat16(u);
+}
+<span class="hljs-type">static</span> <span class="hljs-type">int16_t</span> err_q[N];
+<span class="hljs-type">static</span> <span class="hljs-type">uint32_t</span> <span class="hljs-title function_">ticks</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> { <span class="hljs-keyword">return</span> SYST_CVR; }
+__attribute__((noinline)) <span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">run</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+  <span class="hljs-type">uint32_t</span> s = <span class="hljs-number">1</span>;                                    <span class="hljs-comment">/* a reproducible pseudo-random error sequence in [-0.25, 0.25) */</span>
+  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> k = <span class="hljs-number">0</span>; k &lt; N; k++) { s = s * <span class="hljs-number">1664525u</span> + <span class="hljs-number">1013904223u</span>; err_q[k] = (<span class="hljs-type">int16_t</span>)(((<span class="hljs-type">int32_t</span>)(s &gt;&gt; <span class="hljs-number">16</span>) - <span class="hljs-number">32768</span>) / <span class="hljs-number">4</span>); }
+  SYST_RVR = <span class="hljs-number">0xFFFFFF</span>; SYST_CVR = <span class="hljs-number">0</span>; SYST_CSR = <span class="hljs-number">5</span>;
+  pid_f cf = {<span class="hljs-number">0.6f</span>, <span class="hljs-number">0.05f</span>, <span class="hljs-number">0.2f</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">-1.0f</span>, <span class="hljs-number">32767.0f</span> / <span class="hljs-number">32768.0f</span>};
+  pid_q cq = {<span class="hljs-number">19661</span>, <span class="hljs-number">1638</span>, <span class="hljs-number">6554</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>};
+  <span class="hljs-type">static</span> <span class="hljs-type">float</span> uf[N]; <span class="hljs-type">static</span> <span class="hljs-type">int16_t</span> uq[N];
+  <span class="hljs-type">uint32_t</span> t0 = ticks();
+  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> k = <span class="hljs-number">0</span>; k &lt; N; k++) uf[k] = pid_f_step(&amp;cf, err_q[k] / <span class="hljs-number">32768.0f</span>);   <span class="hljs-comment">/* includes int -&gt; float */</span>
+  <span class="hljs-type">uint32_t</span> t1 = ticks();
+  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> k = <span class="hljs-number">0</span>; k &lt; N; k++) uq[k] = pid_q_step(&amp;cq, err_q[k]);
+  <span class="hljs-type">uint32_t</span> t2 = ticks();
+  <span class="hljs-type">float</span> worst = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> k = <span class="hljs-number">0</span>; k &lt; N; k++) { <span class="hljs-type">float</span> d = uf[k] - uq[k] / <span class="hljs-number">32768.0f</span>; <span class="hljs-keyword">if</span> (d &lt; <span class="hljs-number">0</span>) d = -d; <span class="hljs-keyword">if</span> (d &gt; worst) worst = d; }
+  rt_puts(<span class="hljs-string">&quot;float_ticks &quot;</span>); rt_putu((t0 - t1) &amp; <span class="hljs-number">0xFFFFFF</span>); rt_puts(<span class="hljs-string">&quot; q15_ticks &quot;</span>); rt_putu((t1 - t2) &amp; <span class="hljs-number">0xFFFFFF</span>);
+  rt_puts(<span class="hljs-string">&quot; worst_ppm &quot;</span>); rt_putu((<span class="hljs-type">uint32_t</span>)(worst * <span class="hljs-number">1e6</span>f)); rt_puts(<span class="hljs-string">&quot;\\n&quot;</span>);
+  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+<span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> HARD_FPU</span>
+  CPACR |= <span class="hljs-number">0xFu</span> &lt;&lt; <span class="hljs-number">20</span>;                       <span class="hljs-comment">/* enable CP10/CP11 before any FPU instruction */</span>
+  __asm__ <span class="hljs-title function_">volatile</span><span class="hljs-params">(<span class="hljs-string">&quot;dsb\\n\\tisb&quot;</span> ::: <span class="hljs-string">&quot;memory&quot;</span>)</span>;
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span></span>
+  <span class="hljs-keyword">return</span> run();
+}</code></pre></div>
+
+<div class="code-card" data-code="3"><div class="code-head"><span class="fname" translate="no">run.py</span><button class="btn btn-quiet btn-small" type="button" data-copy="3">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="3">Download</button></div><pre tabindex="0"><code class="language-python"><span class="hljs-string">&quot;&quot;&quot;Build pid.c for a Cortex-M3 (soft-float) and a Cortex-M4F (FPU), count instructions in QEMU, compare outputs.&quot;&quot;&quot;</span>
+<span class="hljs-keyword">import</span> re, shutil, subprocess, sys
+<span class="hljs-keyword">for</span> tool <span class="hljs-keyword">in</span> (<span class="hljs-string">&quot;arm-none-eabi-gcc&quot;</span>, <span class="hljs-string">&quot;qemu-system-arm&quot;</span>):
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> shutil.which(tool):
+        sys.exit(<span class="hljs-string">f&quot;needs <span class="hljs-subst">{tool}</span> (Debian/Ubuntu: apt install gcc-arm-none-eabi qemu-system-arm)&quot;</span>)
+
+N, INSTR_PER_TICK = <span class="hljs-number">1000</span>, <span class="hljs-number">40</span>
+TARGETS = {<span class="hljs-string">&quot;m3&quot;</span>: ([<span class="hljs-string">&quot;-mcpu=cortex-m3&quot;</span>], <span class="hljs-string">&quot;mps2-an385&quot;</span>),
+           <span class="hljs-string">&quot;m4f&quot;</span>: ([<span class="hljs-string">&quot;-mcpu=cortex-m4&quot;</span>, <span class="hljs-string">&quot;-mfpu=fpv4-sp-d16&quot;</span>, <span class="hljs-string">&quot;-mfloat-abi=hard&quot;</span>, <span class="hljs-string">&quot;-DHARD_FPU&quot;</span>], <span class="hljs-string">&quot;mps2-an386&quot;</span>)}
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">run</span>(<span class="hljs-params">name, extra=(<span class="hljs-params"></span>)</span>):
+    flags, board = TARGETS[name]
+    subprocess.run([<span class="hljs-string">&quot;arm-none-eabi-gcc&quot;</span>, *flags, <span class="hljs-string">&quot;-mthumb&quot;</span>, <span class="hljs-string">&quot;-O2&quot;</span>, <span class="hljs-string">&quot;-Wall&quot;</span>, <span class="hljs-string">&quot;-Werror&quot;</span>, <span class="hljs-string">&quot;-ffreestanding&quot;</span>, <span class="hljs-string">&quot;-nostdlib&quot;</span>,
+                    <span class="hljs-string">&quot;-T&quot;</span>, <span class="hljs-string">&quot;link.ld&quot;</span>, *extra, <span class="hljs-string">&quot;rt.c&quot;</span>, <span class="hljs-string">&quot;pid.c&quot;</span>, <span class="hljs-string">&quot;-lgcc&quot;</span>, <span class="hljs-string">&quot;-o&quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">{name}</span>.elf&quot;</span>], check=<span class="hljs-literal">True</span>)
+    r = subprocess.run([<span class="hljs-string">&quot;qemu-system-arm&quot;</span>, <span class="hljs-string">&quot;-M&quot;</span>, board, <span class="hljs-string">&quot;-nographic&quot;</span>, <span class="hljs-string">&quot;-icount&quot;</span>, <span class="hljs-string">&quot;shift=0&quot;</span>, <span class="hljs-string">&quot;-semihosting-config&quot;</span>,
+                        <span class="hljs-string">&quot;enable=on,target=native&quot;</span>, <span class="hljs-string">&quot;-kernel&quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">{name}</span>.elf&quot;</span>], stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT, text=<span class="hljs-literal">True</span>, timeout=<span class="hljs-number">60</span>)
+    <span class="hljs-keyword">assert</span> r.returncode == <span class="hljs-number">0</span>, r.stdout
+    f, q, ppm = <span class="hljs-built_in">map</span>(<span class="hljs-built_in">int</span>, re.search(<span class="hljs-string">r&quot;float_ticks (\\d+) q15_ticks (\\d+) worst_ppm (\\d+)&quot;</span>, r.stdout).groups())
+    <span class="hljs-keyword">return</span> f * INSTR_PER_TICK / N, q * INSTR_PER_TICK / N, ppm
+
+res = {name: run(name) <span class="hljs-keyword">for</span> name <span class="hljs-keyword">in</span> TARGETS}
+<span class="hljs-keyword">for</span> name, (f, q, ppm) <span class="hljs-keyword">in</span> res.items():
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{name:&gt;<span class="hljs-number">4</span>}</span>: float <span class="hljs-subst">{f:<span class="hljs-number">6.1</span>f}</span> instructions/step, Q15 <span class="hljs-subst">{q:<span class="hljs-number">5.1</span>f}</span>, worst difference <span class="hljs-subst">{ppm / <span class="hljs-number">1e4</span>:<span class="hljs-number">.3</span>f}</span> % of full scale&quot;</span>)
+m3f, m3q, m3e = res[<span class="hljs-string">&quot;m3&quot;</span>]; m4f, m4q, m4e = res[<span class="hljs-string">&quot;m4f&quot;</span>]
+<span class="hljs-keyword">assert</span> m3e &lt; <span class="hljs-number">1000</span> <span class="hljs-keyword">and</span> m4e &lt; <span class="hljs-number">1000</span>                     <span class="hljs-comment"># float and Q15 agree within 0.1 % of full scale</span>
+<span class="hljs-keyword">assert</span> m3f &gt; <span class="hljs-number">5</span> * m3q                                 <span class="hljs-comment"># without an FPU, float costs many times more</span>
+<span class="hljs-keyword">assert</span> m4f &lt; <span class="hljs-number">2</span> * m4q                                 <span class="hljs-comment"># with an FPU, float is about as cheap as Q15</span>
+_, _, trunc = run(<span class="hljs-string">&quot;m3&quot;</span>, [<span class="hljs-string">&quot;-DTRUNCATE&quot;</span>])
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Q15 with truncation instead of rounding: worst difference <span class="hljs-subst">{trunc / <span class="hljs-number">1e4</span>:<span class="hljs-number">.2</span>f}</span> %&quot;</span>)
+<span class="hljs-keyword">assert</span> trunc &gt; <span class="hljs-number">5000</span>                                  <span class="hljs-comment"># the -0.5 LSB bias accumulates in the integrator</span>
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;PASS&quot;</span>)</code></pre></div>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>On an M4F, <code>u = 0.5 * e + i;</code> with <code>float e, i</code> is suddenly 20 times slower than expected. Why?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p><code>0.5</code> is a <code>double</code> constant, so <code>e</code> is promoted to double, the multiply and add run in the soft-float <em>double</em> library, and the result is converted back. Write <code>0.5f</code>, and compile with <code>-Wdouble-promotion</code> to catch these.</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>Why does the test compare against the float controller using the <em>same quantised gains</em> rather than the exact 0.6, 0.05 and 0.2?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>It does here only approximately: the float version uses the exact decimal gains, so a tiny part of the 0.03 % difference is gain quantisation (19 661/32 768 = 0.600006). To isolate arithmetic error, as in Phase 08’s biquad, feed both versions the identical quantised coefficients. Either way the difference stays far inside 0.1 %.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p10-l17"></div>
+
+`,i=[{id:`the-trade-off`,title:`The trade-off`},{id:`the-q15-pid-step`,title:`The Q15 PID step`},{id:`what-we-measure`,title:`What we measure`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p10-l17-q1`,type:`num`,q:`<p>Q15 representation of a gain of 0.05?</p>
+`,explain:`<p>round(k·2¹⁵).</p>
+`,answer:1638,tol:.001,unit:``},{id:`p10-l17-q2`,type:`num`,q:`<p>Bias in LSB accumulated by truncation over 1000 integrator steps (about −0.5 LSB each)?</p>
+`,explain:`<p>Floors always round down.</p>
+`,answer:-500,tol:.001,unit:`LSB`},{id:`p10-l17-q3`,type:`num`,q:`<p>That bias as a percentage of Q15 full scale (32768)?</p>
+`,explain:`<p>Enough to fail a 0.1 % test.</p>
+`,answer:-1.526,tol:.002,unit:`%`},{id:`p10-l17-q4`,type:`num`,q:`<p>547 instructions per step at 72 MHz and 1 instruction per cycle, as CPU load in percent at 20 kHz?</p>
+`,explain:`<p>Time per step times rate.</p>
+`,answer:15.19,tol:.002,unit:`%`},{id:`p10-l17-q5`,type:`mc`,q:`<p>What must firmware do before the first FPU instruction on a Cortex-M4F?</p>
+`,explain:`<p>The FPU is disabled at reset; an FPU instruction would fault.</p>
+`,options:[`disable interrupts`,`set the PLL`,`nothing, the FPU is on at reset`,`enable CP10 and CP11 in CPACR`],answer:3},{id:`p10-l17-q6`,type:`mc`,q:`<p>QEMU’s -icount measurement of this benchmark counts…</p>
+`,explain:`<p>Confirm cycles on hardware with DWT_CYCCNT.</p>
+`,options:[`instructions executed`,`cache misses`,`flash wait states`,`exact cycles including FPU latency`],answer:0}],o=[{file:`link.ld`,lang:`ld`,src:`/* QEMU mps2-an385: code memory at 0x0, SRAM at 0x20000000 (we use 256 KiB and 64 KiB of them). */
+MEMORY {
+  FLASH (rx)  : ORIGIN = 0x00000000, LENGTH = 256K
+  RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 64K
+}
+ENTRY(Reset_Handler)
+SECTIONS {
+  .text : { KEEP(*(.vectors)) *(.text*) *(.rodata*) . = ALIGN(4); } > FLASH
+  .data : { _sdata = .; *(.data*) . = ALIGN(4); _edata = .; } > RAM AT > FLASH
+  _sidata = LOADADDR(.data);
+  .bss (NOLOAD) : { _sbss = .; *(.bss*) *(COMMON) . = ALIGN(4); _ebss = .; } > RAM
+  _estack = ORIGIN(RAM) + LENGTH(RAM);
+}`},{file:`rt.c`,lang:`c`,src:`/* rt.c: minimal Cortex-M runtime. Vector table, reset handler, semihosting print and exit. */
+#include <stdint.h>
+extern uint32_t _sidata, _sdata, _edata, _sbss, _ebss, _estack;
+int main(void);
+
+static int semihost(int op, const void *arg) {          /* bkpt 0xAB traps to the debugger (QEMU) */
+  register int r0 __asm__("r0") = op;
+  register const void *r1 __asm__("r1") = arg;
+  __asm__ volatile("bkpt 0xAB" : "+r"(r0) : "r"(r1) : "memory");
+  return r0;
+}
+void rt_puts(const char *s) { semihost(0x04, s); }      /* SYS_WRITE0 */
+void rt_putu(uint32_t v) {
+  char b[12]; int i = 11; b[i] = 0;
+  do { b[--i] = (char)('0' + v % 10); v /= 10; } while (v);
+  rt_puts(&b[i]);
+}
+void rt_exit(int code) {                                /* SYS_EXIT: QEMU exits 0 for "application exit", 1 otherwise */
+  semihost(0x18, (const void *)(uintptr_t)(code ? 0x20024u : 0x20026u));
+  for (;;) {}
+}
+void Default_Handler(void) { rt_puts("unexpected exception\\n"); rt_exit(3); }
+void HardFault_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SysTick_Handler(void)   __attribute__((weak, alias("Default_Handler")));
+
+void Reset_Handler(void) {
+  uint32_t *src = &_sidata, *dst = &_sdata;
+  while (dst < &_edata) *dst++ = *src++;                /* copy .data from flash to RAM */
+  for (dst = &_sbss; dst < &_ebss;) *dst++ = 0;         /* zero .bss */
+  rt_exit(main());
+}
+__attribute__((section(".vectors"), used))
+static void (*const vectors[16])(void) = {
+  (void (*)(void))&_estack, Reset_Handler, Default_Handler, HardFault_Handler,
+  Default_Handler, Default_Handler, Default_Handler, 0, 0, 0, 0,
+  Default_Handler, Default_Handler, 0, Default_Handler, SysTick_Handler,
+};`},{file:`pid.c`,lang:`c`,src:`#include <stdint.h>
+void rt_puts(const char *s); void rt_putu(uint32_t v);
+#define SYST_CSR (*(volatile uint32_t *)0xE000E010)
+#define SYST_RVR (*(volatile uint32_t *)0xE000E014)
+#define SYST_CVR (*(volatile uint32_t *)0xE000E018)
+#define CPACR    (*(volatile uint32_t *)0xE000ED88)
+#define N 1000
+#ifdef TRUNCATE
+#define RND 0                                /* plain >> 15 floors: a bias of -0.5 LSB per step */
+#else
+#define RND (1 << 14)                        /* add half an LSB first: round to nearest */
+#endif
+
+/* float PID */
+typedef struct { float kp, ki, kd, i, prev, lo, hi; } pid_f;
+__attribute__((noinline)) static float pid_f_step(pid_f *c, float e) {
+  c->i += c->ki * e;
+  if (c->i > c->hi) c->i = c->hi; else if (c->i < c->lo) c->i = c->lo;
+  float u = c->kp * e + c->i + c->kd * (e - c->prev);
+  c->prev = e;
+  return u > c->hi ? c->hi : u < c->lo ? c->lo : u;
+}
+/* Q15 PID: gains Q15 (<1), integrator Q15 in int32, output saturated to Q15 */
+typedef struct { int16_t kp, ki, kd; int32_t i; int16_t prev; } pid_q;
+static inline int16_t sat16(int32_t v) { return v > 32767 ? 32767 : v < -32768 ? -32768 : (int16_t)v; }
+__attribute__((noinline)) static int16_t pid_q_step(pid_q *c, int16_t e) {
+  c->i += ((int32_t)c->ki * e + RND) >> 15;                  /* round, don't truncate */
+  if (c->i > 32767) c->i = 32767; else if (c->i < -32768) c->i = -32768;
+  int32_t u = (((int32_t)c->kp * e + RND) >> 15) + c->i + (((int32_t)c->kd * (e - c->prev) + RND) >> 15);
+  c->prev = e;
+  return sat16(u);
+}
+static int16_t err_q[N];
+static uint32_t ticks(void) { return SYST_CVR; }
+__attribute__((noinline)) static int run(void) {
+  uint32_t s = 1;                                    /* a reproducible pseudo-random error sequence in [-0.25, 0.25) */
+  for (int k = 0; k < N; k++) { s = s * 1664525u + 1013904223u; err_q[k] = (int16_t)(((int32_t)(s >> 16) - 32768) / 4); }
+  SYST_RVR = 0xFFFFFF; SYST_CVR = 0; SYST_CSR = 5;
+  pid_f cf = {0.6f, 0.05f, 0.2f, 0, 0, -1.0f, 32767.0f / 32768.0f};
+  pid_q cq = {19661, 1638, 6554, 0, 0};
+  static float uf[N]; static int16_t uq[N];
+  uint32_t t0 = ticks();
+  for (int k = 0; k < N; k++) uf[k] = pid_f_step(&cf, err_q[k] / 32768.0f);   /* includes int -> float */
+  uint32_t t1 = ticks();
+  for (int k = 0; k < N; k++) uq[k] = pid_q_step(&cq, err_q[k]);
+  uint32_t t2 = ticks();
+  float worst = 0;
+  for (int k = 0; k < N; k++) { float d = uf[k] - uq[k] / 32768.0f; if (d < 0) d = -d; if (d > worst) worst = d; }
+  rt_puts("float_ticks "); rt_putu((t0 - t1) & 0xFFFFFF); rt_puts(" q15_ticks "); rt_putu((t1 - t2) & 0xFFFFFF);
+  rt_puts(" worst_ppm "); rt_putu((uint32_t)(worst * 1e6f)); rt_puts("\\n");
+  return 0;
+}
+
+int main(void) {
+#ifdef HARD_FPU
+  CPACR |= 0xFu << 20;                       /* enable CP10/CP11 before any FPU instruction */
+  __asm__ volatile("dsb\\n\\tisb" ::: "memory");
+#endif
+  return run();
+}`},{file:`run.py`,lang:`python`,src:`"""Build pid.c for a Cortex-M3 (soft-float) and a Cortex-M4F (FPU), count instructions in QEMU, compare outputs."""
+import re, shutil, subprocess, sys
+for tool in ("arm-none-eabi-gcc", "qemu-system-arm"):
+    if not shutil.which(tool):
+        sys.exit(f"needs {tool} (Debian/Ubuntu: apt install gcc-arm-none-eabi qemu-system-arm)")
+
+N, INSTR_PER_TICK = 1000, 40
+TARGETS = {"m3": (["-mcpu=cortex-m3"], "mps2-an385"),
+           "m4f": (["-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-DHARD_FPU"], "mps2-an386")}
+
+def run(name, extra=()):
+    flags, board = TARGETS[name]
+    subprocess.run(["arm-none-eabi-gcc", *flags, "-mthumb", "-O2", "-Wall", "-Werror", "-ffreestanding", "-nostdlib",
+                    "-T", "link.ld", *extra, "rt.c", "pid.c", "-lgcc", "-o", f"{name}.elf"], check=True)
+    r = subprocess.run(["qemu-system-arm", "-M", board, "-nographic", "-icount", "shift=0", "-semihosting-config",
+                        "enable=on,target=native", "-kernel", f"{name}.elf"], stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT, text=True, timeout=60)
+    assert r.returncode == 0, r.stdout
+    f, q, ppm = map(int, re.search(r"float_ticks (\\d+) q15_ticks (\\d+) worst_ppm (\\d+)", r.stdout).groups())
+    return f * INSTR_PER_TICK / N, q * INSTR_PER_TICK / N, ppm
+
+res = {name: run(name) for name in TARGETS}
+for name, (f, q, ppm) in res.items():
+    print(f"{name:>4}: float {f:6.1f} instructions/step, Q15 {q:5.1f}, worst difference {ppm / 1e4:.3f} % of full scale")
+m3f, m3q, m3e = res["m3"]; m4f, m4q, m4e = res["m4f"]
+assert m3e < 1000 and m4e < 1000                     # float and Q15 agree within 0.1 % of full scale
+assert m3f > 5 * m3q                                 # without an FPU, float costs many times more
+assert m4f < 2 * m4q                                 # with an FPU, float is about as cheap as Q15
+_, _, trunc = run("m3", ["-DTRUNCATE"])
+print(f"Q15 with truncation instead of rounding: worst difference {trunc / 1e4:.2f} %")
+assert trunc > 5000                                  # the -0.5 LSB bias accumulates in the integrator
+print("PASS")`}],s={id:e,minutes:40,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};

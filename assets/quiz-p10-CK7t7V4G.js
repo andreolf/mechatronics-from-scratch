@@ -1,0 +1,265 @@
+var e={"p10-l01":[{id:`p10-l01-q1`,type:`num`,q:`<p>How many instructions does the subs/bne loop execute for N = 250 000?</p>
+`,explain:`<p>Two per iteration.</p>
+`,answer:5e5,tol:.001,unit:`instructions`},{id:`p10-l01-q2`,type:`num`,q:`<p>In QEMU with -icount shift=0, how many SysTick ticks does that take (40 instructions per tick)?</p>
+`,explain:`<p>Instructions divided by 40.</p>
+`,answer:12500,tol:.001,unit:`ticks`},{id:`p10-l01-q3`,type:`num`,q:`<p>On a Cortex-M3 at 72 MHz with 4 cycles per iteration, how many ms do 100 000 iterations take?</p>
+`,explain:`<p>Cycles divided by the clock.</p>
+`,answer:5.556,tol:.001,unit:`ms`},{id:`p10-l01-q4`,type:`num`,q:`<p>A taken branch costs 1 + P cycles. With P = 3, how many cycles is one loop iteration (subs 1 cycle)?</p>
+`,explain:`<p>The subs plus the branch with its refill.</p>
+`,answer:5,tol:.001,unit:`cycles`},{id:`p10-l01-q5`,type:`mc`,q:`<p>Which register holds the return address after a BL (function call)?</p>
+`,explain:`<p>The link register.</p>
+`,options:[`LR (r14)`,`PC (r15)`,`r0`,`SP (r13)`],answer:0},{id:`p10-l01-q6`,type:`mc`,q:`<p>What does QEMU’s -icount shift=0 let you measure exactly?</p>
+`,explain:`<p>Time advances 1 ns per instruction; there is no pipeline or wait-state model.</p>
+`,options:[`instructions executed`,`clock cycles including wait states`,`cache misses`,`power consumption`],answer:0}],"p10-l02":[{id:`p10-l02-q1`,type:`num`,q:`<p>size reports text 1200, data 64, bss 256. How many bytes does the flash image take?</p>
+`,explain:`<p>text + data.</p>
+`,answer:1264,tol:.001,unit:`bytes`},{id:`p10-l02-q2`,type:`num`,q:`<p>Static RAM for that build (data + bss), in bytes?</p>
+`,explain:`<p>Initialised and zeroed variables both live in RAM.</p>
+`,answer:320,tol:.001,unit:`bytes`},{id:`p10-l02-q3`,type:`num`,q:`<p>Reset_Handler is at 0x100. What value is stored in the reset vector (decimal)?</p>
+`,explain:`<p>Thumb bit set.</p>
+`,answer:257,tol:.001,unit:``},{id:`p10-l02-q4`,type:`num`,q:`<p>Initial SP for 128 KiB of RAM starting at 0x20000000, in decimal?</p>
+`,explain:`<p>0x20020000.</p>
+`,answer:537001984,tol:1e-7,unit:``},{id:`p10-l02-q5`,type:`mc`,q:`<p>In nm output, what does U mean?</p>
+`,explain:`<p>The linker must find a definition.</p>
+`,options:[`user code`,`uninitialised data`,`unused`,`undefined, needed from another object`],answer:3},{id:`p10-l02-q6`,type:`mc`,q:`<p>Why does the vector table need KEEP in the linker script?</p>
+`,explain:`<p>The hardware reads it, not your code.</p>
+`,options:[`nothing in the code references it, so --gc-sections would drop it`,`KEEP makes it read-only`,`it is too large`,`it must be in RAM`],answer:0}],"p10-l03":[{id:`p10-l03-q1`,type:`num`,q:`<p>.text is 0x1F0 bytes at 0x0. What is the LMA of .data (decimal)?</p>
+`,explain:`<p>Right after .text.</p>
+`,answer:496,tol:.001,unit:``},{id:`p10-l03-q2`,type:`num`,q:`<p>.data is 8 bytes at 0x20000000 and .bss is 1024 bytes. Where does .bss end (decimal)?</p>
+`,explain:`<p>0x20000408.</p>
+`,answer:536871944,tol:1e-7,unit:``},{id:`p10-l03-q3`,type:`num`,q:`<p>With 64 KiB RAM, 4 KiB stack and .bss ending at 0x20000408, how many bytes of heap remain?</p>
+`,explain:`<p>From _ebss to the stack reservation.</p>
+`,answer:60408,tol:.001,unit:`bytes`},{id:`p10-l03-q4`,type:`num`,q:`<p>How much flash does .data with 200 bytes of initial values use?</p>
+`,explain:`<p>Its initial values are stored in flash (and it uses 200 bytes of RAM too).</p>
+`,answer:200,tol:.001,unit:`bytes`},{id:`p10-l03-q5`,type:`mc`,q:`<p>What does ‘&gt; RAM AT &gt; FLASH’ mean for .data?</p>
+`,explain:`<p>Two addresses, one copy at startup.</p>
+`,options:[`it runs from RAM (VMA) but is stored in flash (LMA)`,`it is read-only`,`it is copied from RAM to flash at reset`,`it is placed twice by the compiler`],answer:0},{id:`p10-l03-q6`,type:`mc`,q:`<p>In C, how do you get the value of the linker symbol _estack?</p>
+`,explain:`<p>Linker symbols are addresses, not variables with storage.</p>
+`,options:[`&amp;_estack, the address of the symbol`,`*_estack`,`sizeof(_estack)`,`_estack`],answer:0}],"p10-l04":[{id:`p10-l04-q1`,type:`num`,q:`<p>Offset in the vector table of external interrupt IRQ 5 (decimal)?</p>
+`,explain:`<p>0x54.</p>
+`,answer:84,tol:.001,unit:`bytes`},{id:`p10-l04-q2`,type:`num`,q:`<p>Offset of the SysTick vector (exception 15), decimal?</p>
+`,explain:`<p>0x3C.</p>
+`,answer:60,tol:.001,unit:`bytes`},{id:`p10-l04-q3`,type:`num`,q:`<p>How many word stores zero a 40-byte .bss?</p>
+`,explain:`<p>One per 32-bit word.</p>
+`,answer:10,tol:.001,unit:`stores`},{id:`p10-l04-q4`,type:`num`,q:`<p>Copying 4 KiB of .data at about 4 cycles per word on a 64 MHz core takes how many µs?</p>
+`,explain:`<p>1024 words × 4 cycles / 64 MHz.</p>
+`,answer:64,tol:.001,unit:`µs`},{id:`p10-l04-q5`,type:`mc`,q:`<p>What does the core read from address 0x00000000 at reset?</p>
+`,explain:`<p>Word 0 is SP, word 1 is the reset vector.</p>
+`,options:[`the clock configuration`,`the first instruction`,`the initial stack pointer`,`the reset vector`],answer:2},{id:`p10-l04-q6`,type:`mc`,q:`<p>Why does the test poison RAM with 0xA5 before checking .bss?</p>
+`,explain:`<p>Real RAM powers up with garbage; the test must too.</p>
+`,options:[`to set the stack`,`the linker requires it`,`to speed up boot`,`QEMU RAM starts at zero and would hide a missing .bss loop`],answer:3}],"p10-l05":[{id:`p10-l05-q1`,type:`num`,q:`<p>Which MODER bit is the lower bit of pin 7’s field?</p>
+`,explain:`<p>Two bits per pin.</p>
+`,answer:14,tol:.001,unit:``},{id:`p10-l05-q2`,type:`num`,q:`<p>Value to write to BSRR to clear pin 3 (decimal)?</p>
+`,explain:`<p>Reset bits are the upper half.</p>
+`,answer:524288,tol:.001,unit:``},{id:`p10-l05-q3`,type:`num`,q:`<p>Address of GPIOC’s ODR (decimal), with ports 0x400 apart from GPIOA at 0x40020000?</p>
+`,explain:`<p>0x40020814.</p>
+`,answer:1073874964,tol:1e-7,unit:``},{id:`p10-l05-q4`,type:`num`,q:`<p>Mask to clear the MODER field of pin 5 (decimal)?</p>
+`,explain:`<p>0xC00.</p>
+`,answer:3072,tol:.001,unit:``},{id:`p10-l05-q5`,type:`mc`,q:`<p>Why use BSRR instead of ODR |= bit in the main loop?</p>
+`,explain:`<p>No read-modify-write.</p>
+`,options:[`it is faster to read`,`BSRR also enables the clock`,`ODR is read-only`,`a single store sets or clears pins atomically, so an interrupt cannot lose an update`],answer:3},{id:`p10-l05-q6`,type:`mc`,q:`<p>You write to a GPIO register but nothing changes. The most common cause is…</p>
+`,explain:`<p>Peripherals are clock-gated after reset.</p>
+`,options:[`the pin is analog`,`the compiler optimised it away even with volatile`,`BSRR is full`,`the port’s clock is not enabled in RCC`],answer:3}],"p10-l06":[{id:`p10-l06-q1`,type:`num`,q:`<p>Mask (decimal) of a 3-bit field at bit 4?</p>
+`,explain:`<p>0x70.</p>
+`,answer:112,tol:.001,unit:``},{id:`p10-l06-q2`,type:`num`,q:`<p>Result (decimal) of inserting 5 into that field of 0xFFFFFF0F?</p>
+`,explain:`<p>0xFFFFFF5F.</p>
+`,answer:4294967135,tol:1e-7,unit:``},{id:`p10-l06-q3`,type:`num`,q:`<p>Extract the 4-bit field at bit 8 of 0x00003A00 (decimal)?</p>
+`,explain:`<p>0xA.</p>
+`,answer:10,tol:.001,unit:``},{id:`p10-l06-q4`,type:`num`,q:`<p>How many (position, width) pairs are there for fields inside a 32-bit register?</p>
+`,explain:`<p>The test loops over all 528.</p>
+`,answer:528,tol:.001,unit:``},{id:`p10-l06-q5`,type:`mc`,q:`<p>What is wrong with 1 &lt;&lt; 31 in C?</p>
+`,explain:`<p>Use 1u &lt;&lt; 31.</p>
+`,options:[`it equals zero`,`it shifts a signed int into the sign bit, which is undefined behaviour`,`nothing`,`it is too slow`],answer:1},{id:`p10-l06-q6`,type:`mc`,q:`<p>What does volatile guarantee?</p>
+`,explain:`<p>Visibility, not atomicity.</p>
+`,options:[`every access is performed, in order, and not cached in a register`,`memory barriers for DMA`,`atomic read-modify-write`,`mutual exclusion with interrupts`],answer:0}],"p10-l07":[{id:`p10-l07-q1`,type:`num`,q:`<p>HSE 8 MHz, M = 4, N = 168, P = 2. SYSCLK in MHz?</p>
+`,explain:`<p>f_in N/(M P).</p>
+`,answer:168,tol:.001,unit:`MHz`},{id:`p10-l07-q2`,type:`num`,q:`<p>Flash wait states at 120 MHz (one per 30 MHz)?</p>
+`,explain:`<p>ceil(120/30) − 1.</p>
+`,answer:3,tol:.001,unit:``},{id:`p10-l07-q3`,type:`num`,q:`<p>With APB1 = HCLK/4 at 168 MHz, what clock does TIM2 see, in MHz?</p>
+`,explain:`<p>Timer clock doubles when the APB prescaler is not 1.</p>
+`,answer:84,tol:.001,unit:`MHz`},{id:`p10-l07-q4`,type:`num`,q:`<p>SysTick reload for a 1 kHz tick at 100 MHz?</p>
+`,explain:`<p>f/1000 − 1, since the counter includes 0.</p>
+`,answer:99999,tol:.001,unit:``},{id:`p10-l07-q5`,type:`mc`,q:`<p>When moving from 16 MHz to 168 MHz, when do you raise the flash wait states?</p>
+`,explain:`<p>Too few wait states for even a few cycles corrupts instruction fetches.</p>
+`,options:[`after switching SYSCLK to the PLL`,`it does not matter`,`only if the ART accelerator is off`,`before switching SYSCLK to the PLL`],answer:3},{id:`p10-l07-q6`,type:`mc`,q:`<p>Which constraint rules out M = 2 with an 8 MHz crystal?</p>
+`,explain:`<p>f_VCO,in must be 1–2 MHz.</p>
+`,options:[`the VCO input would be 4 MHz, above the 2 MHz limit`,`USB would not be 48 MHz`,`M must be odd`,`N would exceed 432`],answer:0}],"p10-l08":[{id:`p10-l08-q1`,type:`num`,q:`<p>f_clk = 84 MHz, PSC = 83, ARR = 999. Update frequency in Hz?</p>
+`,explain:`<p>84 MHz / 84 000.</p>
+`,answer:1e3,tol:.001,unit:`Hz`},{id:`p10-l08-q2`,type:`num`,q:`<p>With PSC = 0, ARR = 1904 at 84 MHz, the update rate in Hz?</p>
+`,explain:`<p>K rounded to 1905.</p>
+`,answer:44094.49,tol:1e-4,unit:`Hz`},{id:`p10-l08-q3`,type:`num`,q:`<p>Frequency error of that setting against 44.1 kHz, in percent?</p>
+`,explain:`<p>Small, and fine for most uses.</p>
+`,answer:-.0125,tol:.01,unit:`%`},{id:`p10-l08-q4`,type:`num`,q:`<p>How long between wraps of a 16-bit counter at 1 MHz, in ms?</p>
+`,explain:`<p>65 536 counts of 1 µs.</p>
+`,answer:65.536,tol:.001,unit:`ms`},{id:`p10-l08-q5`,type:`mc`,q:`<p>Why prefer PSC = 0, ARR = 4199 over PSC = 3, ARR = 1049 for 20 kHz PWM?</p>
+`,explain:`<p>The ARR range is the number of duty steps.</p>
+`,options:[`lower power`,`it avoids shadow registers`,`higher update frequency`,`four times the duty-cycle resolution`],answer:3},{id:`p10-l08-q6`,type:`mc`,q:`<p>You wrote new PSC and ARR values but the old rate continues until the next wrap. Why?</p>
+`,explain:`<p>Shadow registers.</p>
+`,options:[`PSC (and ARR with ARPE) are buffered until an update event; set EGR.UG to load now`,`the counter is 32-bit`,`the values are too small`,`the timer clock is off`],answer:0}],"p10-l09":[{id:`p10-l09-q1`,type:`num`,q:`<p>SysTick reload for a 1 kHz tick at 25 MHz?</p>
+`,explain:`<p>f/1000 − 1.</p>
+`,answer:24999,tol:.001,unit:``},{id:`p10-l09-q2`,type:`num`,q:`<p>Cortex-M4 interrupt entry of 12 cycles at 168 MHz, in ns?</p>
+`,explain:`<p>Cycles over the clock.</p>
+`,answer:71.43,tol:.001,unit:`ns`},{id:`p10-l09-q3`,type:`num`,q:`<p>A 1 µs jitter budget at 168 MHz allows a critical section of at most how many cycles?</p>
+`,explain:`<p>Ignoring the entry time itself.</p>
+`,answer:168,tol:.001,unit:`cycles`},{id:`p10-l09-q4`,type:`num`,q:`<p>Measured periods range from 24 990 to 25 110 counts of 40 ns. Jitter in µs?</p>
+`,explain:`<p>Spread times the count period.</p>
+`,answer:4.8,tol:.001,unit:`µs`},{id:`p10-l09-q5`,type:`mc`,q:`<p>On a Cortex-M, which priority number is most urgent?</p>
+`,explain:`<p>0 is the most urgent configurable priority.</p>
+`,options:[`the highest number`,`the lowest number`,`all are equal unless grouped`,`priority 8`],answer:1},{id:`p10-l09-q6`,type:`mc`,q:`<p>What does tail-chaining save?</p>
+`,explain:`<p>The core goes straight to the next handler.</p>
+`,options:[`unstacking and restacking registers between back-to-back handlers`,`flash wait states`,`the priority comparison`,`the vector table lookup`],answer:0}],"p10-l10":[{id:`p10-l10-q1`,type:`num`,q:`<p>How many days until a 32-bit millisecond counter wraps?</p>
+`,explain:`<p>4 294 967 296 ms.</p>
+`,answer:49.71,tol:.001,unit:`days`},{id:`p10-l10-q2`,type:`num`,q:`<p>A torn read of hi:lo at the wrap is wrong by how many ms?</p>
+`,explain:`<p>The new hi with the old lo.</p>
+`,answer:4294967296,tol:1e-6,unit:`ms`},{id:`p10-l10-q3`,type:`num`,q:`<p>A 4-cycle window at 168 MHz lasts how many ns?</p>
+`,explain:`<p>Cycles over the clock.</p>
+`,answer:23.81,tol:.001,unit:`ns`},{id:`p10-l10-q4`,type:`num`,q:`<p>flags |= bit compiles to load, or, store. How many hook positions (between accesses) let an ISR’s update be lost?</p>
+`,explain:`<p>After the load and before the store, in either of the two gaps.</p>
+`,answer:2,tol:.001,unit:``},{id:`p10-l10-q5`,type:`mc`,q:`<p>Which of these is atomic on a Cortex-M3?</p>
+`,explain:`<p>Single aligned word accesses are atomic; compound statements are not.</p>
+`,options:[`count++ on a uint32_t`,`an aligned 32-bit load`,`flags |= 4`,`a 64-bit load`],answer:1},{id:`p10-l10-q6`,type:`mc`,q:`<p>The hi-lo-hi re-read loop works because…</p>
+`,explain:`<p>A lock-free consistency check.</p>
+`,options:[`it uses LDREX`,`volatile makes it atomic`,`if hi did not change across the read, lo was read while hi held that value`,`it disables interrupts`],answer:2}],"p10-l11":[{id:`p10-l11-q1`,type:`num`,q:`<p>Centre-aligned PWM at 168 MHz with ARR = 4200. PWM frequency in kHz?</p>
+`,explain:`<p>f_clk / (2 ARR).</p>
+`,answer:20,tol:.001,unit:`kHz`},{id:`p10-l11-q2`,type:`num`,q:`<p>Edge-aligned with ARR = 999, CCR = 250. Duty in percent?</p>
+`,explain:`<p>CCR/(ARR+1).</p>
+`,answer:25,tol:.001,unit:`%`},{id:`p10-l11-q3`,type:`num`,q:`<p>Dead time in ns for DTG = 0x94 at 168 MHz?</p>
+`,explain:`<p>Range 2, (64+20)·2 counts.</p>
+`,answer:1e3,tol:.001,unit:`ns`},{id:`p10-l11-q4`,type:`num`,q:`<p>Largest dead time in µs with CKD = 0 at 168 MHz?</p>
+`,explain:`<p>1008 counts.</p>
+`,answer:6,tol:.001,unit:`µs`},{id:`p10-l11-q5`,type:`mc`,q:`<p>What does dead-time insertion delay?</p>
+`,explain:`<p>Each output turns on late, after the other turned off.</p>
+`,options:[`the ADC trigger`,`every falling edge`,`the update event`,`every rising edge of CH1 and CH1N`],answer:3},{id:`p10-l11-q6`,type:`mc`,q:`<p>Why is the counter peak in centre-aligned mode a good ADC trigger for current sensing?</p>
+`,explain:`<p>Sample in the quiet middle.</p>
+`,options:[`the ADC needs it`,`it doubles the sample rate`,`it is the middle of a switching interval, away from the switching edges and their ringing`,`the counter is fastest there`],answer:2}],"p10-l12":[{id:`p10-l12-q1`,type:`num`,q:`<p>Counts per revolution of a 2500-line encoder in x4 mode?</p>
+`,explain:`<p>Four edges per line.</p>
+`,answer:1e4,tol:.001,unit:``},{id:`p10-l12-q2`,type:`num`,q:`<p>1000 lines x4, 1 ms sampling, ΔN = 200. Speed in rpm?</p>
+`,explain:`<p>50 rev/s.</p>
+`,answer:3e3,tol:.001,unit:`rpm`},{id:`p10-l12-q3`,type:`num`,q:`<p>Signed 16-bit difference from 65500 to 164?</p>
+`,explain:`<p>Modulo 65 536.</p>
+`,answer:200,tol:.001,unit:`counts`},{id:`p10-l12-q4`,type:`num`,q:`<p>Capture ticks (1 MHz) for one encoder cycle at 2 rpm with 1000 lines?</p>
+`,explain:`<p>30 ms per line.</p>
+`,answer:3e4,tol:.001,unit:`ticks`},{id:`p10-l12-q5`,type:`mc`,q:`<p>Which method is better at very low speed?</p>
+`,explain:`<p>Few counts per sample but long, well-resolved periods.</p>
+`,options:[`neither works`,`counting edges per fixed sample (M)`,`measuring the time between edges (T)`,`both are equal`],answer:2},{id:`p10-l12-q6`,type:`mc`,q:`<p>The M method’s resolution is…</p>
+`,explain:`<p>2π/(CPR·Ts) per count.</p>
+`,options:[`one count per sample period`,`one revolution`,`one capture tick`,`set by the PWM frequency`],answer:0}],"p10-l13":[{id:`p10-l13-q1`,type:`num`,q:`<p>Conversion time in µs with 15-cycle sampling at 21 MHz?</p>
+`,explain:`<p>(t_samp + 12)/f_ADC.</p>
+`,answer:1.2857,tol:.001,unit:`µs`},{id:`p10-l13-q2`,type:`num`,q:`<p>Fastest trigger rate for a 4-channel scan with that timing, in kHz?</p>
+`,explain:`<p>One scan per trigger.</p>
+`,answer:194.44,tol:.001,unit:`kHz`},{id:`p10-l13-q3`,type:`num`,q:`<p>A 256-sample circular buffer at 4 channels and 10 kHz. Time between HT and TC interrupts, in ms?</p>
+`,explain:`<p>Half the buffer is 32 scans.</p>
+`,answer:3.2,tol:.001,unit:`ms`},{id:`p10-l13-q4`,type:`num`,q:`<p>Conversion time in µs with 480-cycle sampling at 21 MHz?</p>
+`,explain:`<p>For high-impedance sources.</p>
+`,answer:23.43,tol:.001,unit:`µs`},{id:`p10-l13-q5`,type:`mc`,q:`<p>Why trigger the ADC from a timer instead of starting conversions in software?</p>
+`,explain:`<p>DSP assumes uniform sampling.</p>
+`,options:[`DMA requires it`,`it uses fewer pins`,`it increases resolution`,`the sample instants are as regular as the timer clock, with no software jitter`],answer:3},{id:`p10-l13-q6`,type:`mc`,q:`<p>On a half-transfer interrupt, which part of the buffer should the CPU process?</p>
+`,explain:`<p>Double buffering.</p>
+`,options:[`the first half, while the DMA fills the second`,`the second half`,`the whole buffer`,`nothing until TC`],answer:0}],"p10-l14":[{id:`p10-l14-q1`,type:`num`,q:`<p>Tuning word for 1 kHz at f_s = 100 kHz with a 32-bit accumulator?</p>
+`,explain:`<p>f·2³²/f_s.</p>
+`,answer:42949673,tol:1e-7,unit:``},{id:`p10-l14-q2`,type:`num`,q:`<p>Frequency resolution in µHz at f_s = 100 kHz?</p>
+`,explain:`<p>f_s/2³².</p>
+`,answer:23.28,tol:.001,unit:`µHz`},{id:`p10-l14-q3`,type:`num`,q:`<p>Output frequency in Hz for M = 2^24 at f_s = 100 kHz?</p>
+`,explain:`<p>One table entry per sample.</p>
+`,answer:390.625,tol:.001,unit:`Hz`},{id:`p10-l14-q4`,type:`num`,q:`<p>Samples per cycle at 12.345 kHz with f_s = 100 kHz?</p>
+`,explain:`<p>f_s/f.</p>
+`,answer:8.1,tol:.001,unit:``},{id:`p10-l14-q5`,type:`mc`,q:`<p>What happens when the accumulator overflows?</p>
+`,explain:`<p>Unsigned overflow is modulo 2³².</p>
+`,options:[`the frequency doubles`,`the output glitches`,`nothing special, it is the phase wrapping through 2π`,`the DAC resets`],answer:2},{id:`p10-l14-q6`,type:`mc`,q:`<p>Which bits of the accumulator index a 256-entry table?</p>
+`,explain:`<p>The most significant bits are the coarse phase.</p>
+`,options:[`the low 8 bits`,`the top 8 bits`,`all 32`,`bits 8 to 15`],answer:1}],"p10-l15":[{id:`p10-l15-q1`,type:`num`,q:`<p>IWDG timeout in ms with PR = 1, RL = 399 at 32 kHz?</p>
+`,explain:`<p>4·2^PR·(RL+1)/f_LSI.</p>
+`,answer:100,tol:.001,unit:`ms`},{id:`p10-l15-q2`,type:`num`,q:`<p>The same setting at 47 kHz, in ms?</p>
+`,explain:`<p>The fastest LSI gives the shortest timeout.</p>
+`,answer:68.09,tol:.001,unit:`ms`},{id:`p10-l15-q3`,type:`num`,q:`<p>Maximum IWDG timeout in seconds at 32 kHz (PR = 6, RL = 4095)?</p>
+`,explain:`<p>÷256 and 4096 counts.</p>
+`,answer:32.768,tol:.001,unit:`s`},{id:`p10-l15-q4`,type:`num`,q:`<p>WWDG tick in µs at 42 MHz with WDGTB = 3?</p>
+`,explain:`<p>APB1/4096/2^WDGTB.</p>
+`,answer:780.19,tol:.001,unit:`µs`},{id:`p10-l15-q5`,type:`mc`,q:`<p>Where should the watchdog be kicked?</p>
+`,explain:`<p>The kick must prove the whole system is alive.</p>
+`,options:[`once per main loop, after every task has reported healthy`,`in every function`,`only at startup`,`in the SysTick interrupt`],answer:0},{id:`p10-l15-q6`,type:`mc`,q:`<p>The window watchdog resets the chip if…</p>
+`,explain:`<p>The refresh must land in the window.</p>
+`,options:[`the LSI fails`,`it is refreshed too early or too late`,`it is refreshed too late only`,`the supply drops`],answer:1}],"p10-l16":[{id:`p10-l16-q1`,type:`num`,q:`<p>Average current in µA for 5 mA for 20 ms every 60 s, with 3 µA otherwise?</p>
+`,explain:`<p>Duty-weighted sum.</p>
+`,answer:4.666,tol:.001,unit:`µA`},{id:`p10-l16-q2`,type:`num`,q:`<p>Charge per year in mAh drawn by a 3 µA sleep current?</p>
+`,explain:`<p>3 µA × 8766 h.</p>
+`,answer:26.3,tol:.002,unit:`mAh`},{id:`p10-l16-q3`,type:`num`,q:`<p>Life in years of 1800 mAh at 32.8 µA?</p>
+`,explain:`<p>Capacity over current.</p>
+`,answer:6.26,tol:.002,unit:`years`},{id:`p10-l16-q4`,type:`num`,q:`<p>Duty cycle in percent of a 22 ms wake-up every 60 s?</p>
+`,explain:`<p>Awake for a tiny fraction of the time.</p>
+`,answer:.0367,tol:.002,unit:`%`},{id:`p10-l16-q5`,type:`mc`,q:`<p>When wake-ups are rare, battery life is set mainly by…</p>
+`,explain:`<p>The floor is on for almost all of the time.</p>
+`,options:[`the run current`,`the sleep current`,`the flash size`,`the CPU frequency`],answer:1},{id:`p10-l16-q6`,type:`mc`,q:`<p>After waking from Stop mode on an STM32, what must the firmware usually redo first?</p>
+`,explain:`<p>Stop mode returns on the internal oscillator.</p>
+`,options:[`restore the system clock (HSE and PLL)`,`reload the vector table`,`copy .data again`,`erase flash`],answer:0}],"p10-l17":[{id:`p10-l17-q1`,type:`num`,q:`<p>Q15 representation of a gain of 0.05?</p>
+`,explain:`<p>round(k·2¹⁵).</p>
+`,answer:1638,tol:.001,unit:``},{id:`p10-l17-q2`,type:`num`,q:`<p>Bias in LSB accumulated by truncation over 1000 integrator steps (about −0.5 LSB each)?</p>
+`,explain:`<p>Floors always round down.</p>
+`,answer:-500,tol:.001,unit:`LSB`},{id:`p10-l17-q3`,type:`num`,q:`<p>That bias as a percentage of Q15 full scale (32768)?</p>
+`,explain:`<p>Enough to fail a 0.1 % test.</p>
+`,answer:-1.526,tol:.002,unit:`%`},{id:`p10-l17-q4`,type:`num`,q:`<p>547 instructions per step at 72 MHz and 1 instruction per cycle, as CPU load in percent at 20 kHz?</p>
+`,explain:`<p>Time per step times rate.</p>
+`,answer:15.19,tol:.002,unit:`%`},{id:`p10-l17-q5`,type:`mc`,q:`<p>What must firmware do before the first FPU instruction on a Cortex-M4F?</p>
+`,explain:`<p>The FPU is disabled at reset; an FPU instruction would fault.</p>
+`,options:[`disable interrupts`,`set the PLL`,`nothing, the FPU is on at reset`,`enable CP10 and CP11 in CPACR`],answer:3},{id:`p10-l17-q6`,type:`mc`,q:`<p>QEMU’s -icount measurement of this benchmark counts…</p>
+`,explain:`<p>Confirm cycles on hardware with DWT_CYCCNT.</p>
+`,options:[`instructions executed`,`cache misses`,`flash wait states`,`exact cycles including FPU latency`],answer:0}],"p10-l18":[{id:`p10-l18-q1`,type:`num`,q:`<p>Bytes per second at 115 200 baud, 8N1 (10 bits per byte)?</p>
+`,explain:`<p>Start, 8 data, stop.</p>
+`,answer:11520,tol:.001,unit:`bytes/s`},{id:`p10-l18-q2`,type:`num`,q:`<p>Backlog in bytes if the main loop is away for 15 ms at that rate?</p>
+`,explain:`<p>Round up to a power of two, 256.</p>
+`,answer:172.8,tol:.001,unit:`bytes`},{id:`p10-l18-q3`,type:`num`,q:`<p>Slot index of counter value 1000 in a 64-entry ring?</p>
+`,explain:`<p>Masking with N − 1.</p>
+`,answer:40,tol:.001,unit:``},{id:`p10-l18-q4`,type:`num`,q:`<p>head = 5, tail = 4294967291 (both 32-bit). How many bytes are in the buffer?</p>
+`,explain:`<p>Unsigned subtraction wraps.</p>
+`,answer:10,tol:.001,unit:`bytes`},{id:`p10-l18-q5`,type:`mc`,q:`<p>Why must the ring size be a power of two for masking?</p>
+`,explain:`<p>The mask keeps the low bits.</p>
+`,options:[`index &amp; (N−1) equals index mod N only when N is a power of two`,`for alignment`,`to save RAM`,`the DMA requires it`],answer:0},{id:`p10-l18-q6`,type:`mc`,q:`<p>In the producer, what is the correct order?</p>
+`,explain:`<p>The consumer must never see an index pointing at unwritten data.</p>
+`,options:[`disable interrupts first`,`either order`,`write the data, then publish head with a release store`,`publish head, then write the data`],answer:2}],"p10-l19":[{id:`p10-l19-q1`,type:`num`,q:`<p>Super-loop period in ms for tasks of 200, 300, 500, 600 and 400 µs?</p>
+`,explain:`<p>The sum of all task times.</p>
+`,answer:2,tol:.001,unit:`ms`},{id:`p10-l19-q2`,type:`num`,q:`<p>Utilisation of those tasks at 1 kHz, 100, 50, 10 and 10 Hz?</p>
+`,explain:`<p>Σ C/T.</p>
+`,answer:.265,tol:.001,unit:``},{id:`p10-l19-q3`,type:`num`,q:`<p>Hyperperiod in ticks for periods of 1, 10, 20 and 100 ticks?</p>
+`,explain:`<p>Least common multiple.</p>
+`,answer:100,tol:.001,unit:`ticks`},{id:`p10-l19-q4`,type:`num`,q:`<p>Worst tick load in µs with offsets 0..4 (control 200 µs plus the largest single slow task)?</p>
+`,explain:`<p>Control plus logging.</p>
+`,answer:800,tol:.001,unit:`µs`},{id:`p10-l19-q5`,type:`mc`,q:`<p>Utilisation is 0.27, yet one tick overruns. How?</p>
+`,explain:`<p>Offsets spread the load.</p>
+`,options:[`it cannot happen`,`utilisation was computed wrong`,`several slow tasks are due in the same tick; the per-tick budget is violated even though the average is low`,`the timer is too slow`],answer:2},{id:`p10-l19-q6`,type:`mc`,q:`<p>In a super-loop, what sets the control law’s period?</p>
+`,explain:`<p>That’s its main weakness.</p>
+`,options:[`the slowest task alone`,`the compiler`,`the sum of all task execution times, which varies`,`the timer`],answer:2}],"p10-l20":[{id:`p10-l20-q1`,type:`num`,q:`<p>Hyperperiod in ticks of tasks with periods 1, 5, 10 and 20 ticks?</p>
+`,explain:`<p>Least common multiple.</p>
+`,answer:20,tol:.001,unit:`ticks`},{id:`p10-l20-q2`,type:`num`,q:`<p>Worst tick load in µs (A 250 + C 500 + dispatcher 20)?</p>
+`,explain:`<p>Ticks where A and C coincide.</p>
+`,answer:770,tol:.001,unit:`µs`},{id:`p10-l20-q3`,type:`num`,q:`<p>Utilisation of A, B, C and D (without the dispatcher)?</p>
+`,explain:`<p>Σ C/T.</p>
+`,answer:.395,tol:.001,unit:``},{id:`p10-l20-q4`,type:`num`,q:`<p>If C takes 900 µs in tick 12, by how many µs is tick 13 late?</p>
+`,explain:`<p>Dispatcher + A + C minus the tick.</p>
+`,answer:170,tol:.001,unit:`µs`},{id:`p10-l20-q5`,type:`mc`,q:`<p>What does ‘cooperative’ mean in this scheduler?</p>
+`,explain:`<p>Run to completion, so no task-to-task races.</p>
+`,options:[`tasks are never preempted; each runs to completion`,`tasks cooperate through queues`,`tasks share a stack`,`interrupts are disabled`],answer:0},{id:`p10-l20-q6`,type:`mc`,q:`<p>Which check names the task that caused an overrun?</p>
+`,explain:`<p>The tick check only says that something was late.</p>
+`,options:[`the hyperperiod check`,`the watchdog`,`the per-task budget check with a timestamp`,`the tick overrun check`],answer:2}],"p10-l21":[{id:`p10-l21-q1`,type:`num`,q:`<p>Offset in bytes of the stacked PC in the exception frame?</p>
+`,explain:`<p>The seventh word.</p>
+`,answer:24,tol:.001,unit:`bytes`},{id:`p10-l21-q2`,type:`num`,q:`<p>CFSR value (decimal) with only DIVBYZERO set?</p>
+`,explain:`<p>0x02000000.</p>
+`,answer:33554432,tol:1e-7,unit:``},{id:`p10-l21-q3`,type:`num`,q:`<p>CFSR value (decimal) for PRECISERR plus BFARVALID?</p>
+`,explain:`<p>0x8200.</p>
+`,answer:33280,tol:.001,unit:``},{id:`p10-l21-q4`,type:`num`,q:`<p>Size in bytes of the basic exception frame?</p>
+`,explain:`<p>Eight registers.</p>
+`,answer:32,tol:.001,unit:`bytes`},{id:`p10-l21-q5`,type:`mc`,q:`<p>EXC_RETURN bit 2 tells the handler…</p>
+`,explain:`<p>The stub tests it and reads MSP or PSP.</p>
+`,options:[`whether the FPU was used`,`the fault cause`,`which stack (MSP or PSP) holds the frame`,`the priority`],answer:2},{id:`p10-l21-q6`,type:`mc`,q:`<p>Which tool maps a stacked PC to a function and line?</p>
+`,explain:`<p>It needs the ELF with symbols, and -g for lines.</p>
+`,options:[`addr2line (or GDB’s info symbol / list)`,`nm only`,`size`,`objcopy`],answer:0}],"p10-l22":[{id:`p10-l22-q1`,type:`num`,q:`<p>With a 20 ms debounce, the last bounce at 104 ms, when is the press accepted, in ms?</p>
+`,explain:`<p>20 ms after the last raw change.</p>
+`,answer:124,tol:.001,unit:`ms`},{id:`p10-l22-q2`,type:`num`,q:`<p>Elapsed ms computed as uint32 (now − start) with start = 2^32 − 10 and now = 10?</p>
+`,explain:`<p>Unsigned subtraction wraps correctly.</p>
+`,answer:20,tol:.001,unit:`ms`},{id:`p10-l22-q3`,type:`num`,q:`<p>LED writes per second in blink mode with a 250 ms half-period?</p>
+`,explain:`<p>Toggle every 250 ms is a 2 Hz blink.</p>
+`,answer:4,tol:.001,unit:``},{id:`p10-l22-q4`,type:`num`,q:`<p>When does blink mode start if the press is accepted at 1020 ms and the hold time is 2 s?</p>
+`,explain:`<p>Hold time after the accepted press.</p>
+`,answer:3020,tol:.001,unit:`ms`},{id:`p10-l22-q5`,type:`mc`,q:`<p>What lets the module be tested on the host?</p>
+`,explain:`<p>The seam between logic and registers.</p>
+`,options:[`it uses volatile`,`it runs in QEMU`,`it calls hardware only through a HAL interface that tests can replace with a fake`,`compiling with -O0`],answer:2},{id:`p10-l22-q6`,type:`mc`,q:`<p>Which test double records calls and checks they were made correctly?</p>
+`,explain:`<p>Mocks verify interactions; CMock generates them.</p>
+`,options:[`a fake`,`a mock`,`a stub`,`a spy register`],answer:1}]};export{e as default};

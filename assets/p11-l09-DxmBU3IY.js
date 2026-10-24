@@ -1,0 +1,270 @@
+var e=`p11-l09`,t=40,n=`Reading an external ADC at hundreds of kilosamples per second over SPI is easy for the bus and hopeless for the CPU if it takes an interrupt per sample, so a timer starts each conversion and DMA moves each word while the CPU handles whole half-buffers. You derive the sample-rate limit from SCK, word length and conversion time, write the configuration and a timing model of timer, SPI and DMA, and test that it reaches 250 kS/s with no lost or torn samples.`,r=`<h2 id="throughput-from-first-principles">Throughput from first principles</h2>
+<p>An external SAR ADC typically works like this: a CONVST pulse (or CS falling) starts a conversion that takes <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7651em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">co</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight" style="margin-right:0.0359em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, then the master clocks out <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> bits over SPI. One sample takes</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9012em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">am</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">pl</span><span class="mord mathnormal mtight">e</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7651em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">co</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight" style="margin-right:0.0359em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.2408em;vertical-align:-0.8804em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.1076em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0576em;">S</span><span class="mord mathnormal mtight" style="margin-right:0.0715em;">C</span><span class="mord mathnormal mtight" style="margin-right:0.0715em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8804em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.9805em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em;">g</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1076em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight">ma</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.2935em;vertical-align:-0.9721em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">am</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">pl</span><span class="mord mathnormal mtight">e</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9721em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mpunct">,</span></span></span></span></span></div>
+<p>where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9012em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em;">g</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span> is the minimum CS-high time. The plain bus figure <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.1076em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0576em;">S</span><span class="mord mathnormal mtight" style="margin-right:0.0715em;">C</span><span class="mord mathnormal mtight" style="margin-right:0.0715em;">K</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> is an upper bound you never quite reach.</p>
+<p>On an STM32 the SPI clock is the bus clock divided by a power of two: with an 84 MHz APB2, SCK can be 42, 21, 10.5, 5.25 MHz and so on. If the ADC allows up to 20 MHz, you get 10.5 MHz, not 20. With <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">16</span></span></span></span>, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7651em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">co</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight" style="margin-right:0.0359em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">700</span></span></span></span> ns and <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9012em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em;">g</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">100</span></span></span></span> ns: <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9012em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">am</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">pl</span><span class="mord mathnormal mtight">e</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">0.7</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1.524</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.1</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">2.324</span></span></span></span> µs, so at most 430 kS/s.</p>
+<h2 id="why-not-an-interrupt-per-sample">Why not an interrupt per sample</h2>
+<p>An ISR costs entry, exit and the handler: say 1.2 µs of CPU at 168 MHz. At 250 kS/s that’s 30 % of the CPU spent moving 16-bit words, and any higher-priority interrupt that runs longer than 4 µs makes you miss a sample.</p>
+<p>With DMA:</p>
+<ol>
+<li>A <strong>timer</strong> fires at exactly <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1076em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> and starts the conversion (pin toggle or CONVST output), so sampling is jitter-free regardless of the CPU.</li>
+<li>When the data is ready, the SPI clocks it out and the <strong>DMA</strong> writes each word into a circular buffer of <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span></span></span></span> samples.</li>
+<li>The DMA raises <strong>half-transfer</strong> and <strong>transfer-complete</strong> interrupts. The CPU processes one half while the DMA fills the other: one interrupt per <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span></span></span></span> samples.</li>
+</ol>
+<p>The rule that keeps data intact: processing one half must finish before the DMA comes back to it, so <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9012em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span><span class="mord mathnormal mtight">ocess</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mord">/</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1076em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>. With <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">512</span></span></span></span> at 250 kS/s that’s 2.048 ms.</p>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="spidma" data-args="{}"></div></div><figcaption>Timer, conversion, SPI words and DMA half-buffers on one timeline, with the throughput gauge. Raise the target rate or lower SCK until the sample no longer fits its slot, and lengthen the processing until it overruns the half-buffer.</figcaption></figure>
+<h2 id="worked-example">Worked example</h2>
+<p>Target 250 kS/s from the ADC above with <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">512</span></span></span></span>.</p>
+<ol>
+<li>Timer period: 84 MHz / 250 kHz = 336 counts, exactly 4.000 µs.</li>
+<li>The sample takes 2.324 µs of its 4 µs slot: 58 % bus utilisation, 1.676 µs of slack.</li>
+<li>Interrupts: <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">250</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">000/512</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">488</span></span></span></span> per second instead of 250 000.</li>
+<li>If each half-buffer ISR takes 40 µs plus 1.2 µs overhead, the CPU load is <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">488</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">41.2</span><span class="mspace">\xA0</span><span class="mord mathnormal">μ</span><span class="mord text"><span class="mord">s</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">2.0</span></span></span></span> %, against 30 % per-sample.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">spi_dma.c</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdint.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span>
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span>
+  <span class="hljs-type">double</span> pclk_hz, adc_max_sck_hz, t_conv_s, t_gap_s; <span class="hljs-type">int</span> bits;
+} <span class="hljs-type">hw_t</span>;
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span> <span class="hljs-type">int</span> br; <span class="hljs-type">double</span> sck_hz; <span class="hljs-type">long</span> timer_arr; <span class="hljs-type">double</span> t_sample_s; <span class="hljs-type">double</span> fs_hz; } <span class="hljs-type">spi_cfg_t</span>;
+
+<span class="hljs-comment">/* pick the fastest SCK the ADC allows (pclk / 2^(br+1)) and a timer reload for the target rate */</span>
+<span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">configure</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">hw_t</span> *hw, <span class="hljs-type">double</span> target_fs, <span class="hljs-type">spi_cfg_t</span> *c)</span> {
+  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> br = <span class="hljs-number">0</span>; br &lt; <span class="hljs-number">8</span>; br++) {
+    <span class="hljs-type">double</span> sck = hw-&gt;pclk_hz / (<span class="hljs-type">double</span>)(<span class="hljs-number">2</span> &lt;&lt; br);
+    <span class="hljs-keyword">if</span> (sck &gt; hw-&gt;adc_max_sck_hz) <span class="hljs-keyword">continue</span>;
+    c-&gt;br = br; c-&gt;sck_hz = sck;
+    c-&gt;t_sample_s = hw-&gt;t_conv_s + hw-&gt;bits / sck + hw-&gt;t_gap_s;
+    <span class="hljs-type">double</span> ticks = hw-&gt;pclk_hz / target_fs;
+    c-&gt;timer_arr = (<span class="hljs-type">long</span>)(ticks + <span class="hljs-number">0.5</span>) - <span class="hljs-number">1</span>;
+    c-&gt;fs_hz = hw-&gt;pclk_hz / (<span class="hljs-type">double</span>)(c-&gt;timer_arr + <span class="hljs-number">1</span>);
+    <span class="hljs-keyword">if</span> (c-&gt;t_sample_s &gt; <span class="hljs-number">1.0</span> / c-&gt;fs_hz) <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;          <span class="hljs-comment">/* doesn&#x27;t fit in one period */</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-number">-2</span>;
+}
+
+<span class="hljs-comment">/* ---------- timing model: timer -&gt; conversion -&gt; SPI word -&gt; DMA into a circular buffer ---------- */</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> HALF 512</span>
+<span class="hljs-type">static</span> <span class="hljs-type">uint16_t</span> buf[<span class="hljs-number">2</span> * HALF];
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span> <span class="hljs-type">long</span> samples, overruns, torn_halves, halves_ok, isrs; <span class="hljs-type">double</span> cpu_busy_s; } <span class="hljs-type">result_t</span>;
+
+<span class="hljs-comment">/* the ADC returns a code that encodes the sample index, so lost or reordered samples are detectable */</span>
+<span class="hljs-type">static</span> <span class="hljs-type">uint16_t</span> <span class="hljs-title function_">adc_code</span><span class="hljs-params">(<span class="hljs-type">long</span> k)</span> { <span class="hljs-keyword">return</span> (<span class="hljs-type">uint16_t</span>)(k * <span class="hljs-number">40503u</span>); }
+
+<span class="hljs-type">static</span> <span class="hljs-type">result_t</span> <span class="hljs-title function_">run</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">hw_t</span> *hw, <span class="hljs-type">const</span> <span class="hljs-type">spi_cfg_t</span> *c, <span class="hljs-type">double</span> seconds, <span class="hljs-type">double</span> t_process_s, <span class="hljs-type">double</span> isr_overhead_s)</span> {
+  <span class="hljs-type">result_t</span> r; <span class="hljs-built_in">memset</span>(&amp;r, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span> r);
+  <span class="hljs-type">double</span> T = <span class="hljs-number">1.0</span> / c-&gt;fs_hz, dma_latency = <span class="hljs-number">50e-9</span>;
+  <span class="hljs-type">long</span> n = (<span class="hljs-type">long</span>)(seconds * c-&gt;fs_hz);
+  <span class="hljs-type">double</span> busy_until = <span class="hljs-number">-1</span>;                                     <span class="hljs-comment">/* the SPI/ADC chain */</span>
+  <span class="hljs-type">double</span> cpu_free_at = <span class="hljs-number">0</span>;
+  <span class="hljs-type">double</span> proc_end[<span class="hljs-number">2</span>] = {<span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>};                              <span class="hljs-comment">/* when the CPU finishes reading each half */</span>
+  <span class="hljs-type">long</span> proc_first[<span class="hljs-number">2</span>] = {<span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>};
+  <span class="hljs-keyword">for</span> (<span class="hljs-type">long</span> k = <span class="hljs-number">0</span>; k &lt; n; k++) {
+    <span class="hljs-type">double</span> t = k * T;                                         <span class="hljs-comment">/* timer update event: CONVST */</span>
+    <span class="hljs-keyword">if</span> (t &lt; busy_until) { r.overruns++; <span class="hljs-keyword">continue</span>; }
+    <span class="hljs-type">double</span> done = t + hw-&gt;t_conv_s + hw-&gt;bits / c-&gt;sck_hz + dma_latency;
+    busy_until = t + c-&gt;t_sample_s;
+    <span class="hljs-type">long</span> slot = k % (<span class="hljs-number">2</span> * HALF); <span class="hljs-type">int</span> h = (<span class="hljs-type">int</span>)(slot / HALF);
+    <span class="hljs-keyword">if</span> (slot % HALF == <span class="hljs-number">0</span> &amp;&amp; proc_first[h] &gt;= <span class="hljs-number">0</span>) {             <span class="hljs-comment">/* the DMA re-enters a half the CPU was given */</span>
+      <span class="hljs-keyword">if</span> (done &lt; proc_end[h]) r.torn_halves++;                <span class="hljs-comment">/* still being read: torn */</span>
+      <span class="hljs-keyword">else</span> {                                                  <span class="hljs-comment">/* the CPU read it in time: check its contents */</span>
+        <span class="hljs-type">int</span> ok = <span class="hljs-number">1</span>;
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">long</span> i = <span class="hljs-number">0</span>; i &lt; HALF; i++) ok &amp;= buf[h * HALF + i] == adc_code(proc_first[h] + i);
+        r.halves_ok += ok;
+      }
+      proc_first[h] = <span class="hljs-number">-1</span>;
+    }
+    buf[slot] = adc_code(k);
+    r.samples++;
+    <span class="hljs-keyword">if</span> (slot % HALF == HALF - <span class="hljs-number">1</span>) {                            <span class="hljs-comment">/* half-transfer or transfer-complete IRQ */</span>
+      r.isrs++;
+      <span class="hljs-type">double</span> start = done &gt; cpu_free_at ? done : cpu_free_at;
+      proc_end[h] = start + isr_overhead_s + t_process_s;
+      cpu_free_at = proc_end[h];
+      r.cpu_busy_s += isr_overhead_s + t_process_s;
+      proc_first[h] = k - (HALF - <span class="hljs-number">1</span>);
+    }
+  }
+  <span class="hljs-keyword">return</span> r;
+}
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> CHECK(c) do { <span class="hljs-keyword">if</span> (!(c)) { printf(<span class="hljs-string">&quot;FAIL line %d: %s\\n&quot;</span>, __LINE__, #c); exit(1); } } while (0)</span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+  <span class="hljs-type">const</span> <span class="hljs-type">hw_t</span> hw = {<span class="hljs-number">84e6</span>, <span class="hljs-number">20e6</span>, <span class="hljs-number">700e-9</span>, <span class="hljs-number">100e-9</span>, <span class="hljs-number">16</span>};
+  <span class="hljs-type">spi_cfg_t</span> c;
+  CHECK(configure(&amp;hw, <span class="hljs-number">250e3</span>, &amp;c) == <span class="hljs-number">0</span>);
+  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SCK %.2f MHz (BR=%d), sample takes %.3f us, timer ARR=%ld -&gt; %.1f kS/s\\n&quot;</span>, c.sck_hz / <span class="hljs-number">1e6</span>, c.br, c.t_sample_s * <span class="hljs-number">1e6</span>, c.timer_arr, c.fs_hz / <span class="hljs-number">1e3</span>);
+  CHECK(c.sck_hz == <span class="hljs-number">10.5e6</span> &amp;&amp; c.timer_arr == <span class="hljs-number">335</span> &amp;&amp; c.fs_hz == <span class="hljs-number">250e3</span>);
+  CHECK(c.t_sample_s &gt; <span class="hljs-number">2.3238e-6</span> &amp;&amp; c.t_sample_s &lt; <span class="hljs-number">2.3239e-6</span>);
+  <span class="hljs-type">double</span> fmax = <span class="hljs-number">1</span> / c.t_sample_s;
+  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;bus limit at this SCK: %.0f kS/s\\n&quot;</span>, fmax / <span class="hljs-number">1e3</span>);
+  CHECK(fmax &gt; <span class="hljs-number">430e3</span> &amp;&amp; fmax &lt; <span class="hljs-number">431e3</span>);
+  <span class="hljs-type">spi_cfg_t</span> c2;
+  CHECK(configure(&amp;hw, <span class="hljs-number">500e3</span>, &amp;c2) == <span class="hljs-number">-1</span>);                    <span class="hljs-comment">/* 2 us slot &lt; 2.324 us sample */</span>
+
+  <span class="hljs-comment">/* one second at 250 kS/s with DMA and 40 us of processing per half */</span>
+  <span class="hljs-type">result_t</span> r = run(&amp;hw, &amp;c, <span class="hljs-number">1.0</span>, <span class="hljs-number">40e-6</span>, <span class="hljs-number">1.2e-6</span>);
+  <span class="hljs-type">double</span> load = r.cpu_busy_s / <span class="hljs-number">1.0</span>;
+  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;DMA: %ld samples, %ld overruns, %ld interrupts, %ld/%ld halves intact, CPU load %.2f %%\\n&quot;</span>,
+         r.samples, r.overruns, r.isrs, r.halves_ok, r.isrs - <span class="hljs-number">1</span>, load * <span class="hljs-number">100</span>);
+  CHECK(r.samples == <span class="hljs-number">250000</span> &amp;&amp; r.overruns == <span class="hljs-number">0</span> &amp;&amp; r.torn_halves == <span class="hljs-number">0</span>);
+  CHECK(r.isrs == <span class="hljs-number">250000</span> / HALF &amp;&amp; r.halves_ok == r.isrs - <span class="hljs-number">1</span>);   <span class="hljs-comment">/* every handed-over half checked except the last */</span>
+  CHECK(load &gt; <span class="hljs-number">0.019</span> &amp;&amp; load &lt; <span class="hljs-number">0.021</span>);
+  <span class="hljs-comment">/* interrupt per sample for comparison */</span>
+  <span class="hljs-type">double</span> per_sample_load = <span class="hljs-number">250e3</span> * <span class="hljs-number">1.2e-6</span>;
+  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;interrupt per sample would cost %.0f %% of the CPU\\n&quot;</span>, per_sample_load * <span class="hljs-number">100</span>);
+  CHECK(per_sample_load &gt; <span class="hljs-number">0.29</span>);
+  <span class="hljs-comment">/* processing slower than a half-buffer (2.048 ms) corrupts data */</span>
+  <span class="hljs-type">result_t</span> slow = run(&amp;hw, &amp;c, <span class="hljs-number">0.2</span>, <span class="hljs-number">2.5e-3</span>, <span class="hljs-number">1.2e-6</span>);
+  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;2.5 ms processing per half: %ld torn halves\\n&quot;</span>, slow.torn_halves);
+  CHECK(slow.torn_halves &gt; <span class="hljs-number">0</span>);
+  <span class="hljs-comment">/* a slow SCK makes the sample no longer fit */</span>
+  <span class="hljs-type">hw_t</span> slow_adc = hw; slow_adc.adc_max_sck_hz = <span class="hljs-number">5e6</span>;
+  <span class="hljs-type">spi_cfg_t</span> c3;
+  CHECK(configure(&amp;slow_adc, <span class="hljs-number">250e3</span>, &amp;c3) == <span class="hljs-number">-1</span> &amp;&amp; c3.sck_hz == <span class="hljs-number">2.625e6</span>);   <span class="hljs-comment">/* 2.625 MHz: too slow for 4 us */</span>
+  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;ADC limited to 5 MHz SCK: %.3f MHz, sample %.2f us, max %.0f kS/s\\n&quot;</span>, c3.sck_hz / <span class="hljs-number">1e6</span>, c3.t_sample_s * <span class="hljs-number">1e6</span>, <span class="hljs-number">1</span> / c3.t_sample_s / <span class="hljs-number">1e3</span>);
+  CHECK(c3.t_sample_s &gt; <span class="hljs-number">6.8e-6</span>);                              <span class="hljs-comment">/* 16 bits at 2.625 MHz alone is 6.1 us */</span>
+  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PASS\\n&quot;</span>);
+  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}</code></pre></div>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>Your ADC allows 20 MHz SCK but the STM32 gives you 10.5 or 21 MHz. Is running at 21 MHz a reasonable risk?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>No: 21 MHz is 5 % over the datasheet limit, and the limit usually comes from the ADC’s output delay, so you’d be eating into the round-trip margin of lesson 08 with no guarantee across temperature. Either accept 10.5 MHz, move the SPI to a bus clock that divides to 20 MHz or just under it, or pick a faster ADC.</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>Why trigger conversions from a timer instead of starting each one from the DMA-complete event?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>Back-to-back conversions would run at whatever rate the SPI and DMA latencies allow, which varies with bus contention, and the sample spacing would jitter. Filters, FFTs and control loops assume uniform sampling; a timer gives exactly 4.000 µs regardless of what the CPU or DMA is doing.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p11-l09"></div>
+`,i=[{id:`throughput-from-first-principles`,title:`Throughput from first principles`},{id:`why-not-an-interrupt-per-sample`,title:`Why not an interrupt per sample`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p11-l09-q1`,type:`num`,q:`<p>Sample time in µs with t_conv = 0.7 µs, 16 bits at 10.5 MHz and a 0.1 µs gap?</p>
+`,explain:`<p>Conversion plus the word plus the gap.</p>
+`,answer:2.324,tol:.001,unit:`µs`},{id:`p11-l09-q2`,type:`num`,q:`<p>Timer reload value (ARR) for 250 kS/s from 84 MHz?</p>
+`,explain:`<p>336 counts per period.</p>
+`,answer:335,tol:0,unit:``},{id:`p11-l09-q3`,type:`num`,q:`<p>Half-buffer interrupts per second at 250 kS/s with 512-sample halves?</p>
+`,explain:`<p>One per half.</p>
+`,answer:488.28,tol:.001,unit:`per s`},{id:`p11-l09-q4`,type:`num`,q:`<p>Time budget in ms to process a 512-sample half at 250 kS/s?</p>
+`,explain:`<p>Until the DMA wraps back.</p>
+`,answer:2.048,tol:.001,unit:`ms`},{id:`p11-l09-q5`,type:`mc`,q:`<p>What paces the samples in the DMA design?</p>
+`,explain:`<p>Jitter-free sampling.</p>
+`,options:[`the half-transfer interrupt`,`the DMA’s own speed`,`the CPU’s main loop`,`a hardware timer`],answer:3},{id:`p11-l09-q6`,type:`mc`,q:`<p>What happens if processing a half takes longer than the half-buffer time?</p>
+`,explain:`<p>A circular DMA never waits for the CPU.</p>
+`,options:[`the SPI slows down`,`the DMA overwrites data still being read, so samples are torn or lost`,`nothing`,`the DMA waits`],answer:1}],o=[{file:`spi_dma.c`,lang:`c`,src:`#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+  double pclk_hz, adc_max_sck_hz, t_conv_s, t_gap_s; int bits;
+} hw_t;
+typedef struct { int br; double sck_hz; long timer_arr; double t_sample_s; double fs_hz; } spi_cfg_t;
+
+/* pick the fastest SCK the ADC allows (pclk / 2^(br+1)) and a timer reload for the target rate */
+static int configure(const hw_t *hw, double target_fs, spi_cfg_t *c) {
+  for (int br = 0; br < 8; br++) {
+    double sck = hw->pclk_hz / (double)(2 << br);
+    if (sck > hw->adc_max_sck_hz) continue;
+    c->br = br; c->sck_hz = sck;
+    c->t_sample_s = hw->t_conv_s + hw->bits / sck + hw->t_gap_s;
+    double ticks = hw->pclk_hz / target_fs;
+    c->timer_arr = (long)(ticks + 0.5) - 1;
+    c->fs_hz = hw->pclk_hz / (double)(c->timer_arr + 1);
+    if (c->t_sample_s > 1.0 / c->fs_hz) return -1;          /* doesn't fit in one period */
+    return 0;
+  }
+  return -2;
+}
+
+/* ---------- timing model: timer -> conversion -> SPI word -> DMA into a circular buffer ---------- */
+#define HALF 512
+static uint16_t buf[2 * HALF];
+typedef struct { long samples, overruns, torn_halves, halves_ok, isrs; double cpu_busy_s; } result_t;
+
+/* the ADC returns a code that encodes the sample index, so lost or reordered samples are detectable */
+static uint16_t adc_code(long k) { return (uint16_t)(k * 40503u); }
+
+static result_t run(const hw_t *hw, const spi_cfg_t *c, double seconds, double t_process_s, double isr_overhead_s) {
+  result_t r; memset(&r, 0, sizeof r);
+  double T = 1.0 / c->fs_hz, dma_latency = 50e-9;
+  long n = (long)(seconds * c->fs_hz);
+  double busy_until = -1;                                     /* the SPI/ADC chain */
+  double cpu_free_at = 0;
+  double proc_end[2] = {-1, -1};                              /* when the CPU finishes reading each half */
+  long proc_first[2] = {-1, -1};
+  for (long k = 0; k < n; k++) {
+    double t = k * T;                                         /* timer update event: CONVST */
+    if (t < busy_until) { r.overruns++; continue; }
+    double done = t + hw->t_conv_s + hw->bits / c->sck_hz + dma_latency;
+    busy_until = t + c->t_sample_s;
+    long slot = k % (2 * HALF); int h = (int)(slot / HALF);
+    if (slot % HALF == 0 && proc_first[h] >= 0) {             /* the DMA re-enters a half the CPU was given */
+      if (done < proc_end[h]) r.torn_halves++;                /* still being read: torn */
+      else {                                                  /* the CPU read it in time: check its contents */
+        int ok = 1;
+        for (long i = 0; i < HALF; i++) ok &= buf[h * HALF + i] == adc_code(proc_first[h] + i);
+        r.halves_ok += ok;
+      }
+      proc_first[h] = -1;
+    }
+    buf[slot] = adc_code(k);
+    r.samples++;
+    if (slot % HALF == HALF - 1) {                            /* half-transfer or transfer-complete IRQ */
+      r.isrs++;
+      double start = done > cpu_free_at ? done : cpu_free_at;
+      proc_end[h] = start + isr_overhead_s + t_process_s;
+      cpu_free_at = proc_end[h];
+      r.cpu_busy_s += isr_overhead_s + t_process_s;
+      proc_first[h] = k - (HALF - 1);
+    }
+  }
+  return r;
+}
+#define CHECK(c) do { if (!(c)) { printf("FAIL line %d: %s\\n", __LINE__, #c); exit(1); } } while (0)
+
+int main(void) {
+  const hw_t hw = {84e6, 20e6, 700e-9, 100e-9, 16};
+  spi_cfg_t c;
+  CHECK(configure(&hw, 250e3, &c) == 0);
+  printf("SCK %.2f MHz (BR=%d), sample takes %.3f us, timer ARR=%ld -> %.1f kS/s\\n", c.sck_hz / 1e6, c.br, c.t_sample_s * 1e6, c.timer_arr, c.fs_hz / 1e3);
+  CHECK(c.sck_hz == 10.5e6 && c.timer_arr == 335 && c.fs_hz == 250e3);
+  CHECK(c.t_sample_s > 2.3238e-6 && c.t_sample_s < 2.3239e-6);
+  double fmax = 1 / c.t_sample_s;
+  printf("bus limit at this SCK: %.0f kS/s\\n", fmax / 1e3);
+  CHECK(fmax > 430e3 && fmax < 431e3);
+  spi_cfg_t c2;
+  CHECK(configure(&hw, 500e3, &c2) == -1);                    /* 2 us slot < 2.324 us sample */
+
+  /* one second at 250 kS/s with DMA and 40 us of processing per half */
+  result_t r = run(&hw, &c, 1.0, 40e-6, 1.2e-6);
+  double load = r.cpu_busy_s / 1.0;
+  printf("DMA: %ld samples, %ld overruns, %ld interrupts, %ld/%ld halves intact, CPU load %.2f %%\\n",
+         r.samples, r.overruns, r.isrs, r.halves_ok, r.isrs - 1, load * 100);
+  CHECK(r.samples == 250000 && r.overruns == 0 && r.torn_halves == 0);
+  CHECK(r.isrs == 250000 / HALF && r.halves_ok == r.isrs - 1);   /* every handed-over half checked except the last */
+  CHECK(load > 0.019 && load < 0.021);
+  /* interrupt per sample for comparison */
+  double per_sample_load = 250e3 * 1.2e-6;
+  printf("interrupt per sample would cost %.0f %% of the CPU\\n", per_sample_load * 100);
+  CHECK(per_sample_load > 0.29);
+  /* processing slower than a half-buffer (2.048 ms) corrupts data */
+  result_t slow = run(&hw, &c, 0.2, 2.5e-3, 1.2e-6);
+  printf("2.5 ms processing per half: %ld torn halves\\n", slow.torn_halves);
+  CHECK(slow.torn_halves > 0);
+  /* a slow SCK makes the sample no longer fit */
+  hw_t slow_adc = hw; slow_adc.adc_max_sck_hz = 5e6;
+  spi_cfg_t c3;
+  CHECK(configure(&slow_adc, 250e3, &c3) == -1 && c3.sck_hz == 2.625e6);   /* 2.625 MHz: too slow for 4 us */
+  printf("ADC limited to 5 MHz SCK: %.3f MHz, sample %.2f us, max %.0f kS/s\\n", c3.sck_hz / 1e6, c3.t_sample_s * 1e6, 1 / c3.t_sample_s / 1e3);
+  CHECK(c3.t_sample_s > 6.8e-6);                              /* 16 bits at 2.625 MHz alone is 6.1 us */
+  printf("PASS\\n");
+  return 0;
+}`}],s={id:e,minutes:40,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};
