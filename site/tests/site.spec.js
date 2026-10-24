@@ -11,7 +11,7 @@ test.afterEach(async ({ page }) => {
 
 test('home: hero, honest stats, tutor line and footer', async ({ page }) => {
   await expect(page).toHaveTitle(/Mechatronics from Scratch/);
-  await expect(page.locator('h1')).toContainText('Mechatronics');
+  await expect(page.locator('h1:visible').first()).toContainText('Mechatronics');
   await expect(page.locator('#stats')).toContainText('352');
   await expect(page.locator('#stats')).toContainText('20');
   await expect(page.getByTestId('full-count')).toHaveText('34');
@@ -57,8 +57,15 @@ test('lab 01 pendulum: balances, then falls when D is switched off', async ({ pa
 test('lab 02 arm: tracks a target placed by tap or drag, sags when the elbow motor is killed', async ({ page, isMobile }) => {
   const lab = await gotoLab(page, 'arm');
   const view = page.getByTestId('lab-arm-3d');
+  await view.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(200);
   const box = await view.boundingBox();
-  const x = box.x + box.width * 0.6, y = box.y + box.height * 0.35;
+  // first point that the canvas itself receives (the overlay toolbar can sit on top on short screens)
+  let x = 0, y = 0;
+  for (const [fx, fy] of [[0.6, 0.35], [0.6, 0.5], [0.55, 0.6], [0.45, 0.55]]) {
+    x = box.x + box.width * fx; y = box.y + box.height * fy;
+    if (await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.tagName === 'CANVAS', [x, y])) break;
+  }
   if (isMobile) {
     // touch never hijacks scroll: a drag needs Drag mode, a tap places the target directly
     await page.getByTestId('lab-arm-interact').click();

@@ -11,7 +11,7 @@ test.afterEach(async ({ page }) => {
 
 test('a full lesson renders math, code, exercises and widgets', async ({ page }) => {
   await page.goto('./#/learn/p01-l14');
-  await expect(page.getByTestId('lesson-title')).toHaveText('Rotation matrices');
+  await expect(page.getByTestId('lesson-title')).toHaveText(/^Rotation matrices/);
   const body = page.getByTestId('lesson-body');
   expect(await body.locator('.katex').count()).toBeGreaterThan(10);
   await expect(body.locator('.katex-display').first()).toBeVisible();
@@ -78,7 +78,7 @@ test('unwritten lessons show an honest outline', async ({ page }) => {
   await page.goto('./#/learn/p05-l01');
   await expect(page.getByTestId('coming-soon')).toContainText('Full lesson coming soon');
   await page.goto('./#/test/p05');
-  await expect(page.locator('h1')).toBeVisible();
+  await expect(page.locator('h1:visible').first()).toBeVisible();
   await expect(page.getByTestId('phase-test')).toHaveCount(0);
 });
 
@@ -98,7 +98,7 @@ test('phase test: failing, then passing, unlocks a verifiable certificate', asyn
   // attempt 2: new questions, all right
   await page.getByTestId('retake').click();
   qs = page.getByTestId('phase-test').getByTestId('question');
-  await expect(page.locator('h1')).toHaveText('Phase test');
+  await expect(page.locator('h1:visible').first()).toHaveText('Phase test');
   await expect(qs).toHaveCount(15);
   for (let i = 0; i < 15; i++) { const el = qs.nth(i); await answer(bank.get(await el.getAttribute('data-qid')), el, true); }
   await page.getByTestId('submit-test').click();
@@ -106,7 +106,9 @@ test('phase test: failing, then passing, unlocks a verifiable certificate', asyn
   await expect(page.getByTestId('test-result')).toContainText('15 of 15');
 
   await page.getByTestId('to-cert').click();
+  await expect(page.getByTestId('cert-canvas')).toHaveAttribute('data-ready', '1');
   await page.getByTestId('cert-name').fill('Ada Lovelace');
+  await expect.poll(() => page.evaluate(() => window.__mfs.store.get().certs.p01?.name)).toBe('Ada Lovelace');
   await expect(page.getByTestId('cert-canvas')).toHaveAttribute('data-ready', '1');
   const code = (await page.getByTestId('cert-code').textContent()).trim();
   expect(code).toMatch(/^[0-9A-HJKMNP-TV-Z]{4}(-[0-9A-HJKMNP-TV-Z]{4}){3}$/);
@@ -142,7 +144,7 @@ const ROUTES = ['#/', '#/course', '#/labs', '#/learn/p01-l01', '#/learn/p01-l12'
 test('every key route: no horizontal overflow, no console errors, touch targets ≥44px', async ({ page, isMobile }) => {
   for (const r of ROUTES) {
     await page.goto('./' + r); await page.waitForTimeout(500);
-    await expect(page.locator('h1').first()).toBeVisible();
+    await expect(page.locator('h1:visible').first()).toBeVisible();
     expect(await overflow(page), r).toBeLessThanOrEqual(0);
     if (isMobile) {
       const small = await page.evaluate(() => [...document.querySelectorAll('main button, main .btn, main input[type=checkbox], .lesson-bar a, .lesson-bar button')]

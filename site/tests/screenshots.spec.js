@@ -28,8 +28,8 @@ test('capture v2 screenshots', async ({ page }, info) => {
   await page.goto('./#/learn/p02-l09'); await page.waitForTimeout(800);
   await top(page, '[data-testid=quiz]', 70);
   const qs = page.getByTestId('quiz').getByTestId('question');
-  await qs.nth(0).locator('.q-opt').nth(0).click(); await qs.nth(0).locator('[data-check]').click();
-  await qs.nth(1).locator('input').first().click();
+  const mc = qs.filter({ has: page.locator('.q-opt') }).first();
+  await mc.locator('.q-opt').nth(0).click(); await mc.locator('[data-check]').click();
   await top(page, '[data-testid=quiz]', 70); await page.waitForTimeout(300);
   await shot(page, tag, 'quiz');
 

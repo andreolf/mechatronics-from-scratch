@@ -5,6 +5,7 @@ const gl = ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-
 const chromium = { launchOptions: { args: gl } };
 export default defineConfig({
   testDir: './tests',
+  testIgnore: process.env.SHOTS ? [] : ['**/screenshots.spec.js'],
   timeout: 120_000,
   expect: { timeout: 20_000 },
   fullyParallel: true,

@@ -121,14 +121,16 @@ export async function renderCert(root, key) {
       <p class="quiz-score" aria-live="polite">Verification code: <b class="tnum" data-testid="cert-code" translate="no">…</b> · Anyone can check it at <a href="#/verify">the verify page</a> with your name and date.</p>
       <div class="cert-preview"><canvas data-testid="cert-canvas" role="img" aria-label="Certificate preview"></canvas></div></div></div>`;
   const cv = root.querySelector('canvas'), inp = root.querySelector('[data-testid=cert-name]'), codeEl = root.querySelector('[data-testid=cert-code]');
-  let cur = null;
+  let seq = 0; // only the latest draw may mark the preview ready
   const draw = async () => {
-    const name = normName(inp.value); const code = await certCode(name, key, date);
-    cur = { name, code }; codeEl.textContent = code;
+    const my = ++seq; const name = normName(inp.value); const code = await certCode(name, key, date);
+    if (my !== seq) return;
+    codeEl.textContent = code;
     await drawCert(cv, { name, key, date, dateLabel: fmtDate(date), code, verifyUrl: verifyUrl() });
+    if (my !== seq) return;
     cv.dataset.ready = '1'; store.setName(name); store.saveCert(key, { name, date, code });
   };
-  let t; inp.addEventListener('input', () => { clearTimeout(t); t = setTimeout(draw, 200); });
+  let t; inp.addEventListener('input', () => { seq++; cv.dataset.ready = '0'; codeEl.textContent = '…'; clearTimeout(t); t = setTimeout(draw, 200); });
   const fname = (ext) => `mechatronics-from-scratch-${key}-certificate.${ext}`;
   root.querySelector('[data-png]').addEventListener('click', async () => { await draw(); cv.toBlob((b) => download(fname('png'), b), 'image/png'); });
   root.querySelector('[data-pdf]').addEventListener('click', async () => { await draw(); download(fname('pdf'), pdfFromCanvas(cv)); });
