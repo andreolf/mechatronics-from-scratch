@@ -94,6 +94,7 @@ test('phase test: failing, then passing, unlocks a verifiable certificate', asyn
   for (let i = 0; i < 15; i++) { const el = qs.nth(i); await answer(bank.get(await el.getAttribute('data-qid')), el, false); }
   await page.getByTestId('submit-test').click();
   await expect(page.getByTestId('test-result')).toHaveAttribute('data-pass', 'false');
+  await expect(page.locator('.q [data-testid=test-result]')).toHaveCount(0); // result sits below the form, not inside a question
 
   // attempt 2: new questions, all right
   await page.getByTestId('retake').click();

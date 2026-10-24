@@ -370,8 +370,10 @@ figure.fig figcaption { font-family: var(--sans); font-size: var(--t-0); color: 
 .verify-out { margin-top: 12px; padding: 12px 14px; border-radius: 10px; font-size: var(--t-1); }
 .verify-out.ok { background: #c6ff1a14; border: 1px solid #c6ff1a55; }
 .verify-out.no { background: #ff6b5b14; border: 1px solid #ff6b5b55; }
-.test-progress { position: sticky; top: calc(var(--head-h) + env(safe-area-inset-top)); z-index: 5; background: #000e; padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: var(--t-0); color: var(--fog); display: flex; justify-content: space-between; gap: 12px; }
-.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80; background: var(--lime); color: var(--lime-ink); font-weight: 700; border-radius: 999px; padding: 12px 18px; font-size: var(--t-1); box-shadow: 0 10px 40px #000; max-width: calc(100vw - 32px); }
+.test-progress { position: sticky; top: calc(var(--head-h) + env(safe-area-inset-top)); z-index: 5; background: #000; margin: 0 calc(-1 * var(--pad-r)) 0 calc(-1 * var(--pad)); padding-left: var(--pad); padding-right: var(--pad-r); padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); font-size: var(--t-0); color: var(--fog); display: flex; justify-content: space-between; gap: 12px; }
+.toast { position: fixed; right: max(12px, env(safe-area-inset-right)); top: calc(var(--head-h) + env(safe-area-inset-top) + 10px); z-index: 80; pointer-events: none; background: var(--lime); color: var(--lime-ink); font: 600 13px/1.2 var(--sans); border-radius: 999px; padding: 8px 14px; box-shadow: 0 6px 24px #0009; max-width: min(320px, calc(100vw - 24px)); }
+.toast[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) { .toast:not([hidden]) { animation: toast-in .18s ease-out; } @keyframes toast-in { from { opacity: 0; transform: translateY(-6px); } } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
 @media (min-width: 480px) { .hero-facts { grid-template-columns: repeat(4, auto); } }
 h1[tabindex="-1"]:focus { outline: none; }

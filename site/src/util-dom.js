@@ -5,9 +5,9 @@ export const fmtNum = (n) => new Intl.NumberFormat(navigator.language || 'en').f
 let toastTimer;
 export function toast(msg) {
   let t = document.querySelector('.toast');
-  if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite'); document.body.append(t); }
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite'); document.body.append(t); window.addEventListener('hashchange', () => (t.hidden = true)); }
   t.textContent = msg; t.hidden = false;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2600);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2000);
 }
 export function download(name, blob) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;

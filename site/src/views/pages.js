@@ -46,7 +46,7 @@ export async function renderTest(root, pid) {
     <div class="test-progress" aria-live="polite"><span data-answered>0 of ${qs.length} answered</span><span>Pass: ${Math.ceil(qs.length * PASS)}</span></div>
     <form class="quiz" data-testid="phase-test" novalidate></form>
     <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" type="button" data-testid="submit-test">Submit answers</button></div>
-    <div data-result aria-live="polite"></div></div>`;
+    <div data-test-out aria-live="polite"></div></div>`;
   const form = root.querySelector('form'); const els = qs.map((q, i) => questionEl(q, i + 1, { instant: false }));
   els.forEach((e, i) => { const src = document.createElement('p'); src.className = 'quiz-score'; src.style.margin = '10px 0 0'; src.innerHTML = `From <a href="#/learn/${qs[i].lesson.id}">${esc(qs[i].lesson.title)}</a>`; e.append(src); form.append(e); });
   const counter = root.querySelector('[data-answered]');
@@ -60,7 +60,7 @@ export async function renderTest(root, pid) {
     els.forEach((e) => { e.reveal(); e.querySelectorAll('input').forEach((i) => (i.disabled = true)); });
     const score = els.filter((e) => e.correct()).length, frac = score / qs.length, pass = frac >= PASS;
     const gained = store.testResult(pid, score, qs.length);
-    const out = root.querySelector('[data-result]');
+    const out = root.querySelector("[data-test-out]");
     out.innerHTML = `<div class="complete-card" style="margin-top:20px" data-testid="test-result" data-pass="${pass}"><h2>${pass ? 'Passed' : 'Not passed yet'}: ${score} of ${qs.length} (${Math.round(frac * 100)} %)</h2>
       <p>${pass ? `You passed Phase ${pad2(p.number)}.${gained ? ` +${gained} XP.` : ''} Your certificate is ready.` : 'You need 80 %. Review the explanations above, revisit the linked lessons, and retake the test. Each attempt draws a new set of questions.'}</p>
       <div class="hero-actions">${pass ? `<a class="btn btn-primary" href="#/certificate/${p.id}" data-testid="to-cert">Get your certificate</a>` : ''}<a class="btn btn-quiet" href="#/test/${p.id}?a=${attempts + 1}" data-testid="retake">Retake with new questions</a></div></div>`;
