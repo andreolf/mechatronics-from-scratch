@@ -1,6 +1,7 @@
 // Lesson widgets. Each one is touch-first: sliders and taps work everywhere; dragging on touch needs the "Drag" toggle.
 import { Plot, frame, slider, select, toggle, h, C, f3 } from './plot.js';
 import MORE from './signals.js';
+import CIRCUITS from './circuits.js';
 
 const W = {};
 const log10 = Math.log10;
@@ -309,7 +310,7 @@ W.gd = (el) => {
   p.redraw();
 };
 
-Object.assign(W, MORE);
+Object.assign(W, MORE, CIRCUITS);
 
 export function hydrateWidgets(root) {
   root.querySelectorAll('.widget[data-widget]').forEach((el) => {

@@ -30,14 +30,22 @@ const map = phaseMap({ grid: $('phase-grid'), search: $('search'), status: $('se
 
 // ---------- 3D: hero now, labs when first near the viewport ----------
 let heroStarted = false, labsStarted = false;
+// A chunk fetch can fail on a flaky connection (WebKit: "Importing a module script failed"). Retry twice, then degrade quietly.
+async function retryImport(load, tries = 3) {
+  for (let k = 1; ; k++) {
+    try { return await load(); } catch (e) { if (k >= tries) throw e; await new Promise((r) => setTimeout(r, 400 * k)); }
+  }
+}
 async function startHero() {
   if (heroStarted) return; heroStarted = true;
-  const { hero } = await import('./hero.js');
+  let mod; try { mod = await retryImport(() => import('./hero.js')); } catch (e) { heroStarted = false; console.warn('hero failed to load', e); return; }
+  const { hero } = mod;
   hero($('hero-canvas'), $('hero-readout'), $('hero-pause'));
 }
 async function startLabs() {
   if (labsStarted) return; labsStarted = true;
-  const [{ pendulumLab }, { armLab }, { quadLab }, { motorLab }] = await Promise.all([import('./labs/pendulumLab.js'), import('./labs/armLab.js'), import('./labs/quadLab.js'), import('./labs/motorLab.js')]);
+  let mods; try { mods = await retryImport(() => Promise.all([import('./labs/pendulumLab.js'), import('./labs/armLab.js'), import('./labs/quadLab.js'), import('./labs/motorLab.js')])); } catch (e) { labsStarted = false; console.warn('labs failed to load', e); return; }
+  const [{ pendulumLab }, { armLab }, { quadLab }, { motorLab }] = mods;
   const root = $('lab-root');
   window.__mfs.labs.pendulum = pendulumLab(root);
   window.__mfs.labs.arm = armLab(root);
@@ -50,7 +58,7 @@ const labIO = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersec
 // ---------- router ----------
 const home = $('view-home'), page = $('view-page'), app = $('app');
 let pageMods = null;
-const loadPages = () => (pageMods ||= Promise.all([import('./views/lesson.js'), import('./views/pages.js')]));
+const loadPages = () => (pageMods ||= retryImport(() => Promise.all([import('./views/lesson.js'), import('./views/pages.js')])).catch((e) => { pageMods = null; throw e; }));
 const HOME_ANCHORS = { '#/course': 'course', '#/labs': 'labs', '#/tutor': 'tutor', '#/loop': 'loop' };
 
 function setNav(key) { document.querySelectorAll('.site-nav a').forEach((a) => (a.dataset.nav === key ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'))); }

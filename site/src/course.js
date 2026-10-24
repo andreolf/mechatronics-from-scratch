@@ -5,7 +5,7 @@ import index from './generated/index.json';
 const lessonLoaders = import.meta.glob('./generated/lessons/*.json');
 const quizLoaders = import.meta.glob('./generated/quiz-p*.json');
 const cache = new Map();
-const load = async (loaders, key) => { if (cache.has(key)) return cache.get(key); if (!loaders[key]) return null; const m = await loaders[key](); const v = m.default || m; cache.set(key, v); return v; };
+const load = async (loaders, key) => { if (cache.has(key)) return cache.get(key); if (!loaders[key]) return null; let m; for (let k = 1; ; k++) { try { m = await loaders[key](); break; } catch (e) { if (k >= 3) throw e; await new Promise((r) => setTimeout(r, 400 * k)); } } const v = m.default || m; cache.set(key, v); return v; };
 export const course = data;
 export const full = index;
 export const phases = data.phases;
