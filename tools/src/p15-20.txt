@@ -1,0 +1,118 @@
+@phase 15 | robot-kinematics-dynamics | Robot Kinematics & Dynamics | Frames, Jacobians, inverse kinematics and the dynamics of arms, wheels and legs. | Robot Dynamics | yes | Robotics Toolbox for Python | Python
+L Rigid-body configuration | Describe where a robot link is. | Degrees of freedom, Grubler's formula, configuration space. | Compute DOF of planar mechanisms. | Mechanism with DOF counter. | Matches known mechanisms. | NumPy
+L Forward kinematics of a planar 2-link arm | Find the tool position from joint angles. | x = l1 cos q1 + l2 cos(q1 + q2). | Implement FK and plot the workspace. | [live:arm] Arm with reachable workspace shaded. | FK matches geometric construction. | Robotics Toolbox for Python
+L Denavit-Hartenberg parameters | Describe serial chains compactly. | DH transform derivation. | Build FK for a 3-DOF arm from a DH table. | DH frames on a 3D arm. | Matches homogeneous transform chain. | Robotics Toolbox for Python
+L Product of exponentials | Use screw axes instead of DH. | T = e^[S1]q1 ... M. | Implement PoE FK. | Screw axes drawn on joints. | Agrees with DH FK. | Modern Robotics library
+L Forward kinematics of a 6-DOF arm | Model an industrial arm. | Spherical wrist decomposition. | FK for a generic 6-DOF arm. | 3D arm with tool frame. | Matches URDF-based FK. | Pinocchio
+L Analytic inverse kinematics | Solve joint angles in closed form. | Law of cosines; elbow-up and elbow-down branches. | Implement analytic IK for 2- and 3-link planar arms. | [live:arm] Drag target, see both branches. | FK(IK(x)) = x for reachable targets. | Robotics Toolbox for Python
+L Numerical IK with the Jacobian pseudo-inverse | Solve IK for any chain. | dq = J^+ dx; Newton iterations. | Implement iterative IK. | [live:arm] Arm converging to the cursor. | Converges within 20 iterations for reachable targets. | Pinocchio
+L Damped least squares and singularities | Survive singular configurations. | dq = J^T (J J^T + lambda^2 I)^-1 dx. | Implement DLS and compare near singularities. | [live:arm] Arm at full stretch with and without damping. | DLS bounded joint speed at singularity. | Pinocchio
+L Velocity kinematics | Map joint rates to tool velocity. | Geometric Jacobian columns z_i x (p - p_i). | Compute the geometric Jacobian. | Velocity ellipsoid at the tool. | Matches numerical differentiation. | Pinocchio
+L Statics: tau = J^T F | Compute joint torques for a tool force. | Virtual work principle. | Compute holding torques for a payload. | Force arrow at tool with joint torque bars. | Matches Newton-Euler at rest. | Pinocchio
+L Joint limits and redundancy | Use extra DOF for secondary goals. | Null-space projection (I - J^+ J). | Implement IK with joint-limit avoidance in null space. | [live:arm] Toggle joint limits and see unreachable targets. | Joint limits respected while tracking. | Pinocchio
+L Recursive Newton-Euler dynamics | Compute inverse dynamics fast. | Forward velocity pass, backward force pass. | Implement RNEA for a planar arm. | Force propagation down links. | Matches Lagrangian result. | Pinocchio
+L Lagrangian dynamics of a 2-link arm | Get M(q), C(q, dq) and g(q). | Kinetic energy of links; Christoffel symbols. | Derive with SymPy and simulate. | Arm falling under gravity. | Energy conserved without damping. | SymPy
+L Computed-torque control | Linearise an arm by feedback. | tau = M(q)(qdd_d + Kd e' + Kp e) + C + g. | Implement computed torque control. | Arm tracking a trajectory with error traces. | Tracking error decays exponentially. | MuJoCo
+L Impedance control | Make a robot compliant to touch. | Desired mass-spring-damper at the tool. | Implement Cartesian impedance control. | Pushing the arm and feeling it spring back. | Effective stiffness matches design. | MuJoCo
+L Mobile robot kinematics | Model a differential-drive robot. | Unicycle model; nonholonomic constraint. | Simulate a diff-drive robot. | Robot driving arcs. | Odometry matches kinematic integration. | ROS 2
+L Legged locomotion basics | Understand quadruped gaits generically, in the style of research quadrupeds. | Support polygon, centre of mass, gait phases. | Simulate a quadruped gait pattern kinematically. | Quadruped stepping with support polygon. | CoM stays in support polygon for static gait. | MuJoCo
+L Floating-base dynamics | Model robots that are not bolted down. | Floating base coordinates; contact constraints. | Compute contact forces for a standing quadruped. | Contact force arrows on feet. | Forces balance gravity. | Pinocchio
+
+@phase 16 | motion-planning | Motion Planning & Trajectories | Plan collision-free paths and smooth, feasible trajectories. | Autonomous Mobile Robots | yes | OMPL | Python
+L Configuration space | Turn obstacles into C-space regions. | Minkowski sums; C-obstacles for a 2-link arm. | Compute a C-space map for a planar arm. | Workspace and C-space side by side. | Collision-free path in C-space is collision-free in workspace. | OMPL
+L Polynomial trajectories | Move smoothly between points. | Cubic and quintic boundary-condition solves. | Implement cubic and quintic trajectories. | Position, velocity and acceleration plots. | Boundary conditions satisfied exactly. | NumPy
+L Trapezoidal velocity profiles | Move motors with acceleration limits. | Triangular versus trapezoidal profile times. | Implement a trapezoidal profile generator. | Profile with limits shaded. | Never exceeds limits. | NumPy
+L Jerk-limited S-curves | Reduce vibration in motion. | Seven-segment S-curve. | Implement S-curve profiles. | Vibration of a flexible load with and without S-curve. | Residual vibration reduced. | NumPy
+L Splines | Interpolate many waypoints. | Cubic splines with continuity conditions. | Implement natural cubic splines. | Spline through draggable waypoints. | C2 continuity verified. | SciPy interpolate
+L Graph search: BFS and Dijkstra | Plan on grids. | Optimality and complexity. | Implement BFS and Dijkstra on occupancy grids. | Wavefront spreading over a map. | Path cost optimal. | Nav2
+L A* search | Plan faster with a heuristic. | Admissible heuristic preserves optimality. | Implement A* and compare expansions. | Fewer expanded nodes visualised. | Same cost as Dijkstra, fewer expansions. | Nav2
+L Potential fields | Navigate reactively. | Attractive and repulsive potentials; local minima. | Implement potential-field navigation. | Robot stuck in a local minimum. | Reaches goal in open map; detects minima. | NumPy
+L Probabilistic roadmaps | Plan in high-dimensional spaces. | Sampling and connection; probabilistic completeness. | Implement PRM for a 2-link arm. | Roadmap growing. | Finds a path when one exists in tests. | OMPL
+L RRT and RRT* | Plan with tree growth. | Voronoi bias; asymptotic optimality of RRT*. | Implement RRT and RRT*. | Tree growing toward goal. | RRT* path cost decreases with samples. | OMPL
+L Collision checking | Check robot versus obstacles quickly. | Separating axis theorem; bounding volumes. | Implement SAT for 2D polygons. | Shapes turning red on collision. | Matches brute-force tests. | FCL
+L Trajectory optimisation | Optimise smoothness and obstacle cost. | Minimum-jerk objective; gradient-based optimisation. | Implement a simple CHOMP-style optimiser. | Path bending away from obstacles. | Cost decreases and path stays collision-free. | SciPy optimize
+L Time-optimal path parameterisation | Move as fast as limits allow. | Phase plane s, s-dot with velocity and acceleration limits. | Implement a simple TOPP on a path. | Phase-plane limit curve. | Respects all limits. | TOPP-RA
+L Pure pursuit path tracking | Follow a path with a mobile robot. | Curvature = 2 y/L^2 for lookahead L. | Implement pure pursuit. | Robot following a track with lookahead circle. | Cross-track error below spec. | Nav2
+
+@phase 17 | vision-slam | Computer Vision, Estimation & SLAM | Cameras, features, localisation and mapping, built from pixels and probabilities. | Vision and mobile robot estimation (generic) | no | OpenCV | Python
+L Images as arrays | Treat an image as numbers. | Pixels, channels, colour spaces. | Load and manipulate images with NumPy only. | Pixel inspector. | Conversions match OpenCV. | OpenCV
+L The pinhole camera model | Map 3D points to pixels. | u = f x/z + cx; intrinsic matrix K. | Project 3D points to an image. | 3D scene with camera frustum. | Matches cv2.projectPoints. | OpenCV
+L Camera calibration | Estimate K from checkerboard images. | Zhang's homography method. | Implement calibration from synthetic data. | Checkerboard views. | Recovers intrinsics within 1 percent. | OpenCV
+L Lens distortion | Undistort images. | Radial and tangential models. | Implement undistortion. | Warped grid straightening. | Matches OpenCV undistortion. | OpenCV
+L Convolution and edges | Find edges. | Sobel kernels; gradient magnitude. | Implement Sobel and Canny-style non-max suppression. | Edge map. | Matches OpenCV within tolerance. | OpenCV
+L Thresholding and blobs | Find coloured objects. | Otsu's method; connected components. | Implement Otsu and blob labelling. | Blobs labelled with centroids. | Counts match ground truth. | OpenCV
+L Harris corners | Find trackable points. | Structure tensor eigenvalues. | Implement Harris detection. | Corners highlighted. | Repeatable under rotation. | OpenCV
+L Descriptors and matching | Match features between images. | Binary descriptors and Hamming distance; ratio test. | Implement BRIEF-like descriptors and matching. | Matches drawn between frames. | Inlier ratio above target. | OpenCV
+L Homographies and DLT | Map planes between views. | Direct linear transform with SVD. | Implement DLT homography. | Image warped onto a plane. | Reprojection error below 1 px. | OpenCV
+L RANSAC | Fit models with outliers. | Iteration count from inlier ratio. | Implement RANSAC for homographies. | Inliers versus outliers coloured. | Robust to 50 percent outliers. | OpenCV
+L Fiducial markers and PnP | Get pose from a marker. | Perspective-n-point; iterative refinement. | Estimate pose from four corners. | Axes drawn on a marker. | Pose error below 1 degree in simulation. | OpenCV
+L Stereo depth | Get depth from two cameras. | Disparity z = f B/d. | Implement block matching. | Disparity map. | Depth error within expectation. | OpenCV
+L Optical flow | Track motion between frames. | Lucas-Kanade least squares. | Implement LK optical flow. | Flow vectors. | Tracks synthetic motion within 0.2 px. | OpenCV
+L Odometry and dead reckoning | Integrate wheel and IMU motion. | Error growth over distance. | Implement odometry with drift analysis. | Drifting path versus truth. | Drift matches error model. | ROS 2
+L Particle filter localisation | Localise on a known map. | Monte Carlo localisation. | Implement MCL with a laser model. | Particles converging on a map. | Converges from global uncertainty. | Nav2
+L EKF localisation with landmarks | Localise with known landmarks. | Range-bearing measurement Jacobians. | Implement EKF localisation. | Ellipse following robot. | Consistent NEES. | FilterPy
+L Occupancy grid mapping | Build a map from range scans. | Log-odds updates; inverse sensor model. | Implement occupancy mapping. | Map filling in. | Map matches ground truth above 95 percent. | Nav2
+L Scan matching with ICP | Align two scans. | Point-to-point ICP via SVD. | Implement ICP. | Scans snapping together. | Converges for small initial errors. | Open3D
+L EKF-SLAM | Map and localise together. | Joint state of robot and landmarks; correlations. | Implement EKF-SLAM in 2D. | Landmark ellipses shrinking on loop closure. | Consistent estimates. | FilterPy
+L Pose-graph optimisation | Fix drift with loop closures. | Nonlinear least squares on SE(2). | Implement Gauss-Newton pose graph. | Graph snapping into shape. | Error reduced after optimisation. | GTSAM
+
+@phase 18 | realtime-ros2 | Real-Time Software & ROS 2 | Deadlines, schedulers and the ROS 2 graph that ties a robot together. | Real-time systems (generic) | no | ROS 2 | Python
+L Real-time concepts | Define deadlines, jitter and WCET. | Hard, firm and soft deadlines. | Measure loop timing on Linux. | Timing histogram. | Statistics computed correctly. | ROS 2
+L Rate-monotonic scheduling | Prove a task set is schedulable. | Liu-Layland bound n(2^(1/n) - 1); response-time analysis. | Implement response-time analysis. | Gantt chart with deadlines. | Matches simulation. | Python
+L RTOS tasks | Run tasks with FreeRTOS. | Preemptive priority scheduling. | [C] Create tasks for sensing, control and logging. | Task timeline. | Control task meets period. | FreeRTOS
+L Queues, mutexes and priority inversion | Avoid classic concurrency failures. | Priority inheritance protocol. | [C] Reproduce and fix priority inversion. | Inversion timeline. | High priority latency bounded after fix. | FreeRTOS
+L Linux real-time with PREEMPT_RT | Run control loops on Linux. | Latency sources; cyclictest. | Measure jitter with and without RT settings. | Jitter histogram comparison. | Max latency reduced. | cyclictest
+L Lock-free communication between threads | Pass data without blocking. | Memory ordering and atomics. | Implement a triple buffer. | Writer and reader timelines. | No torn reads in stress test. | Python
+L ROS 2 architecture and DDS | Understand the ROS 2 graph. | Publish-subscribe, QoS policies. | Inspect a running graph. | Node graph. | Correct topics listed. | ROS 2
+L Nodes, topics, services and actions | Pick the right interface. | Synchronous versus asynchronous semantics. | Write one of each in rclpy. | Message flow animation. | Integration test passes. | ROS 2
+L Publisher and subscriber | Stream sensor data. | Message rates and QoS. | Publish IMU data and subscribe. | Live plot. | Received rate within 1 percent. | ROS 2
+L Custom interfaces | Define your own messages. | Message definition language. | Create a custom message package. | Message fields. | Builds and round-trips. | ROS 2
+L TF2 transforms | Track frames over time. | Transform tree and interpolation. | Broadcast and look up transforms. | Frame tree in 3D. | Lookups match computed transforms. | ROS 2
+L URDF robot description | Describe a robot for tools. | Links, joints, inertias. | Write a URDF for a 3-DOF arm. | Robot in a viewer. | check_urdf passes. | ROS 2
+L Launch files and parameters | Start systems reproducibly. | Parameter scoping. | Write a launch file for the arm stack. | Launch tree. | System starts with correct parameters. | ROS 2
+L ros2_control and hardware interfaces | Connect controllers to hardware. | Controller manager lifecycle. | Write a mock hardware interface. | Controller states. | Joint trajectory controller runs on mock hardware. | ros2_control
+L Simulation in Gazebo and MuJoCo | Test before hardware. | Physics step, contact models, real-time factor. | Run the arm in simulation. | Simulated arm. | Matches expected kinematics. | Gazebo
+L micro-ROS on a microcontroller | Bring ROS 2 to an MCU. | Agent-client architecture. | [C] Publish encoder data from an MCU. | MCU node in the graph. | Topic visible at expected rate. | micro-ROS
+L Logging and replay with rosbag | Debug with recorded data. | Deterministic replay. | Record and replay a session. | Timeline scrubber. | Replay reproduces outputs. | ROS 2
+
+@phase 19 | power-safety | Power Electronics, Batteries & Safety | Convert power efficiently, manage batteries and design machines that fail safe. | Power Electronics | yes | ngspice | Python
+L Switching versus linear power | See why switchers dominate. | Efficiency of linear versus switching conversion. | Compare losses for a 12 V to 3.3 V conversion. | Heat comparison. | Switcher efficiency above 85 percent in model. | ngspice
+L The buck converter | Derive the buck converter. | Volt-second balance: Vout = D Vin; ripple equations. | Simulate an averaged and switched buck. | Inductor current ripple. | Ripple matches formula. | ngspice
+L The boost converter | Step voltage up. | Vout = Vin/(1 - D). | Simulate a boost converter. | Voltage rising with duty. | Matches formula in CCM. | ngspice
+L Buck-boost and flyback | Isolate and invert. | Transformer turns ratio; energy storage in core. | Simulate a flyback. | Energy in and out of the core. | Output matches ratio formula. | ngspice
+L Converter control | Regulate output voltage. | Averaged small-signal model; type-II compensator. | Design voltage-mode control. | Load step response. | Phase margin above 45 degrees. | python-control
+L MOSFET losses and thermal design | Keep switches cool. | Conduction plus switching losses; junction temperature. | Compute losses and heatsink. | Thermal network. | Junction below limit. | NumPy
+L Gate drivers and bootstrap | Drive high-side MOSFETs. | Bootstrap capacitor sizing. | Size a bootstrap circuit. | Bootstrap charging cycle. | Droop within spec. | ngspice
+L Three-phase inverters and SVPWM | Drive AC motors. | Space vector modulation geometry. | Implement SVPWM. | Hexagon with reference vector. | Phase voltages match reference. | NumPy
+L Regenerative braking | Recover energy, as in Swiss mountain rail and ski lifts. | Motor as generator; energy recovered = efficiency times potential energy. | Simulate regen braking on a descent. | Energy flowing back to the battery. | Energy accounting closes. | NumPy
+L Lithium-ion cells | Understand what a cell is. | OCV curve, capacity, C-rate. | Model OCV versus SOC. | Cell with charge level. | Model matches example data. | PyBaMM
+L Battery equivalent circuit model | Predict terminal voltage. | Thevenin model with RC pairs. | Fit an ECM to a pulse test. | Voltage relaxing after a pulse. | Fit error below 10 mV. | PyBaMM
+L State of charge estimation | Estimate remaining energy, e.g. in an e-scooter pack. | Coulomb counting drift; EKF with ECM. | Implement SOC EKF. | SOC estimate converging. | SOC error below 3 percent. | FilterPy
+L Battery management and balancing | Keep packs safe. | Passive balancing energy dissipation. | Simulate passive balancing. | Cells equalising. | Cell spread reduced. | Python
+L Charging: CC/CV | Charge cells correctly. | Constant current then constant voltage termination. | Implement a CC/CV charger state machine. | Charging curve. | Never exceeds limits. | Python
+L EMC basics | Avoid interference problems. | Loop area, dV/dt and coupling paths. | Estimate radiated loop emissions qualitatively. | Field around a current loop. | Layout change reduces estimated coupling. | KiCad
+L Hazard analysis and risk assessment | Identify hazards systematically. | Severity, exposure and probability; ISO 12100 process. | Write a hazard log for a robot arm cell. | Risk matrix. | Every hazard has a mitigation. | Python
+L Functional safety concepts | Understand safety integrity. | IEC 61508 and ISO 13849 concepts: SIL, PL, diagnostic coverage. | Compute a simple PFH for a redundant channel. | Redundant channels with diagnostics. | Calculation consistent with formula. | Python
+L Emergency stop and safe torque off | Stop machines safely. | Stop categories 0, 1 and 2; STO principle. | Simulate a category-1 stop of a drive. | Machine decelerating then torque removed. | Stop time within spec. | Python
+L Watchdogs, plausibility checks and fail-safe states | Detect faults at runtime. | Range, rate and cross-check monitors. | Implement plausibility monitors for a sensor pair. | Fault detection timeline. | Detects injected faults within budget. | Python
+L FMEA | Analyse failure modes. | RPN = S x O x D and its limits. | Write an FMEA for a self-balancing robot. | FMEA table. | Highest risks have actions. | Python
+L Fault injection testing | Prove your safety logic works. | Coverage of fault classes. | Inject faults into the simulation. | [live:quad] Kill a motor and observe. | Safety reaction triggers each time. | Python
+L Electrical safety and isolation | Protect people. | Creepage, clearance, isolation barriers. | Check a design against isolation rules. | Board with isolation gap. | Rule checks pass. | KiCad
+
+@phase 20 | capstones | Capstones | Build complete machines: a self-balancing robot, a quadcopter, a robot arm and two real-world systems. | Project work (generic) | no | ROS 2 | Python
+L Capstone planning and requirements | Write requirements you can test. | Requirements as measurable criteria. | Write a requirements file with tests mapped to each item. | Requirements traceability graph. | Every requirement has a test. | Python
+L Self-balancing robot: modelling | Model your robot. | Wheeled inverted pendulum with motor model. | Build the full model. | [live:pendulum] Model falling uncontrolled. | Linear model matches nonlinear near upright. | MuJoCo
+L Self-balancing robot: electronics | Design the electronics. | Power budget and IMU placement. | Draw the schematic in KiCad. | 3D PCB. | ERC passes. | KiCad
+L Self-balancing robot: firmware | Write the control firmware. | Loop timing budget. | [C] Implement sensing, filter and control at 500 Hz. | Timing view. | Loop meets deadline. | PlatformIO
+L Self-balancing robot: PID versus LQR | Compare controllers. | Robustness margins. | Implement both and compare recovery. | [live:pendulum] Kick test. | Both recover; LQR uses less effort. | python-control
+L Self-balancing robot: break it | Inject faults. | Failure modes and detection. | Inject sensor noise, delay and actuator loss. | [live:pendulum] Switch D off, add noise. | Each fault is detected or explained. | MuJoCo
+L Quadcopter: dynamics and mixer | Model the drone. | Mixer matrix from thrust to motor commands. | Implement the mixer and inverse. | [live:quad] Motors spinning by command. | Mixer inverse correct. | Gazebo
+L Quadcopter: attitude estimation | Estimate attitude. | Complementary filter and EKF. | Run filters on sim IMU. | [live:quad] Filter on/off. | Attitude error below 2 degrees. | PX4
+L Quadcopter: cascaded control | Control rate and attitude. | Inner rate loop, outer attitude loop. | Tune cascaded PID. | [live:quad] Step response. | Stable with margins. | PX4
+L Quadcopter: sim-to-real | Prepare for flight. | Model mismatch and robustness. | Run in Gazebo with noise. | Simulated flight. | Passes robustness tests. | Gazebo
+L Robot arm: design and URDF | Design a 3-DOF arm. | Torque requirements from statics. | Write URDF and size motors. | Arm in a viewer. | Motors meet torque spec. | ROS 2
+L Robot arm: IK and trajectories | Move the arm. | IK plus quintic trajectories. | Implement pick-and-place motion. | [live:arm] Arm picking points. | Reaches targets within 1 mm in sim. | MoveIt 2
+L Robot arm: computed torque and ros2_control | Control the arm. | Computed torque on hardware interface. | Implement controller in ros2_control. | Tracking plot. | Error below spec. | ros2_control
+L Smart irrigation pump controller | Build a pump controller for a Bali-style terrace irrigation tank. | Level control with pump curves and hysteresis. | Implement level control with dry-run protection. | Tank and pump animation. | Never runs dry in simulation. | PlatformIO
+L Ski-lift-style drive supervisor | Build a safety supervisor for a rope drive (educational). | Speed monitoring, brakes and stop categories. | Implement a supervisor with fault states. | Drive state diagram. | All faults lead to safe state. | Python
+L Portfolio and demo day | Package your work. | Communicating results. | Assemble artifacts and a write-up. | Portfolio page. | Every capstone has artifacts and tests. | Git

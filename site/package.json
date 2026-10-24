@@ -1,0 +1,22 @@
+{
+  "name": "mechatronics-from-scratch-site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "python3 ../tools/build_curriculum.py && vite build",
+    "preview": "vite preview --port 4791 --strictPort",
+    "test": "vite build && playwright test",
+    "test:sim": "node --test tests-unit/",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "vite": "^8.3.5"
+  }
+}

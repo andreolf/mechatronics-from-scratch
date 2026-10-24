@@ -1,0 +1,6 @@
+node_modules/
+site/dist/
+site/test-results/
+site/playwright-report/
+.DS_Store
+__pycache__/

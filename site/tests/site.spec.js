@@ -1,0 +1,165 @@
+import { test, expect } from '@playwright/test';
+import { watchConsole, litFraction, gotoLab } from './helpers.js';
+
+test.describe('Mechatronics from Scratch', () => {
+  let errors;
+  test.beforeEach(async ({ page }) => {
+    errors = watchConsole(page);
+    await page.goto('/');
+  });
+  test.afterEach(async () => {
+    expect(errors, 'console errors').toEqual([]);
+  });
+
+  test('loads with hero, stats, tutor line and colophon', async ({ page }) => {
+    await expect(page).toHaveTitle(/Mechatronics from Scratch/);
+    await expect(page.locator('h1')).toContainText('Mechatronics');
+    await expect(page.locator('#stats')).toContainText('352');
+    await expect(page.locator('#stats')).toContainText('20');
+    await expect(page.getByTestId('tutor-cmd')).toContainText('npx skills add');
+    await expect(page.locator('.tbd')).toContainText('TBD');
+    await expect(page.locator('#colophon')).toContainText('No paywall, no signup');
+    await expect(page.locator('#colophon')).toContainText('MIT');
+    // every section scrolled through without errors
+    for (const id of ['tutor', 'labs', 'loop', 'map', 'colophon']) { await page.locator('#' + id).scrollIntoViewIfNeeded(); await page.waitForTimeout(250); }
+  });
+
+  test('hero 3D canvas renders and the arm follows the pointer', async ({ page }) => {
+    const hero = page.getByTestId('hero-canvas');
+    await expect(hero).toHaveAttribute('data-webgl', 'on');
+    await expect(hero.locator('canvas')).toHaveCount(1);
+    await page.waitForTimeout(1200);
+    expect(await litFraction(page, hero)).toBeGreaterThan(0.01);
+    const before = await page.evaluate(() => window.__mfs.hero.target.toArray());
+    const box = await hero.boundingBox();
+    await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.3);
+    await page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.35, { steps: 5 });
+    await page.waitForTimeout(300);
+    const after = await page.evaluate(() => window.__mfs.hero.target.toArray());
+    expect(Math.hypot(after[0] - before[0], after[1] - before[1], after[2] - before[2])).toBeGreaterThan(0.05);
+  });
+
+  test('lab 01 pendulum: balances, then falls when D is switched off', async ({ page }) => {
+    const lab = await gotoLab(page, 'pendulum');
+    await expect(lab.locator('canvas').first()).toBeVisible();
+    await page.waitForTimeout(1500);
+    await expect(lab).toHaveAttribute('data-fallen', 'false');
+    await expect(page.getByTestId('lab-pendulum-status')).toHaveText('BALANCING');
+    await page.getByTestId('pend-D').click();
+    await page.getByTestId('pend-kick').click();
+    await expect(lab).toHaveAttribute('data-fallen', 'true', { timeout: 30_000 });
+    await expect(page.getByTestId('lab-pendulum-status')).toHaveText('FALLEN');
+    await page.getByTestId('pend-defaults').click();
+    await page.waitForTimeout(1500);
+    await expect(lab).toHaveAttribute('data-fallen', 'false');
+  });
+
+  test('lab 02 arm: tracks a dragged target, sags when the elbow motor is killed', async ({ page }) => {
+    const lab = await gotoLab(page, 'arm');
+    const view = page.getByTestId('lab-arm-3d');
+    const box = await view.boundingBox();
+    // drag the target to the upper right of the arm base
+    await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.35);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.62, box.y + box.height * 0.33, { steps: 4 });
+    await page.mouse.up();
+    await expect(page.getByTestId('arm-auto')).toHaveAttribute('aria-pressed', 'false');
+    await expect.poll(async () => +(await lab.getAttribute('data-error')), { timeout: 30_000 }).toBeLessThan(0.03);
+    await page.getByTestId('arm-kill').click();
+    await expect(page.getByTestId('lab-arm-status')).toHaveText('ELBOW MOTOR OFF');
+    await expect.poll(async () => +(await lab.getAttribute('data-error')), { timeout: 30_000 }).toBeGreaterThan(0.1);
+  });
+
+  test('lab 03 quadcopter: hovers, crashes when a motor is killed', async ({ page }) => {
+    const lab = await gotoLab(page, 'quad');
+    await page.waitForTimeout(1500);
+    await expect(lab).toHaveAttribute('data-crashed', 'false');
+    expect(+(await lab.getAttribute('data-z'))).toBeGreaterThan(0.6);
+    await page.getByTestId('quad-kill-2').click();
+    await expect(lab).toHaveAttribute('data-crashed', 'true', { timeout: 30_000 });
+    await expect(page.getByTestId('lab-quad-status')).toHaveText(/CRASHED|FLY-AWAY/);
+    await page.getByTestId('quad-kill-2').click();
+    await page.getByTestId('quad-reset').click();
+    await page.waitForTimeout(500);
+    await expect(lab).toHaveAttribute('data-crashed', 'false');
+  });
+
+  test('lab 03 quadcopter: gyro-only estimate with bias drifts', async ({ page }) => {
+    const lab = await gotoLab(page, 'quad');
+    await page.getByTestId('quad-filter').selectOption('gyro');
+    await page.getByTestId('quad-bias').click();
+    await expect.poll(async () => +(await lab.getAttribute('data-atterr')), { timeout: 30_000 }).toBeGreaterThan(0.08);
+  });
+
+  test('lab 04 motor: follows setpoint, loses speed under load without integral action', async ({ page }) => {
+    const lab = await gotoLab(page, 'motor');
+    await expect.poll(async () => +(await lab.getAttribute('data-rpm')), { timeout: 20_000 }).toBeGreaterThan(1900);
+    await page.getByTestId('motor-rpm').fill('3500');
+    await expect.poll(async () => +(await lab.getAttribute('data-rpm')), { timeout: 20_000 }).toBeGreaterThan(3350);
+    await page.getByTestId('motor-int').click();
+    await page.getByTestId('motor-step').click();
+    await expect.poll(async () => +(await lab.getAttribute('data-rpm')), { timeout: 20_000 }).toBeLessThan(3000);
+    await expect(page.getByTestId('lab-motor-status')).toHaveText(/OFF SETPOINT|SATURATED/);
+  });
+
+  test('phase map: 20 phases, expand a phase, open a lesson, search', async ({ page }) => {
+    await page.locator('#map').scrollIntoViewIfNeeded();
+    const phases = page.getByTestId('phase');
+    await expect(phases).toHaveCount(20);
+    const p13 = page.locator('[data-phase="p13"]');
+    await p13.getByTestId('phase-btn').click();
+    await expect(p13).toHaveClass(/open/);
+    await expect(p13.getByTestId('lesson')).toHaveCount(20);
+    const pid = p13.locator('#lesson-p13-l07');
+    await pid.locator('.lesson-title').click();
+    await expect(pid.locator('.lesson-detail')).toBeVisible();
+    await expect(pid.locator('.lesson-detail')).toContainText('Derive');
+    await p13.getByTestId('phase-btn').click();
+    await expect(p13).not.toHaveClass(/open/);
+
+    await page.getByTestId('search').fill('kalman');
+    await expect(page.locator('#search-status')).toContainText('match');
+    const n = +(await page.locator('#search-status').getAttribute('data-count'));
+    expect(n).toBeGreaterThan(3);
+    await expect(page.getByTestId('lesson')).toHaveCount(n);
+    await expect(page.getByTestId('lesson').first()).toContainText(/kalman/i);
+    await page.getByTestId('search').fill('zzqxv');
+    await expect(page.locator('#search-status')).toContainText('0 lessons');
+    await page.getByTestId('search').fill('');
+    await expect(page.getByTestId('phase')).toHaveCount(20);
+  });
+
+  test('progress persists in localStorage across reloads and can be reset', async ({ page }) => {
+    await page.locator('#map').scrollIntoViewIfNeeded();
+    const p1 = page.locator('[data-phase="p01"]');
+    await p1.getByTestId('phase-btn').click();
+    await p1.getByTestId('lesson-check').nth(0).check();
+    await p1.getByTestId('lesson-check').nth(2).check();
+    await expect(page.locator('#progress-label')).toHaveText('2 / 352 lessons');
+    await page.reload();
+    await page.locator('#map').scrollIntoViewIfNeeded();
+    await expect(page.locator('#progress-label')).toHaveText('2 / 352 lessons');
+    const p1b = page.locator('[data-phase="p01"]');
+    await expect(p1b.locator('.phase-meta')).toContainText('2/18');
+    await p1b.getByTestId('phase-btn').click();
+    await expect(p1b.getByTestId('lesson-check').nth(0)).toBeChecked();
+    await expect(p1b.getByTestId('lesson-check').nth(2)).toBeChecked();
+    await page.getByTestId('reset-progress').click();
+    await page.getByTestId('reset-progress').click();
+    await expect(page.locator('#progress-label')).toHaveText('0 / 352 lessons');
+  });
+});
+
+test('graceful WebGL fallback still runs the simulations', async ({ page }) => {
+  const errors = watchConsole(page);
+  await page.goto('/?nowebgl=1');
+  await expect(page.getByTestId('hero-canvas')).toHaveAttribute('data-webgl', 'off');
+  await expect(page.locator('.nogl').first()).toBeVisible();
+  const lab = await gotoLab(page, 'pendulum');
+  await expect(lab.locator('.nogl')).toBeVisible();
+  const t1 = await lab.getAttribute('data-theta');
+  await page.getByTestId('pend-kick').click();
+  await page.waitForTimeout(400);
+  expect(await lab.getAttribute('data-theta')).not.toBe(t1);
+  expect(errors).toEqual([]);
+});
