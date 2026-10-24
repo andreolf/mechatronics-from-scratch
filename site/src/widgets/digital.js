@@ -294,10 +294,10 @@ W.r2r = (el) => {
       for (let k = 0; k < n; k++) { const rb = R2[k + 1]; const vin = k === bit ? 1 : 0; const v = (vth / rth + vin / rb) / (1 / rth + 1 / rb); const rp = 1 / (1 / rth + 1 / rb); if (k === n - 1) return v; vth = v; rth = rp + R[k]; }
     };
     const w = Array.from({ length: n }, (_, b) => weight(b)); const out = (c) => w.reduce((a, wb, b) => a + ((c >> b) & 1) * wb, 0);
-    const lsb = (out(255) - out(0)) / 255; let worst = 0, mono = true; const xs = [], ys = [];
-    for (let c = 1; c < 256; c++) { const d = (out(c) - out(c - 1)) / lsb - 1; worst = Math.max(worst, Math.abs(d)); if (out(c) < out(c - 1)) mono = false; xs.push(c); ys.push(d); }
+    const lsb = (out(255) - out(0)) / 255; let worst = 0, at = 0, mono = true; const xs = [], ys = [];
+    for (let c = 1; c < 256; c++) { const d = (out(c) - out(c - 1)) / lsb - 1; if (Math.abs(d) > worst) { worst = Math.abs(d); at = c; } if (out(c) < out(c - 1)) mono = false; xs.push(c); ys.push(d); }
     P.line(xs, ys, C.lime, 1.5); P.line([0, 255], [-1, -1], C.bad, 1, [4, 3]);
-    read.innerHTML = `resistor tolerance ±${s.tol} % · worst |DNL| <b>${worst.toFixed(3)} LSB</b> (largest at the 127→128 major carry) · ${mono ? '<b>monotonic</b>' : '<b>not monotonic</b> (DNL < −1)'} · red: −1 LSB`;
+    read.innerHTML = `resistor tolerance ±${s.tol} % · worst |DNL| <b>${worst.toFixed(3)} LSB</b> at the ${at - 1}→${at} step${at === 128 ? ' (the major carry)' : ''} · ${mono ? '<b>monotonic</b>' : '<b>not monotonic</b> (DNL < −1)'} · red: −1 LSB`;
   };
   ctrls.append(slider('Resistor tolerance', { min: 0.01, max: 2, step: 0.01, value: s.tol, fmt: (v) => '±' + v.toFixed(2) + ' %' }, (v) => { s.tol = v; p.redraw(); }),
     h('div', { class: 'btn-row' }, btn('New resistor set', () => { s.seed++; p.redraw(); }, 'r2r-new')));
