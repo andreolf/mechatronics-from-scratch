@@ -154,7 +154,7 @@ W.tilt = (el) => {
 // p07-l10: gyro bias estimation
 W.gyrobias = (el) => {
   const { body, read, ctrls } = frame(el);
-  const s = { bias: 0.5, est: 10, seed: 1 }; const fs = 100, arw = 0.05; // deg/s/sqrt(Hz) white noise density
+  const s = { bias: 0.5, est: 10, seed: 1 }; const fs = 100, arw = 0.01; // deg/s/sqrt(Hz) white noise density
   const p = new Plot(body, { aspect: 0.55, maxH: 320, x: [0, 60], y: [-5, 35], label: 'Integrated heading of a stationary gyro' });
   p.draw = (P) => {
     const r = mulberry(s.seed); const n = 70 * fs; const g = []; for (let i = 0; i < n; i++) g.push(s.bias + arw * Math.sqrt(fs) * randn(r));
@@ -259,7 +259,7 @@ W.orifice = (el) => {
   const { body, read, ctrls } = frame(el);
   const s = { dp: 2000 }; const Cd = 0.61, d = 0.01, rho = 1.2, dpMax = 5000, lsb = dpMax / 4096;
   const A = Math.PI * d * d / 4; const Q = (dp) => Cd * A * Math.sqrt(2 * Math.max(dp, 0) / rho);
-  const p = new Plot(body, { aspect: 0.55, maxH: 320, x: [0, 5000], y: [0, 60], label: 'Air flow through a 10 mm orifice against differential pressure' });
+  const p = new Plot(body, { aspect: 0.55, maxH: 320, x: [0, 5000], y: [0, 5], label: 'Air flow through a 10 mm orifice against differential pressure' });
   p.draw = (P) => {
     P.axes({ xl: 'Δp [Pa]', yl: 'Q [L/s]' }); P.fn((x) => Q(x) * 1000, C.lime, 2.5); P.dot(s.dp, Q(s.dp) * 1000, C.warn, 5);
     const dq = (Q(s.dp + lsb) - Q(s.dp)) * 1000;
@@ -272,13 +272,13 @@ W.orifice = (el) => {
 // p07-l16: anti-aliasing filter order
 W.aaf = (el) => {
   const { body, read, ctrls } = frame(el);
-  const s = { n: 4, fc: 100 }; const fs = 1000, need = 6.02 * 12 + 1.76;
+  const s = { n: 4, fc: 100 }; const fs = 1000, need = 20 * Math.log10(2 ** 11);
   const p = new Plot(body, { aspect: 0.6, maxH: 340, x: [10, 10000], y: [-120, 5], logx: true, label: 'Butterworth anti-aliasing filter for 1 kHz sampling' });
   const mag = (f) => -10 * Math.log10(1 + (f / s.fc) ** (2 * s.n));
   p.draw = (P) => {
     P.axes({ xl: 'f [Hz]', yl: '|H| [dB]' }); P.fn(mag, C.lime, 2.5); P.line([500, 500], [-120, 5], C.warn, 1, [4, 3]); P.line([10, 10000], [-need, -need], C.bad, 1, [4, 3]);
     const fa = fs - s.fc; const a = -mag(fa);
-    read.innerHTML = `order ${s.n}, cutoff ${s.fc} Hz · at f<sub>s</sub>/2 = 500 Hz: <b>${(-mag(500)).toFixed(1)} dB</b> · at ${fa} Hz (aliases onto the passband edge): <b>${a.toFixed(1)} dB</b> · 12 bits need ${need.toFixed(1)} dB (red) ${a >= need ? '✓' : '✗'}`;
+    read.innerHTML = `order ${s.n}, cutoff ${s.fc} Hz · at f<sub>s</sub>/2 = 500 Hz: <b>${(-mag(500)).toFixed(1)} dB</b> · at ${fa} Hz (aliases onto the passband edge): <b>${a.toFixed(1)} dB</b> · below 1 LSB of 12 bits needs ${need.toFixed(1)} dB (red) ${a >= need ? '✓' : '✗'}`;
   };
   ctrls.append(slider('Order', { min: 1, max: 10, step: 1, value: s.n, fmt: (v) => String(v) }, (v) => { s.n = v; p.redraw(); }),
     slider('Cutoff', { min: 20, max: 400, step: 5, value: s.fc, fmt: (v) => v + ' Hz' }, (v) => { s.fc = v; p.redraw(); }));
