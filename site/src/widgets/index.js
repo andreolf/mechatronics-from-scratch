@@ -11,6 +11,7 @@ import BUSES from './buses.js';
 import DYNAMICS from './dynamics.js';
 import CONTROL from './control.js';
 import MODERN from './modern.js';
+import ROBOTS from './robots.js';
 
 const W = {};
 const log10 = Math.log10;
@@ -319,7 +320,7 @@ W.gd = (el) => {
   p.redraw();
 };
 
-Object.assign(W, MORE, CIRCUITS, DIGITAL, SENSORS, DSP, ACTUATORS, EMBEDDED, BUSES, DYNAMICS, CONTROL, MODERN);
+Object.assign(W, MORE, CIRCUITS, DIGITAL, SENSORS, DSP, ACTUATORS, EMBEDDED, BUSES, DYNAMICS, CONTROL, MODERN, ROBOTS);
 
 export function hydrateWidgets(root) {
   root.querySelectorAll('.widget[data-widget]').forEach((el) => {
