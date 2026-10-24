@@ -88,7 +88,7 @@ print("PASS")
 :::exercise
 Where is the PI zero, and roughly where should crossover be for the lab's tuning to have the integral's lag mostly gone?
 :::solution
-At $-K_i/K_p = -20.8$ rad/s. With the rule of thumb of a factor of 5, crossover should be at 100 rad/s or more. The loop's gain crossover with these values is about $K_pG(0)\times10.7 \approx 25$ rad/s, near the zero, so the integral's lag still matters and the response overshoots somewhat (the closed-loop poles are at hBHc18.4 \pm 14.7j$). Try a smaller $K_i$ in the lab to see it calm down.
+At $-K_i/K_p = -20.8$ rad/s. With the rule of thumb of a factor of 5, crossover should be at 100 rad/s or more. The loop's gain crossover with these values is about $K_pG(0)\times10.7 \approx 25$ rad/s, near the zero, so the integral's lag still matters and the response overshoots somewhat (the closed-loop poles are at $-18.4 \pm 14.7j$). Try a smaller $K_i$ in the lab to see it calm down.
 :::end
 
 :::exercise
