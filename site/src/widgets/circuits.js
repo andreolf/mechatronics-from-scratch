@@ -103,12 +103,12 @@ W.amp = (el) => {
 W.inamp = (el) => {
   const { body, read, ctrls } = frame(el);
   const s = { Rg: 499, cmrr: 100, vd: 2, vcm: 1 }; // Ω, dB, mV, V(50 Hz hum)
-  const p = new Plot(body, { aspect: 0.5, maxH: 300, x: [0, 100], y: [-1, 1], label: 'In-amp output: wanted signal plus leaked common-mode hum' });
+  const p = new Plot(body, { aspect: 0.5, maxH: 300, x: [0, 400], y: [-1, 1], label: 'In-amp output: wanted signal plus leaked common-mode hum' });
   p.draw = (P) => {
-    const G = 1 + 49400 / s.Rg, leak = Math.pow(10, -s.cmrr / 20); const xs = linspace(0, 100, 800);
+    const G = 1 + 49400 / s.Rg, leak = Math.pow(10, -s.cmrr / 20); const xs = linspace(0, 400, 4000);
     const out = xs.map((t) => G * (s.vd * 1e-3 * Math.sin(TAU * 5 * t / 1000) + s.vcm * leak * Math.sin(TAU * 50 * t / 1000)));
     const pk = Math.max(0.01, ...out.map(Math.abs)) * 1.15; P.setRange(P.xr, [-pk, pk]); P.axes({ xl: 't [ms]', yl: 'V_out [V]' });
-    P.line(xs, xs.map((t) => G * s.vd * 1e-3 * Math.sin(TAU * 5 * t / 1000)), C.dim, 1, [4, 4]); P.line(xs, out, C.lime, 2);
+    P.line(xs, out, C.lime, 1.5); P.line(xs, xs.map((t) => G * s.vd * 1e-3 * Math.sin(TAU * 5 * t / 1000)), C.bone, 1, [4, 4]);
     read.innerHTML = `G = 1 + 49.4 kΩ/R<sub>G</sub> = <b>${G.toFixed(1)}</b> · signal out ${(G * s.vd).toFixed(1)} mV peak · hum out <b>${(G * s.vcm * leak * 1000).toFixed(3)} mV</b> peak at CMRR ${s.cmrr} dB · dashed: ideal`;
   };
   ctrls.append(slider('Gain resistor R_G', { min: 50, max: 50000, step: 1, value: s.Rg, fmt: (v) => v + ' Ω' }, (v) => { s.Rg = v; p.redraw(); }),
@@ -126,7 +126,7 @@ W.ldo = (el) => {
   p.draw = (P) => {
     P.axes({ xl: 'V_in [V]', yl: 'V_out [V]' }); P.fn((v) => Math.max(0, Math.min(Vo, v - drop)), C.lime, 2.5, null, 300); P.dot(s.Vin, Math.max(0, Math.min(Vo, s.Vin - drop)), C.warn, 5);
     const vo = Math.max(0, Math.min(Vo, s.Vin - drop)), pd = (s.Vin - vo) * s.I, tj = 25 + pd * s.th;
-    read.innerHTML = `${s.Vin - drop >= Vo ? 'regulating' : '<b>in dropout</b>'} · V<sub>out</sub> ${vo.toFixed(2)} V · dissipation (V<sub>in</sub>−V<sub>out</sub>)·I = <b>${pd.toFixed(2)} W</b> · efficiency ${(100 * vo / s.Vin).toFixed(1)} % · junction ≈ 25 °C + P·θ<sub>JA</sub> = <b>${tj.toFixed(0)} °C</b>${tj > 125 ? ' · <b>over 125 °C: thermal shutdown</b>' : ''}`;
+    read.innerHTML = `${s.Vin - drop >= Vo ? 'regulating' : '<b>in dropout</b>'} · V<sub>out</sub> ${vo.toFixed(2)} V · dissipation (V<sub>in</sub>−V<sub>out</sub>)·I = <b>${pd.toFixed(2)} W</b> · efficiency ${(100 * vo / s.Vin).toFixed(1)} % · junction ≈ 25 °C + P·θ<sub>JA</sub> = <b>${tj.toFixed(0)} °C</b>${tj > 125 ? ' · <b>above the 125 °C rating</b>' : ''}`;
   };
   ctrls.append(slider('Input voltage', { min: 3, max: 15, step: 0.1, value: s.Vin, fmt: (v) => v.toFixed(1) + ' V' }, (v) => { s.Vin = v; p.redraw(); }),
     slider('Load current', { min: 0.01, max: 1.5, step: 0.01, value: s.I, fmt: (v) => v.toFixed(2) + ' A' }, (v) => { s.I = v; p.redraw(); }),
