@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mechatronics from Scratch · derive it, code it, break it</title>
+  <meta name="description" content="A free, open-source mechatronics curriculum: math, circuits, sensors, motors, embedded C, control, robotics and ROS 2, every idea derived by hand and coded from scratch, with interactive 3D labs you can break." />
+  <meta name="theme-color" content="#050505" />
+  <link rel="canonical" href="https://andreolf.github.io/mechatronics-from-scratch/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://andreolf.github.io/mechatronics-from-scratch/" />
+  <meta property="og:title" content="Mechatronics from Scratch" />
+  <meta property="og:description" content="A free, open-source mechatronics curriculum: 20 phases, 352 lessons. Circuits, sensors, motors, embedded C, control, robotics and ROS 2, derived by hand and coded from scratch, with interactive 3D labs you can break." />
+  <meta property="og:image" content="https://andreolf.github.io/mechatronics-from-scratch/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Mechatronics from Scratch: hero screen with the interactive 3D scene" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@francescoswiss" />
+  <meta name="twitter:creator" content="@francescoswiss" />
+  <meta name="twitter:title" content="Mechatronics from Scratch" />
+  <meta name="twitter:description" content="A free, open-source mechatronics curriculum: 20 phases, 352 lessons. Circuits, sensors, motors, embedded C, control, robotics and ROS 2, derived by hand and coded from scratch, with interactive 3D labs you can break." />
+  <meta name="twitter:image" content="https://andreolf.github.io/mechatronics-from-scratch/og-image.png" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23050505'/%3E%3Cpath d='M5 22 L11 10 L16 19 L21 10 L27 22' stroke='%23c6ff1a' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <script type="module" crossorigin src="./assets/index-BAWxvB6W.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CqAsGQph.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Mechatronics from Scratch home">
+      <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M5 22 L11 10 L16 19 L21 10 L27 22" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>mechatronics<b>/</b>from&nbsp;scratch</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#labs">Labs</a><a href="#loop">Method</a><a href="#map">Phase map</a><a href="#tutor">AI tutor</a><a href="#colophon">Colophon</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-canvas" id="hero-canvas" data-testid="hero-canvas"></div>
+      <div class="hero-copy">
+        <p class="kicker"><span class="dot"></span> open curriculum · MIT · rev&nbsp;0.1</p>
+        <h1>Mechatronics<br /><span class="lime">from Scratch</span></h1>
+        <p class="tagline">Derive it. Code it. <em>Break it.</em> Circuits, motors, embedded C, control, robotics and ROS&nbsp;2, every idea derived by hand and coded from first principles before any framework is installed.</p>
+        <div class="stats" id="stats" aria-live="polite"></div>
+        <div class="cta">
+          <a class="btn primary" href="#map" data-testid="start-btn">Start at Phase 01 →</a>
+          <a class="btn" href="#labs">Break a machine</a>
+        </div>
+        <p class="hero-hint" id="hero-hint">Move your cursor: the arm solves inverse kinematics in real time.</p>
+      </div>
+      <div class="hero-readout mono" id="hero-readout" aria-hidden="true"></div>
+    </section>
+
+    <section class="tutor" id="tutor">
+      <div class="wrap">
+        <div class="tutor-card">
+          <div>
+            <p class="kicker">learn with your AI tutor</p>
+            <h2>Turn your coding agent into a lab partner</h2>
+            <p>Install the course as an agent skill and your assistant gives you a placement quiz, picks your starting phase, and walks you through each derive-code-test loop in your own editor.</p>
+          </div>
+          <div class="install">
+            <div class="install-line mono" data-testid="tutor-cmd"><span class="prompt">$</span> <code id="tutor-cmd">npx skills add andreolf/mechatronics-from-scratch</code>
+              <button class="copy" id="copy-cmd" type="button">copy</button></div>
+            <p class="tbd"><b>Coming soon (TBD):</b> placeholder command. The tutor skill package is not published yet, so this will not work today.</p>
+            <p class="small">Intended for any agent host that supports SKILL.md (e.g. Claude Code, Cursor, Codex).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="labs" id="labs">
+      <div class="wrap">
+        <p class="kicker">interactive · real-time simulation</p>
+        <h2>Break the machine</h2>
+        <p class="lead">Each lab integrates the real equations of motion in your browser. Switch a part off, add noise, kill a motor, and watch exactly what fails. Then open the lesson that explains why.</p>
+        <p class="disclaimer">Educational approximations: simplified models with illustrative parameters, not validated against specific hardware.</p>
+      </div>
+      <div id="lab-root"></div>
+    </section>
+
+    <section class="loop" id="loop">
+      <div class="wrap">
+        <p class="kicker">how this works</p>
+        <h2>One loop, 352 times</h2>
+        <ol class="loop-steps">
+          <li><span class="num mono">01</span><h3>Derive</h3><p>Write the physics and the maths by hand: the ODE, the transfer function, the Jacobian, the Riccati equation.</p></li>
+          <li><span class="num mono">02</span><h3>Code</h3><p>Implement it from scratch in Python/NumPy, or bare-metal C when it has to run on a microcontroller.</p></li>
+          <li><span class="num mono">03</span><h3>Test</h3><p>Every lesson ships a test that proves it works: a residual, a margin, a step response, a logic-analyser trace.</p></li>
+          <li><span class="num mono">04</span><h3>Keep</h3><p>Keep the artifact (plot, firmware, schematic, notebook), then meet the pro tool it maps to: ngspice, KiCad, python-control, ROS&nbsp;2, MuJoCo, PlatformIO.</p></li>
+        </ol>
+        <div class="loop-diagram" aria-hidden="true"><svg viewBox="0 0 400 120"><g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="40" width="80" height="40" rx="6"/><rect x="110" y="40" width="80" height="40" rx="6"/><rect x="215" y="40" width="80" height="40" rx="6"/><rect x="320" y="40" width="75" height="40" rx="6"/><path d="M85 60h25M190 60h25M295 60h25"/><path d="M357 80 v25 H45 V80" stroke-dasharray="4 4"/></g><g class="mono" font-size="12" fill="currentColor" text-anchor="middle"><text x="45" y="65">derive</text><text x="150" y="65">code</text><text x="255" y="65">test</text><text x="357" y="65">keep</text></g></svg></div>
+      </div>
+    </section>
+
+    <section class="map" id="map">
+      <div class="wrap">
+        <p class="kicker">curriculum</p>
+        <h2 id="map-title">Phase map</h2>
+        <p class="lead">Tap a phase to open its lessons. Tick lessons as you finish them; progress is saved in this browser only.</p>
+        <div class="map-tools">
+          <label class="search"><span class="sr">Search lessons</span><input id="search" type="search" placeholder="Search lessons: kalman, I2C, buck, quaternion…" autocomplete="off" data-testid="search" /></label>
+          <div class="progress" data-testid="progress"><div class="bar"><i id="progress-bar"></i></div><span id="progress-label" class="mono">0 / 0</span></div>
+          <button class="btn small" id="reset-progress" type="button" data-testid="reset-progress">Reset progress</button>
+        </div>
+        <p id="search-status" class="search-status mono" aria-live="polite"></p>
+        <div id="phase-grid" class="phase-grid" data-testid="phase-grid"></div>
+      </div>
+    </section>
+
+    <section class="colophon" id="colophon">
+      <div class="wrap">
+        <p class="kicker">colophon</p>
+        <h2>Free. Open. Yours.</h2>
+        <p>The whole curriculum is plain markdown plus one <code>curriculum.json</code>, MIT licensed. No paywall, no signup, no tracking. Fork it, teach it, translate it. The labs run entirely in your browser; three.js is bundled locally and nothing loads from a CDN.</p>
+        <p class="small">Course mappings marked "ETH" name real ETH Zurich course titles for orientation only; others are generic topics. This project is independent and not affiliated with or endorsed by ETH Zurich or any company. Simulations are educational approximations.</p>
+        <p class="small">Source code and curriculum: <a href="https://github.com/andreolf/mechatronics-from-scratch" target="_blank" rel="noopener">github.com/andreolf/mechatronics-from-scratch</a>. Issues and pull requests welcome.</p>
+        <p class="small">Curated by Francesco Andreoli · <span class="mono">@francescoswiss</span> · YouTube <span class="mono">@swissintech</span></p>
+      </div>
+    </section>
+  </main>
+  <footer class="foot mono"><span>mechatronics/from scratch · MIT</span><span id="build-info"></span></footer>
+</body>
+</html>
