@@ -100,6 +100,7 @@ test('phase test: failing, then passing, unlocks a verifiable certificate', asyn
   await page.getByTestId('retake').click();
   qs = page.getByTestId('phase-test').getByTestId('question');
   await expect(page.locator('h1:visible').first()).toHaveText('Phase test');
+  await expect(page.getByTestId('phase-test').locator('xpath=..')).toContainText('Attempt 2.'); // wait for the re-render before reading question ids
   await expect(qs).toHaveCount(15);
   for (let i = 0; i < 15; i++) { const el = qs.nth(i); await answer(bank.get(await el.getAttribute('data-qid')), el, true); }
   await page.getByTestId('submit-test').click();

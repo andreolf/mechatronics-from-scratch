@@ -30,6 +30,11 @@ const marked = new Marked({ gfm: true, breaks: false });
 const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 const slug = (s) => s.toLowerCase().replace(/<[^>]+>/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 
+function shuffledIdx(n, key) {
+  let h = 2166136261; for (const ch of key) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+  const r = () => { h = (h + 0x6d2b79f5) >>> 0; let t = h; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a;
+}
 function tex(src, display) {
   try { return katex.renderToString(src, { displayMode: display, throwOnError: true, strict: 'ignore', output: 'html' }); }
   catch (e) { throw new Error(`KaTeX error in "${src.slice(0, 80)}": ${e.message}`); }
@@ -101,7 +106,10 @@ function compile(file, phase) {
       const items = yaml.load(txt);
       for (const it of items) {
         const qd = { id: `${meta.id}-q${quizzes.length + 1}`, type: it.type, q: md(it.q), explain: md(it.explain || '') };
-        if (it.type === 'mc') { qd.options = it.options.map((o) => md(String(o), { inline: true })); qd.answer = it.answer; if (!(it.answer >= 0 && it.answer < it.options.length)) throw new Error(`${file}: bad mc answer`); }
+        if (it.type === 'mc') { if (!(it.answer >= 0 && it.answer < it.options.length)) throw new Error(`${file}: bad mc answer`);
+          // deterministic per-question shuffle so the correct option is not always in the same position
+          const order = shuffledIdx(it.options.length, qd.id);
+          qd.options = order.map((k) => md(String(it.options[k]), { inline: true })); qd.answer = order.indexOf(it.answer); }
         else if (it.type === 'num') { qd.answer = it.answer; qd.tol = it.tol ?? 0.01; qd.unit = it.unit || ''; if (!it.py) throw new Error(`${file}: numeric question without py check`); }
         else throw new Error(`${file}: unknown quiz type ${it.type}`);
         quizzes.push(qd);
