@@ -6,7 +6,7 @@ Curated by Francesco Andreoli (ETH Zurich mechanical-engineering alumnus · `@fr
 
 > Live site: https://andreolf.github.io/mechatronics-from-scratch/
 
-> Status: v0.2.0. **189 of 352 lessons are fully written** (Phase 01: all 18, Phase 02: all 16, Phase 03: all 14, Phase 04: all 12, Phase 05: all 23, Phase 06: all 16, Phase 07: all 18, Phase 08: all 16, Phase 09: all 20, Phase 10: all 22, Phase 11: all 14). Every other lesson has a detailed outline marked "Full lesson coming soon". The AI-tutor install command on the site is a **coming-soon placeholder** (no skill package is published yet).
+> Status: v0.2.0. **207 of 352 lessons are fully written** (Phase 01: all 18, Phase 02: all 16, Phase 03: all 14, Phase 04: all 12, Phase 05: all 23, Phase 06: all 16, Phase 07: all 18, Phase 08: all 16, Phase 09: all 20, Phase 10: all 22, Phase 11: all 14, Phase 12: all 18). Every other lesson has a detailed outline marked "Full lesson coming soon". The AI-tutor install command on the site is a **coming-soon placeholder** (no skill package is published yet).
 
 ## Full lessons
 
@@ -28,7 +28,7 @@ Lessons are Markdown files in `lessons/pNN/*.md` with a few fenced blocks:
 
 - Everything is stored in your browser (`localStorage`, key `mfs-v2`). No accounts, no backend, no analytics. Export and import your progress as JSON from `#/progress`.
 - XP: 50 per completed lesson, 10 per quiz question right first time, 250 per passed phase test. Streaks count consecutive days with activity.
-- **Phase tests** (`#/test/pNN`) draw 15 questions from the phase's quiz bank. The pass mark is 80 %. Each retake draws a new set. A phase test exists only once every lesson in the phase is fully written (today: Phases 01 to 11).
+- **Phase tests** (`#/test/pNN`) draw 15 questions from the phase's quiz bank. The pass mark is 80 %. Each retake draws a new set. A phase test exists only once every lesson in the phase is fully written (today: Phases 01 to 12).
 - **Certificates** (`#/certificate/pNN`, and `#/certificate/course` after all 20 phase tests) are drawn in the browser and download as PNG or PDF. Each carries a verification code: the first 80 bits of SHA-256 over the name, credential, phases and date, in Crockford base32. Anyone can recompute it at `#/verify`. It proves the certificate wasn't edited after it was made, nothing more: the code is computed client-side, so anyone could generate one.
 - **These are free certificates of completion. They are not accredited, and this project is not affiliated with or endorsed by ETH Zurich.**
 
@@ -135,7 +135,7 @@ Parameters are illustrative, not validated against specific hardware.
 
 ## Known limitations
 
-- 163 lessons (Phases 12 to 20) are outlines, not full lessons yet. Phase tests and phase certificates exist only for Phases 01 to 11, so the full-course certificate can't be earned yet.
+- 145 lessons (Phases 13 to 20) are outlines, not full lessons yet. Phase tests and phase certificates exist only for Phases 01 to 12, so the full-course certificate can't be earned yet.
 - Only 4 live 3D labs exist; lessons also have 2D interactive figures. Other lessons' "lab" field is a design idea.
 - Certificate codes show integrity, not identity: there is no server, so anyone could compute one.
 - Course mappings are orientation only; this project is not affiliated with or endorsed by ETH Zurich.
