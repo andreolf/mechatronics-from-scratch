@@ -257,6 +257,8 @@ article.lesson-article { min-width: 0; max-width: 720px; }
 .prose li { margin: .3em 0; }
 .prose strong { color: #fff; font-weight: 600; }
 .prose code { font-size: .82em; background: var(--graphite-2); border: 1px solid var(--rule); border-radius: 5px; padding: .08em .35em; overflow-wrap: anywhere; }
+.prose > pre { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 12px 14px; background: #050605; border: 1px solid var(--rule-2); border-radius: var(--r-m); font-size: 13px; line-height: 1.5; }
+.prose > pre code { background: none; border: 0; padding: 0; overflow-wrap: normal; }
 .prose a { color: var(--lime); }
 .prose table { border-collapse: collapse; font-family: var(--sans); font-size: var(--t-1); display: block; overflow-x: auto; max-width: 100%; margin: 0 0 1.2em; }
 .prose th, .prose td { border-bottom: 1px solid var(--rule); padding: 8px 12px; text-align: left; white-space: nowrap; font-variant-numeric: tabular-nums; }

@@ -30,7 +30,7 @@ For the second, use more coefficient bits (Q30 coefficients in 32 bits with a 64
 
 **Saturate, don't wrap.** Overflowing int16 flips the sign: a full-scale positive output becomes full-scale negative, which in a current loop is a violent kick. Always clamp.
 
-:::figure widget=fixedbiquad caption="Floating-point and fixed-point outputs of the same 2nd-order Butterworth. Lower the coefficient bits or the cutoff and watch the error (amplified ×100) grow."
+:::figure widget=fixedbiquad caption="Floating-point and fixed-point outputs of the same 2nd-order Butterworth, with the error amplified ×100. Lower the coefficient bits or the cutoff and the error grows; this readout includes coefficient quantisation, which error feedback cannot fix."
 :::end
 
 ## Worked example

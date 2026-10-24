@@ -244,22 +244,23 @@ W.decimate = (el) => {
 };
 
 // p08-l13: fixed-point biquad
-export function q15Biquad(b, a, x, fracBits = 14) { // coefficients in Q2.fracBits, data in Q15, wide accumulator
-  const S = 2 ** fracBits; const qb = b.map((v) => Math.round(v * S)), qa = a.map((v) => Math.round(v * S)); let x1 = 0, x2 = 0, y1 = 0, y2 = 0; const out = [];
-  for (const xv of x) { const xi = Math.round(xv * 32768); let acc = qb[0] * xi + qb[1] * x1 + qb[2] * x2 - qa[1] * y1 - qa[2] * y2; let y = Math.round(acc / S); y = Math.max(-32768, Math.min(32767, y)); x2 = x1; x1 = xi; y2 = y1; y1 = y; out.push(y); } return out;
+export function q15Biquad(b, a, x, fracBits = 14, errorFeedback = false) { // coefficients in Q2.fracBits, data in Q15, wide accumulator
+  const S = 2 ** fracBits; const qb = b.map((v) => Math.round(v * S)), qa = a.map((v) => Math.round(v * S)); let x1 = 0, x2 = 0, y1 = 0, y2 = 0, err = 0; const out = [];
+  for (const xv of x) { const xi = Math.max(-32768, Math.min(32767, Math.round(xv * 32768))); let acc = qb[0] * xi + qb[1] * x1 + qb[2] * x2 - qa[1] * y1 - qa[2] * y2; if (errorFeedback) acc += err; let y = Math.round(acc / S); if (errorFeedback) err = acc - y * S; y = Math.max(-32768, Math.min(32767, y)); x2 = x1; x1 = xi; y2 = y1; y1 = y; out.push(y); } return out;
 }
 W.fixedbiquad = (el) => {
   const { body, read, ctrls } = frame(el);
-  const s = { bits: 14, fc: 0.05 };
+  const s = { bits: 14, fc: 0.05, ef: false };
   const p = new Plot(body, { aspect: 0.55, maxH: 300, x: [0, 200], y: [-1.2, 1.2], label: 'Biquad output: floating point (dashed) and fixed point (lime); error ×100 (amber)' });
   p.draw = (P) => {
-    const { b, a } = butter(2, s.fc, 1); const x = Array.from({ length: 200 }, (_, n) => 0.7 * Math.sin(TAU * 0.02 * n) * (n > 10 ? 1 : 0) + (n > 120 ? -0.4 : 0)); const yf = lfilter(b, a, x); const yq = q15Biquad(b, a, x, s.bits).map((v) => v / 32768);
+    const { b, a } = butter(2, s.fc, 1); const x = Array.from({ length: 200 }, (_, n) => 0.55 * Math.sin(TAU * 0.02 * n) * (n > 10 ? 1 : 0) + (n > 120 ? -0.35 : 0)); const yf = lfilter(b, a, x); const yq = q15Biquad(b, a, x, s.bits, s.ef).map((v) => v / 32768);
     const ns = x.map((_, n) => n); P.axes({ xl: 'n' }); P.line(ns, Array.from(yf), C.dim, 1.5, [5, 4]); P.line(ns, yq, C.lime, 2); P.line(ns, yq.map((v, n) => 100 * (v - yf[n])), C.warn, 1);
     const err = Math.max(...yq.map((v, n) => Math.abs(v - yf[n]))) * 32768;
-    read.innerHTML = `2nd-order Butterworth at ${s.fc} f<sub>s</sub> · coefficients Q2.${s.bits}, data Q15, wide accumulator · worst error <b>${err.toFixed(2)} LSB</b>${err < 1 ? ' ✓ below 1 LSB' : ''}`;
+    read.innerHTML = `2nd-order Butterworth at ${s.fc} f<sub>s</sub> · coefficients Q2.${s.bits}, data Q15, wide accumulator${s.ef ? ', error feedback' : ''} · worst error vs the unquantised floating-point design <b>${err.toFixed(2)} LSB</b>${err < 1 ? ' ✓ below 1 LSB' : ''}`;
   };
   ctrls.append(slider('Coefficient fraction bits', { min: 6, max: 14, step: 1, value: s.bits, fmt: (v) => String(v) }, (v) => { s.bits = v; p.redraw(); }),
-    slider('Cutoff', { min: 0.005, max: 0.2, step: 0.005, value: s.fc, fmt: (v) => v.toFixed(3) + ' f_s' }, (v) => { s.fc = v; p.redraw(); }));
+    slider('Cutoff', { min: 0.005, max: 0.2, step: 0.005, value: s.fc, fmt: (v) => v.toFixed(3) + ' f_s' }, (v) => { s.fc = v; p.redraw(); }),
+    h('div', { class: 'btn-row' }, toggle('Error feedback', false, (v) => { s.ef = v; p.redraw(); }, { id: 'fb-ef' })));
   p.redraw();
 };
 
