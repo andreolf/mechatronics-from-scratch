@@ -45,6 +45,10 @@ A drive with power on its motor is dangerous, so it won't move until the master 
 | Quick stop | 0 x01x | 7, 10 → Switch on disabled; 11 → Quick stop active |
 | Fault reset | rising edge of bit 7 | 15: Fault → Switch on disabled |
 
+A master decodes the state by masking, for example
+
+$$(\text{statusword} \mathbin{\&} \text{6F}_{16}) = \text{21}_{16} \iff \text{Ready to switch on}.$$
+
 The usual start-up is controlword **0x06, 0x07, 0x0F**, checking the statusword after each. A fault from any state goes to Fault reaction active, then Fault; only a 0→1 edge on bit 7 clears it.
 
 :::figure widget=cia402 caption="The CiA 402 drive state machine. Send controlwords and watch the state and statusword change; inject a fault, and clear it with a rising edge on bit 7."
