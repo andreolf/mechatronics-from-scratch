@@ -18,7 +18,7 @@ If $D < v_{max}^2/a_{max}$, then $t_c$ would be negative. The axis must start br
 
 $$v_p = \sqrt{a_{max} D}, \qquad T = 2\sqrt{D/a_{max}}.$$
 
-Either way, the move is **bang-coast-bang**: every limit that can be active is active. No other profile within the limits is faster, because the area under $v(t)$ must be $D$, and these curves rise and fall as steeply as allowed.
+Either way, the move is **bang-coast-bang**: at every instant, either the acceleration or the speed is at its limit. No other profile within the limits is faster, because the area under $v(t)$ must be $D$, and these curves rise and fall as steeply as allowed.
 
 ## Several axes together
 
