@@ -52,16 +52,16 @@ code, kbd, pre { font-family: var(--mono); }
 .icon-btn:hover, .icon-btn[aria-pressed="true"] { color: var(--bone); border-color: var(--fog); }
 
 /* header */
-.site-head { position: sticky; top: 0; z-index: 40; height: calc(var(--head-h) + env(safe-area-inset-top)); padding: env(safe-area-inset-top) var(--pad-r) 0 var(--pad); display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #000000e6; backdrop-filter: saturate(140%) blur(12px); -webkit-backdrop-filter: saturate(140%) blur(12px); border-bottom: 1px solid var(--rule); }
+.site-head { position: sticky; top: 0; z-index: 40; height: calc(var(--head-h) + env(safe-area-inset-top)); padding: env(safe-area-inset-top) var(--pad-r) 0 var(--pad); display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #000; border-bottom: 1px solid var(--rule); }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--bone); text-decoration: none; min-height: 44px; min-width: 0; }
 .brand svg { color: var(--lime); flex: none; }
 .brand-name { font-weight: 700; font-size: var(--t-1); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand-name span { color: var(--fog); font-weight: 500; }
-@media (max-width: 400px) { .brand-name span { display: none; } }
+@media (max-width: 479px) { .brand-name span { display: none; } }
 .site-nav { display: flex; align-items: center; gap: 2px; }
 .site-nav a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 10px; border-radius: 999px; color: var(--fog); text-decoration: none; font-size: var(--t-1); font-weight: 500; }
 .site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--bone); background: var(--graphite-2); }
-.xp-pill { font: 600 12px/1 var(--mono); color: var(--lime); background: var(--lime-soft); border-radius: 999px; padding: 6px 8px; }
+.xp-pill { font: 600 12px/1 var(--mono); color: var(--lime); background: var(--lime-soft); border-radius: 999px; padding: 6px 8px; white-space: nowrap; flex: none; }
 @media (max-width: 560px) { .site-nav a[data-nav="labs"] { display: none; } .nav-label { display: none; } }
 
 /* views */
@@ -90,7 +90,7 @@ code, kbd, pre { font-family: var(--mono); }
 @media (min-width: 900px) {
   .hero { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: 48px; min-height: calc(100svh - var(--head-h)); padding-top: 32px; padding-bottom: 48px; }
   .hero-stage { order: 0; aspect-ratio: auto; height: min(72svh, 720px); max-height: none; }
-  .hero h1 { font-size: clamp(64px, 7.2vw, 112px); }
+  .hero h1 { font-size: clamp(52px, 5.4vw, 96px); }
 }
 
 /* method */
@@ -221,7 +221,7 @@ mark { background: #c6ff1a40; color: inherit; border-radius: 3px; padding: 0 1px
 
 /* ---------- lesson pages ---------- */
 .page { max-width: 1200px; margin: 0 auto; padding: 0 var(--pad-r) 64px var(--pad); }
-.lesson-bar { position: sticky; top: calc(var(--head-h) + env(safe-area-inset-top)); z-index: 30; margin: 0 calc(-1 * var(--pad-r)) 0 calc(-1 * var(--pad)); padding: 6px var(--pad-r) 6px var(--pad); display: flex; align-items: center; gap: 8px; background: #000000eb; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--rule); }
+.lesson-bar { position: sticky; top: calc(var(--head-h) + env(safe-area-inset-top)); z-index: 30; margin: 0 calc(-1 * var(--pad-r)) 0 calc(-1 * var(--pad)); padding: 6px var(--pad-r) 6px var(--pad); display: flex; align-items: center; gap: 8px; background: #000; border-bottom: 1px solid var(--rule); }
 .lesson-bar .crumb { flex: 1; min-width: 0; font-size: var(--t-0); color: var(--fog); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lesson-bar .crumb b { color: var(--bone); font-weight: 600; }
 .lesson-bar .icon-btn { background: var(--graphite); text-decoration: none; display: inline-grid; place-items: center; }
@@ -378,3 +378,4 @@ h1[tabindex="-1"]:focus { outline: none; }
 code, pre, kbd, .readout, .widget-read { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
 .tldr code { font-size: .8em; }
 .tutor-grid > * { min-width: 0; }
+@media (max-width: 420px) { .lesson-bar .meter { display: none; } }

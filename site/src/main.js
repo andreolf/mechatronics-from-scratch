@@ -61,7 +61,7 @@ function showHome(anchor) {
   startHero(); labIO.observe($('labs'));
   map.refresh();
   if (anchor) { if (anchor.startsWith('lab-')) startLabs(); requestAnimationFrame(() => { const el = document.getElementById(anchor); if (el) el.scrollIntoView({ block: 'start' }); }); }
-  else window.scrollTo(0, 0);
+  else window.scrollTo({ top: 0, behavior: 'instant' });
 }
 let routeSeq = 0;
 async function route() {
@@ -77,7 +77,7 @@ async function route() {
   const [{ renderLesson }, P] = await loadPages();
   if (seq !== routeSeq) return;
   home.hidden = true; page.hidden = false;
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: 'instant' });
   let title;
   if (seg === 'learn') { setNav('course'); title = await renderLesson(page, arg); }
   else if (seg === 'phase') { setNav('course'); title = P.renderPhase(page, arg); }
