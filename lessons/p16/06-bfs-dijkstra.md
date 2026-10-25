@@ -20,7 +20,7 @@ Dijkstra keeps a priority queue ordered by the cost so far, $g$. It repeatedly r
 
 Why is a removed cell final? Every cell still in the queue has $g \ge g(c)$, and costs are non-negative, so any other route to $c$ through them costs at least $g(c)$. With a binary heap, the cost is $O((V + E)\log V)$. Negative step costs break this argument, but distances can't be negative.
 
-:::figure widget=wavefront caption="Breadth-first search or Dijkstra spreading from the start across an occupancy grid. The colour is the cost to reach each cell, and the path is traced back from the goal. Press play or step through the expansion."
+:::figure widget=wavefront caption="Breadth-first search or Dijkstra spreading from the start across an occupancy grid. The colour is the cost to reach each cell, and the path is traced back from the goal once it is reached. Move the slider to step through the expansion."
 :::end
 
 ## Worked example
