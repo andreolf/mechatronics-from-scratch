@@ -137,4 +137,4 @@ A full battery cannot accept charge, so its charge limit drops to zero. Every jo
   options: ["It catches sign errors and missing loss terms", "It speeds up the simulation", "It makes the battery larger", "It is required by the motor"]
   answer: 0
   explain: Every joule must be booked once.
-:::
+:::end

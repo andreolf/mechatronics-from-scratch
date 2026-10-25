@@ -123,4 +123,4 @@ The LFP OCV curve is nearly flat over most of the SOC range, so a millivolt-leve
   options: ["LFP", "NMC", "Lead-acid", "All are equally steep"]
   answer: 0
   explain: LFP sits near 3.3 V for most of its range.
-:::
+:::end
