@@ -95,7 +95,7 @@ function compile(file, phase) {
       if (!fence) throw new Error(`${file}: code block without fence`);
       const lang = a.lang || fence[1], src = fence[2];
       const idx = codes.push({ file: a.file, lang, src }) - 1;
-      const hl = hljs.highlight(src, { language: lang }).value;
+      const hl = lang === 'text' ? esc(src) : hljs.highlight(src, { language: lang }).value;
       parts.push(`<div class="code-card" data-code="${idx}"><div class="code-head"><span class="fname" translate="no">${esc(a.file)}</span><button class="btn btn-quiet btn-small" type="button" data-copy="${idx}">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="${idx}">Download</button></div><pre tabindex="0"><code class="language-${lang}">${hl}</code></pre></div>`);
       const dir = path.join(CODE_OUT, meta.id); fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(path.join(dir, a.file), src + '\n');
     } else if (kind === 'exercise') {

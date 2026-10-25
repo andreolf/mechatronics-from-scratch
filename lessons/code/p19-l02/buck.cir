@@ -1,0 +1,17 @@
+* buck.cir: reference only, not run by this site's checks; needs ngspice (ngspice -b buck.cir)
+Vin  in  0   12
+Vgh  gh  0   PULSE(0 5 0 1n 1n 549n 2u)      ; high-side gate, D = 0.275 at 500 kHz
+Vgl  gl  0   PULSE(5 0 0 1n 1n 549n 2u)      ; complementary low-side gate
+S1   in  sw  gh 0 SWM
+S2   sw  0   gl 0 SWM
+.model SWM SW(Ron=25m Roff=1Meg Vt=2.5)
+L1   sw  out 22u
+C1   out 0   47u
+Rl   out 0   1.65
+.tran 10n 1.2m 1m
+.control
+run
+meas tran vavg AVG v(out) from=1.1m to=1.2m
+meas tran ipp PP i(L1) from=1.19m to=1.2m
+.endc
+.end

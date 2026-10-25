@@ -15,7 +15,7 @@ Electromagnetic compatibility (EMC) means a device neither disturbs others nor i
 
 Place the input capacitor right against the switches so the hot loop is tiny, return currents on a solid ground plane directly beneath their traces, keep the switch node copper small, and route sensitive traces away. Slowing the edges (gate resistors, Lesson 07) also helps, at the cost of switching loss (Lesson 06). A trapezoidal waveform with rise time $t_r$ has a spectrum envelope that falls at 20 dB per decade above $1/(\pi T_{pulse})$ and 40 dB per decade above $1/(\pi t_r)$.
 
-:::figure widget=loopcoupling caption="A hot loop beside a victim trace. Drag the capacitor position, change the edge time and toggle the ground plane; the readout estimates mutual inductance and the induced spike."
+:::figure widget=loopcoupling caption="A hot loop beside a victim trace. Move the input capacitor closer, change the edge time and the gap, and toggle the ground plane; the readout estimates mutual inductance and the induced spike."
 :::end
 
 ## Worked example

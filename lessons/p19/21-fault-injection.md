@@ -19,7 +19,7 @@ A campaign is organised by **fault classes**, grouped by where they enter the sy
 
 ## The supervisor
 
-The simulated joint follows a trajectory under PD control with gravity compensation. An independent supervisor checks current plausibility ($|i_{meas} - \tau_{cmd}/k_t| \le 3$ A), the encoder rate, a cross-check between joint and motor encoders, a watchdog on the planner's message counter, and a deadline monitor on the control task. Any trip enters the safe state: torque off and brake.
+The simulated joint follows a trajectory under PD control with gravity compensation. An independent supervisor checks current plausibility ($|i_{meas} - \tau_{cmd}/k_t| \le 1$ A, twenty times the current noise), the encoder rate, a cross-check between joint and motor encoders, a watchdog on the planner's message counter, and a deadline monitor on the control task. Any trip enters the safe state: torque off and brake. Latency is counted from when a fault first produces a wrong output; until then it is **dormant**, like a stuck encoder on a joint that is standing still.
 
 :::figure widget=faultcampaign caption="The joint's response with a fault injected and the moment the supervisor trips. Choose the fault class and the injection time; run a randomised campaign with the button."
 :::end
@@ -29,10 +29,11 @@ The simulated joint follows a trajectory under PD control with gravity compensat
 Fifteen randomised injections per class, 30 ms budget (all values illustrative):
 
 1. Ten healthy runs: no trips.
-2. Motor dead: caught every time by current plausibility, at most 19.0 ms. Motor runaway: at once (0.0 ms).
+2. Motor dead and motor runaway: caught at once (0.0 ms after activation) by current plausibility. An earlier 3 A threshold let a dead motor go unnoticed for tens of milliseconds whenever the commanded torque was small, which a second campaign with other random seeds exposed.
 3. Encoder stuck: caught by the encoder cross-check at most 3.0 ms after its error matters; encoder spike: at once by the rate check.
-4. Setpoint stream lost: the watchdog trips within 9.0 ms. Control overrun: the deadline monitor within 5.0 ms.
-5. All six classes covered within 30 ms: the safety reaction triggered for every injection.
+4. Sweeping the injection time of a dead motor over 121 moments: when it fails while commanded near zero torque it stays **dormant** (its output is still right) for up to 54.0 ms, then is caught within 4.0 ms of producing a wrong torque.
+5. Setpoint stream lost: the watchdog trips within 9.0 ms. Control overrun: the deadline monitor within 5.0 ms.
+6. All six classes covered within 30 ms: the safety reaction triggered for every injection.
 
 ## Code it from scratch
 
@@ -60,15 +61,17 @@ def run(fault=None, t_fault=0.6, mag=1.0, seconds=1.2, seed=0):
         if f == "encoder stuck":
             if q_stuck is None: q_stuck = q_j
             q_j = q_stuck
-        if f and k_bad is None and (f not in ("encoder stuck",) or abs(q_j - q) > 0.004): k_bad = k   # fault now matters
+        if f and k_bad is None and f not in ("encoder stuck", "motor dead"): k_bad = k
+        if f == "encoder stuck" and k_bad is None and abs(q_j - q) > 0.004: k_bad = k             # stuck value now wrong
         if f == "encoder spike" and k == k0: q_j += 0.3 * mag
         if f != "control overrun" or (k - k0) % 40 == 0:                       # an overrunning task updates rarely
             tau_cmd = float(np.clip(40 * (ref - q_j) + 3 * (0 - w) + MGL * np.sin(q_j), -T_MAX, T_MAX)); ctrl_age = 0
         else: ctrl_age += 1
+        if f == "motor dead" and k_bad is None and abs(tau_cmd) > 0.1: k_bad = k                 # dead motor now matters
         tau = 0.0 if f == "motor dead" else T_MAX if f == "motor runaway" else tau_cmd
         i_meas = tau / KT + rng.normal(0, 0.05)
         trips = []                                                             # ---- supervisor ----
-        if abs(i_meas - tau_cmd / KT) > 3.0: trips.append("current plausibility")
+        if abs(i_meas - tau_cmd / KT) > 1.0: trips.append("current plausibility")
         if q_j_prev is not None and abs(q_j - q_j_prev) > 0.02: trips.append("rate")
         xcount = xcount + 1 if abs(q_j - q_m) > 0.004 else 0
         if xcount >= 3: trips.append("encoder cross-check")
@@ -76,11 +79,12 @@ def run(fault=None, t_fault=0.6, mag=1.0, seconds=1.2, seed=0):
         if age >= 10: trips.append("setpoint watchdog")
         if ctrl_age >= 5: trips.append("deadline monitor")
         if trips:
-            if fault is None or k < k0: return 0.0, ["FALSE TRIP"] + trips
-            return (k - k_bad) * DT * 1000, trips          # latency from when the fault starts to matter
+            if fault is None or k < k0: return 0.0, ["FALSE TRIP"] + trips, 0.0
+            if k_bad is None: k_bad = k
+            return (k - k_bad) * DT * 1000, trips, (k_bad - k0) * DT * 1000   # latency after activation, dormant time
         q_j_prev = q_j
         w += (tau - MGL * np.sin(q) - B * w) / J * DT; q += w * DT
-    return None, []
+    return None, [], None
 
 def test_no_false_trips():
     for s in range(10): assert run(None, seed=s)[0] is None
@@ -91,15 +95,23 @@ def test_campaign(trials=15):
     for fault in FAULTS:
         lat = []; mons = set()
         for n in range(trials):
-            ms, trips = run(fault, t_fault=rng.uniform(0.3, 0.9), mag=rng.choice([-1, 1]) * rng.uniform(0.5, 1.5), seed=100 + n)
+            ms, trips, _ = run(fault, t_fault=rng.uniform(0.3, 0.9), mag=rng.choice([-1, 1]) * rng.uniform(0.5, 1.5), seed=100 + n)
             assert ms is not None and "FALSE TRIP" not in trips, (fault, n); lat.append(ms); mons.update(trips)
         covered += max(lat) <= BUDGET_MS
         print(f"{fault:22s} reacted {trials}/{trials}, latency max {max(lat):4.1f} ms, by {', '.join(sorted(mons))}")
     print(f"fault classes covered within {BUDGET_MS} ms: {covered}/{len(FAULTS)}")
     assert covered == len(FAULTS)
 
+def test_dormant_motor_fault():
+    """sweep the injection time: a dead motor commanded near zero torque produces no wrong output yet (dormant)."""
+    res = [run("motor dead", t_fault=tf, seed=100) for tf in np.arange(0.30, 0.90, 0.005)]
+    worst = max(r[0] for r in res); dorm = max(r[2] for r in res)
+    print(f"dead motor over {len(res)} injection times: dormant for up to {dorm:.1f} ms, then caught within {worst:.1f} ms")
+    assert worst <= BUDGET_MS
+
 test_no_false_trips()
 test_campaign()
+test_dormant_motor_fault()
 print("PASS")
 ```
 :::end
