@@ -10,7 +10,7 @@ Gazebo, MuJoCo, Isaac Sim, PyBullet and Drake all repeat, every time step $\Delt
 
 1. compute forces: gravity, joint torques from your controllers (through ros2_control, lesson 14), springs and damping,
 2. detect contacts between collision shapes (lesson 12) and compute contact forces,
-3. solve the equations of motion $M(q)\ddot q + C(q, \dot q) + G(q) = \tau + J^T f_{contact}$ (Phase 06),
+3. solve the equations of motion $M(q)\ddot q + C(q, \dot q) + G(q) = \tau + J^T f_{contact}$ (Phase 15),
 4. integrate velocities and positions to the next step.
 
 ## Integrators

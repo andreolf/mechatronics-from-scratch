@@ -6,7 +6,7 @@ summary: Every sensor and link of a robot has its own frame, and tf2 answers whe
 
 ## Frames everywhere
 
-A laser reports points in `laser`, a camera in `camera_optical`, wheel odometry gives `base_link` in `odom`, and localisation gives `odom` in `map`. To put a laser point on the map you chain transforms (Phase 03): $T^{map}_{laser} = T^{map}_{odom}\, T^{odom}_{base}\, T^{base}_{laser}$. **tf2** keeps all of them and does the chaining for you.
+A laser reports points in `laser`, a camera in `camera_optical`, wheel odometry gives `base_link` in `odom`, and localisation gives `odom` in `map`. To put a laser point on the map you chain transforms (Phase 15): $T^{map}_{laser} = T^{map}_{odom}\, T^{odom}_{base}\, T^{base}_{laser}$. **tf2** keeps all of them and does the chaining for you.
 
 ## The frame tree
 
@@ -19,7 +19,7 @@ Two kinds of transform:
 
 ## Time and interpolation
 
-A laser scan stamped 1.05 s must be transformed with the robot's pose at 1.05 s, not the latest. The buffer **interpolates** between the two neighbouring samples: linear for translation, **slerp** (spherical linear interpolation, Phase 03) for the rotation quaternion. A request outside the stored interval raises an **extrapolation error** rather than guessing; requesting time zero means "latest available".
+A laser scan stamped 1.05 s must be transformed with the robot's pose at 1.05 s, not the latest. The buffer **interpolates** between the two neighbouring samples: linear for translation, **slerp** (spherical linear interpolation, Phase 01) for the rotation quaternion. A request outside the stored interval raises an **extrapolation error** rather than guessing; requesting time zero means "latest available".
 
 :::figure widget=tftree caption="A robot's frame tree. Drag the time slider through the odometry history and pick source and target frames; the readout shows the looked-up transform and its path through the tree."
 :::end

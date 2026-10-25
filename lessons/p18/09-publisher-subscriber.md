@@ -6,7 +6,7 @@ summary: A sensor publisher and a subscriber look trivial until the link loses p
 
 ## The publisher side
 
-An IMU driver publishes `sensor_msgs/msg/Imu` from a timer (or from the device's data-ready interrupt) at a fixed rate. Every message carries a `header` with a **stamp**, the time the measurement was taken, and a **frame_id**, the frame it is expressed in (lesson 11). Stamp with the sample time, not the publish time: consumers use the stamp to fuse data (Phase 15) and to measure latency.
+An IMU driver publishes `sensor_msgs/msg/Imu` from a timer (or from the device's data-ready interrupt) at a fixed rate. Every message carries a `header` with a **stamp**, the time the measurement was taken, and a **frame_id**, the frame it is expressed in (lesson 11). Stamp with the sample time, not the publish time: consumers use the stamp to fuse data (Phase 14) and to measure latency.
 
 ## What QoS does to the stream
 

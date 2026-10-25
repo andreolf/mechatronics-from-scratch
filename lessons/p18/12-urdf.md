@@ -12,7 +12,7 @@ The **Unified Robot Description Format** is XML:
 - A `<joint>` connects a parent link to a child link. Its `<origin xyz rpy>` places the child frame in the parent frame at zero joint angle, `<axis>` gives the motion axis in the child frame, and `<limit>` gives position, velocity and effort limits.
 - Types: `revolute` (with limits), `continuous` (unlimited rotation), `prismatic`, `fixed`, and rarely `floating` and `planar`.
 
-Links and joints must form a **tree** with one root (Phase 05 serial chains). Closed loops cannot be expressed directly.
+Links and joints must form a **tree** with one root (Phase 15 serial chains). Closed loops cannot be expressed directly.
 
 ## Inertia
 

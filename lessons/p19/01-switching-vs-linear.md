@@ -10,7 +10,7 @@ A linear regulator (an LDO or a 7805) is a transistor acting as a variable resis
 
 $$P_{loss} = (V_{in} - V_{out})\, I_{out} + V_{in} I_q, \qquad \eta = \frac{V_{out} I_{out}}{V_{in} (I_{out} + I_q)} \le \frac{V_{out}}{V_{in}}.$$
 
-From 12 V to 3.3 V the best possible efficiency is 27.5 %: almost three quarters of the input power becomes heat. Linear regulators are still ideal for small currents, low noise (an ADC reference, Phase 09) and small dropouts.
+From 12 V to 3.3 V the best possible efficiency is 27.5 %: almost three quarters of the input power becomes heat. Linear regulators are still ideal for small currents, low noise (an ADC reference, Phase 07) and small dropouts.
 
 ## Switching conversion
 

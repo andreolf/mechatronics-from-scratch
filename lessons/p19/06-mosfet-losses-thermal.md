@@ -14,7 +14,7 @@ and $R_{ds}$ rises with junction temperature, roughly 0.4 to 0.5 % per kelvin fo
 
 ## The thermal path
 
-Heat flows from the junction to the case, through a thermal interface to the heatsink, and from the heatsink to air. Like resistors in series (Phase 02),
+Heat flows from the junction to the case, through a thermal interface to the heatsink, and from the heatsink to air. Like resistors in series (Phase 05),
 
 $$T_j = T_a + P\,(\theta_{jc} + \theta_{cs} + \theta_{sa}).$$
 

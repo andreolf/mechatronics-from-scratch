@@ -6,7 +6,7 @@ summary: Three half-bridges make a three-phase inverter that drives AC and brush
 
 ## Eight states, six vectors
 
-A three-phase inverter has three legs, each connecting its motor phase to the DC bus top or bottom. That gives $2^3 = 8$ switch states. Expressed in the stationary $\alpha\beta$ frame (Clarke transform, Phase 07), six of them are **active vectors** of length $\tfrac23 V_{dc}$ at 60° steps, forming a hexagon, and two (000 and 111) are **zero vectors**.
+A three-phase inverter has three legs, each connecting its motor phase to the DC bus top or bottom. That gives $2^3 = 8$ switch states. Expressed in the stationary $\alpha\beta$ frame (Clarke transform, Phase 09), six of them are **active vectors** of length $\tfrac23 V_{dc}$ at 60° steps, forming a hexagon, and two (000 and 111) are **zero vectors**.
 
 ## Synthesising any vector
 
@@ -93,7 +93,7 @@ print("PASS")
 
 ## In practice
 
-Field-oriented control of a brushless motor (Phase 07) computes $v_\alpha, v_\beta$ every PWM period and passes them to SVPWM, usually in a motor-control MCU with centre-aligned timers and hardware dead time (STM32 motor control, TI C2000, the open-source VESC and ODrive firmware). NumPy is enough to check the algorithm; dead time and the switches' voltage drops add small distortions that firmware compensates.
+Field-oriented control of a brushless motor (Phase 09) computes $v_\alpha, v_\beta$ every PWM period and passes them to SVPWM, usually in a motor-control MCU with centre-aligned timers and hardware dead time (STM32 motor control, TI C2000, the open-source VESC and ODrive firmware). NumPy is enough to check the algorithm; dead time and the switches' voltage drops add small distortions that firmware compensates.
 
 ## Exercises
 
