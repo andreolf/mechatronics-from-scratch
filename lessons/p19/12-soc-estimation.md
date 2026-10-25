@@ -10,7 +10,7 @@ Integrating the measured current, $\mathrm{SOC}_k = \mathrm{SOC}_0 - \tfrac{1}{Q
 
 ## Voltage as a measurement
 
-The equivalent circuit model (Lesson 11) predicts the terminal voltage from SOC, current and the RC state. If the measured voltage is lower than predicted, the SOC is probably lower than estimated. An **extended Kalman filter** (Phase 14 built the linear Kalman filter) makes that correction optimally: the state is $x = [\mathrm{SOC}, v_1]$, the prediction step is Coulomb counting plus the RC update, and the measurement model $v = \mathrm{OCV}(\mathrm{SOC}) - R_0 i - v_1$ is linearised with $H = [\mathrm{d}\,\mathrm{OCV}/\mathrm{d}\,\mathrm{SOC}, -1]$. The filter's gain is large where the OCV curve is steep and small where it is flat, which is why LFP cells (Lesson 10) are harder.
+The equivalent circuit model (Lesson 11) predicts the terminal voltage from SOC, current and the RC state. If the measured voltage is lower than predicted, the SOC is probably lower than estimated. An **extended Kalman filter** (Phase 14 covers the linear and extended filters) makes that correction optimally: the state is $x = [\mathrm{SOC}, v_1]$, the prediction step is Coulomb counting plus the RC update, and the measurement model $v = \mathrm{OCV}(\mathrm{SOC}) - R_0 i - v_1$ is linearised with $H = [\mathrm{d}\,\mathrm{OCV}/\mathrm{d}\,\mathrm{SOC}, -1]$. The filter's gain is large where the OCV curve is steep and small where it is flat, which is why LFP cells (Lesson 10) are harder.
 
 ## A scooter ride
 
