@@ -15,7 +15,8 @@ test('home: hero, honest stats, tutor line and footer', async ({ page }) => {
   await expect(page.locator('#stats')).toContainText('352');
   await expect(page.locator('#stats')).toContainText('20');
   await expect(page.getByTestId('full-count')).toHaveText(String(fullIds().length));
-  await expect(page.getByTestId('tutor-cmd')).toContainText('npx skills add');
+  await expect(page.getByTestId('tutor-cmd')).toContainText('git clone https://github.com/andreolf/mechatronics-from-scratch');
+  await expect(page.locator('#tutor')).not.toContainText(/coming soon|placeholder/i);
   const foot = page.locator('#colophon');
   await expect(foot).toContainText('no paywall, no signup');
   await expect(foot).toContainText('MIT');
@@ -111,7 +112,7 @@ test('lab 04 motor: follows setpoint, loses speed under load without integral ac
   await expect(page.getByTestId('lab-motor-status')).toHaveAttribute('data-state', /OFF SETPOINT|SATURATED/);
 });
 
-test('course map: 20 phases, expand, search, open an outline lesson', async ({ page }) => {
+test('course map: 20 phases, expand, search, open a Phase 20 lesson', async ({ page }) => {
   await page.locator('#course').scrollIntoViewIfNeeded();
   await expect(page.getByTestId('phase')).toHaveCount(20);
   const p20 = page.locator('[data-phase="p20"]');
@@ -133,7 +134,8 @@ test('course map: 20 phases, expand, search, open an outline lesson', async ({ p
   await p20.getByTestId('phase-btn').click();
   await p20.locator('#lesson-p20-l07').getByTestId('lesson-link').click();
   await expect(page).toHaveURL(/#\/learn\/p20-l07$/);
-  await expect(page.getByTestId('coming-soon')).toContainText('Full lesson coming soon');
+  await expect(page.getByTestId('lesson-body')).toBeVisible();
+  await expect(page.getByTestId('lesson-title')).toContainText('Quadcopter');
 });
 
 test('checkbox progress persists across reloads and resets with a second tap', async ({ page }) => {

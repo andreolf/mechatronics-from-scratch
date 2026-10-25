@@ -1,4 +1,4 @@
-// Course data helpers: curriculum outline + which lessons are fully written.
+// Course data helpers: the curriculum and the compiled lessons.
 import data from '../../curriculum/curriculum.json';
 import index from './generated/index.json';
 

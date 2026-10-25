@@ -84,7 +84,7 @@
       <section class="band course" id="course" aria-labelledby="map-title">
         <div class="wrap">
           <h2 id="map-title">The course, phase by phase</h2>
-          <p class="lede">Open a phase to see its lessons. Full lessons have an explanation, derivation, worked example, code, exercises and a quiz. The rest show their outline until they are written.</p>
+          <p class="lede">Open a phase to see its lessons. Every lesson has an explanation, derivation, worked example, code, exercises and a quiz.</p>
           <div class="map-tools">
             <label class="search"><span class="sr">Search lessons</span><input id="search" name="lesson-search" type="search" inputmode="search" placeholder="Search lessons, e.g. kalman, quaternion…" autocomplete="off" spellcheck="false" data-testid="search" /></label>
             <div class="progress-line" data-testid="progress"><div class="bar" aria-hidden="true"><i id="progress-bar"></i></div><span id="progress-label" class="tnum">0 of 0 lessons done</span></div>
@@ -98,12 +98,12 @@
       <section class="band tutor" id="tutor" aria-labelledby="tutor-title">
         <div class="wrap tutor-grid">
           <div>
-            <h2 id="tutor-title">Learn with your AI tutor</h2>
-            <p class="lede">Install the course as an agent skill. Your coding assistant gives you a placement quiz, picks a starting phase and walks you through each lesson in your own editor.</p>
+            <h2 id="tutor-title">Study with your own AI assistant</h2>
+            <p class="lede">Every lesson is a plain Markdown file in <code>lessons/</code>, and every code example a runnable file in <code>lessons/code/</code>. Clone the repository and ask your coding assistant to quiz you, explain a derivation or review your solutions in your own editor.</p>
           </div>
           <div class="install">
-            <div class="install-line" data-testid="tutor-cmd"><code id="tutor-cmd" translate="no">npx skills add andreolf/mechatronics-from-scratch</code><button class="btn btn-quiet btn-small" id="copy-cmd" type="button">Copy</button></div>
-            <p class="note"><strong>Coming soon.</strong> This command is a placeholder: the tutor skill package isn't published yet, so it won't work today.</p>
+            <div class="install-line" data-testid="tutor-cmd"><code id="tutor-cmd" translate="no">git clone https://github.com/andreolf/mechatronics-from-scratch</code><button class="btn btn-quiet btn-small" id="copy-cmd" type="button">Copy</button></div>
+            <p class="note">No account, no install step: the lessons, code and tests are all in the repository, MIT licensed.</p>
           </div>
         </div>
       </section>

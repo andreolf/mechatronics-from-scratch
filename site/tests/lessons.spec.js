@@ -74,12 +74,18 @@ test('lesson progress and XP persist across reloads; prev/next navigation works'
   await expect(page).toHaveURL(/p01-l03$/);
 });
 
-test('unwritten lessons show an honest outline', async ({ page }) => {
-  await page.goto('./#/learn/p20-l01');
-  await expect(page.getByTestId('coming-soon')).toContainText('Full lesson coming soon');
+test('the whole course is written: 352 lessons, no outlines, every phase test open', async ({ page }) => {
+  expect(fullIds().length).toBe(352);
+  for (const id of ['p20-l01', 'p20-l16']) {
+    await page.goto('./#/learn/' + id);
+    await expect(page.getByTestId('lesson-body')).toBeVisible();
+    await expect(page.locator('main')).not.toContainText(/coming soon|outline only/i);
+  }
+  await page.goto('./#/phase/p20');
+  await expect(page.getByTestId('start-test')).toBeVisible();
+  await expect(page.locator('main')).not.toContainText(/Outline|coming soon/);
   await page.goto('./#/test/p20');
-  await expect(page.locator('h1:visible').first()).toBeVisible();
-  await expect(page.getByTestId('phase-test')).toHaveCount(0);
+  await expect(page.getByTestId('phase-test').getByTestId('question')).toHaveCount(15);
 });
 
 test('phase test: failing, then passing, unlocks a verifiable certificate', async ({ page }) => {
@@ -171,4 +177,48 @@ test('every full lesson renders its maths, code, quiz and widgets without errors
     expect(await overflow(page), id + ' overflow').toBeLessThanOrEqual(0);
     expect(errors, id + ' console').toEqual([]);
   }
+});
+
+test('full course: pass all 20 phase tests in the UI, earn the course certificate and verify it', async ({ page }, info) => {
+  test.skip(!['desktop', 'pixel-7'].includes(info.project.name), 'long end-to-end run: desktop and one phone');
+  test.setTimeout(600_000);
+  await page.goto('./#/certificate/course');
+  await expect(page.getByTestId('cert-locked')).toContainText('0 passed');
+  for (let n = 1; n <= 20; n++) {
+    const pid = 'p' + String(n).padStart(2, '0');
+    const bank = new Map(quizBank(pid).map((q) => [q.id, q]));
+    await page.goto('./#/test/' + pid);
+    const qs = page.getByTestId('phase-test').getByTestId('question');
+    await expect(qs).toHaveCount(15);
+    for (let i = 0; i < 15; i++) { const el = qs.nth(i); await answer(bank.get(await el.getAttribute('data-qid')), el, true); }
+    await page.getByTestId('submit-test').click();
+    await expect(page.getByTestId('test-result'), pid).toHaveAttribute('data-pass', 'true');
+    if (n < 20) { await page.goto('./#/certificate/course'); await expect(page.getByTestId('cert-locked')).toContainText(`${n} passed`); }
+  }
+  await page.goto('./#/certificate/course');
+  await expect(page.getByTestId('cert-locked')).toHaveCount(0);
+  await expect(page.locator('h1:visible').first()).toHaveText('Full-course certificate');
+  await expect(page.locator('.page')).toContainText('Free certificate of completion, not accredited, and not affiliated with or endorsed by ETH Zurich');
+  await page.getByTestId('cert-name').fill('Grace Hopper');
+  await expect.poll(() => page.evaluate(() => window.__mfs.store.get().certs.course?.name)).toBe('Grace Hopper');
+  await expect(page.getByTestId('cert-canvas')).toHaveAttribute('data-ready', '1');
+  const code = (await page.getByTestId('cert-code').textContent()).trim();
+  expect(code).toMatch(/^[0-9A-HJKMNP-TV-Z]{4}(-[0-9A-HJKMNP-TV-Z]{4}){3}$/);
+  const dl = page.waitForEvent('download'); await page.getByTestId('cert-pdf').click();
+  const head = (await (await import('node:fs')).promises.readFile(await (await dl).path())).subarray(0, 5).toString();
+  expect(head).toBe('%PDF-');
+  const date = await page.evaluate(() => Object.values(window.__mfs.store.get().tests).map((t) => t.date).sort().pop());
+  await page.goto('./#/verify');
+  await page.getByTestId('v-name').fill('Grace Hopper');
+  await page.getByTestId('v-key').selectOption('course');
+  await page.getByTestId('v-date').fill(date);
+  await page.getByTestId('v-code').fill(code);
+  await page.getByTestId('v-submit').click();
+  await expect(page.getByTestId('v-out')).toHaveAttribute('data-ok', 'true');
+  await page.getByTestId('v-key').selectOption('p20');
+  await page.getByTestId('v-submit').click();
+  await expect(page.getByTestId('v-out')).toHaveAttribute('data-ok', 'false');
+  await page.goto('./#/progress');
+  await expect(page.getByTestId('dashboard')).toBeVisible();
+  await expect(page.locator('a[href="#/certificate/course"]')).not.toContainText('locked');
 });

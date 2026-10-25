@@ -6,7 +6,7 @@ Curated by Francesco Andreoli (ETH Zurich mechanical-engineering alumnus · `@fr
 
 > Live site: https://andreolf.github.io/mechatronics-from-scratch/
 
-> Status: v0.2.0. **336 of 352 lessons are fully written** (Phase 01: all 18, Phase 02: all 16, Phase 03: all 14, Phase 04: all 12, Phase 05: all 23, Phase 06: all 16, Phase 07: all 18, Phase 08: all 16, Phase 09: all 20, Phase 10: all 22, Phase 11: all 14, Phase 12: all 18, Phase 13: all 20, Phase 14: all 18, Phase 15: all 18, Phase 16: all 14, Phase 17: all 20, Phase 18: all 17, Phase 19: all 22). Every other lesson has a detailed outline marked "Full lesson coming soon". The AI-tutor install command on the site is a **coming-soon placeholder** (no skill package is published yet).
+> Status: v0.2.0. **All 352 lessons are complete** (Phase 01: all 18, Phase 02: all 16, Phase 03: all 14, Phase 04: all 12, Phase 05: all 23, Phase 06: all 16, Phase 07: all 18, Phase 08: all 16, Phase 09: all 20, Phase 10: all 22, Phase 11: all 14, Phase 12: all 18, Phase 13: all 20, Phase 14: all 18, Phase 15: all 18, Phase 16: all 14, Phase 17: all 20, Phase 18: all 17, Phase 19: all 22, Phase 20: all 16). Every phase has a phase test and a phase certificate, and the full-course certificate can be earned by passing all 20.
 
 ## Full lessons
 
@@ -28,7 +28,7 @@ Lessons are Markdown files in `lessons/pNN/*.md` with a few fenced blocks:
 
 - Everything is stored in your browser (`localStorage`, key `mfs-v2`). No accounts, no backend, no analytics. Export and import your progress as JSON from `#/progress`.
 - XP: 50 per completed lesson, 10 per quiz question right first time, 250 per passed phase test. Streaks count consecutive days with activity.
-- **Phase tests** (`#/test/pNN`) draw 15 questions from the phase's quiz bank. The pass mark is 80 %. Each retake draws a new set. A phase test exists only once every lesson in the phase is fully written (today: Phases 01 to 19).
+- **Phase tests** (`#/test/pNN`) draw 15 questions from the phase's quiz bank. The pass mark is 80 %. Each retake draws a new set. Every phase has one (Phases 01 to 20).
 - **Certificates** (`#/certificate/pNN`, and `#/certificate/course` after all 20 phase tests) are drawn in the browser and download as PNG or PDF. Each carries a verification code: the first 80 bits of SHA-256 over the name, credential, phases and date, in Crockford base32. Anyone can recompute it at `#/verify`. It proves the certificate wasn't edited after it was made, nothing more: the code is computed client-side, so anyone could generate one.
 - **These are free certificates of completion. They are not accredited, and this project is not affiliated with or endorsed by ETH Zurich.**
 
@@ -122,7 +122,7 @@ SHOTS=1 npx playwright test screenshots --project=desktop --project=iphone-14 --
 BASE_URL=https://andreolf.github.io/mechatronics-from-scratch/ npx playwright test   # against the live site
 ```
 
-Playwright projects: desktop Chrome (1280), iPhone 13 and iPhone 14 (WebKit), Pixel 7 (Chromium), a 360 px Android, and iPhone 14 landscape. Every test fails on a console error or horizontal overflow. The suite covers: the hero canvas renders; each lab reacts to input, including tap-to-place in the arm lab's explicit drag mode on touch; the course map, search and checkbox progress; a lesson renders KaTeX, code, widgets and hidden solutions; code downloads; quiz grading for multiple choice, numeric tolerance and invalid input; lesson progress and XP survive a reload; prev/next; outline lessons; a failed then passed phase test unlocks a certificate whose PNG and PDF download and whose code verifies (and fails for a different name); every key route has no overflow and touch targets of at least 44 px on phones; the `?nowebgl=1` fallback. Headless Chromium uses SwiftShader (`--enable-unsafe-swiftshader`).
+Playwright projects: desktop Chrome (1280), iPhone 13 and iPhone 14 (WebKit), Pixel 7 (Chromium), a 360 px Android, and iPhone 14 landscape. Every test fails on a console error or horizontal overflow. The suite covers: the hero canvas renders; each lab reacts to input, including tap-to-place in the arm lab's explicit drag mode on touch; the course map, search and checkbox progress; a lesson renders KaTeX, code, widgets and hidden solutions; code downloads; quiz grading for multiple choice, numeric tolerance and invalid input; lesson progress and XP survive a reload; prev/next; the whole course is written (352 lessons, no outlines, every phase test open); a failed then passed phase test unlocks a certificate whose PNG and PDF download and whose code verifies (and fails for a different name); passing all 20 phase tests through the UI unlocks the full-course certificate, whose PDF downloads and whose code verifies (and fails for a different credential); every key route has no overflow and touch targets of at least 44 px on phones; the `?nowebgl=1` fallback. Headless Chromium uses SwiftShader (`--enable-unsafe-swiftshader`).
 
 ## The labs (educational approximations)
 
@@ -135,11 +135,9 @@ Parameters are illustrative, not validated against specific hardware.
 
 ## Known limitations
 
-- 16 lessons (Phase 20) are outlines, not full lessons yet. Phase tests and phase certificates exist only for Phases 01 to 19, so the full-course certificate can't be earned yet.
 - Only 4 live 3D labs exist; lessons also have 2D interactive figures. Other lessons' "lab" field is a design idea.
 - Certificate codes show integrity, not identity: there is no server, so anyone could compute one.
 - Course mappings are orientation only; this project is not affiliated with or endorsed by ETH Zurich.
-- The AI-tutor `npx skills add` line is a placeholder until a skill package exists.
 
 ## License
 

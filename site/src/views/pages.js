@@ -25,7 +25,7 @@ export function renderPhase(root, pid) {
       : `<p class="lede" style="margin:0">The test opens once every lesson in this phase is fully written (${fullN} of ${p.lessons.length} so far).</p>`}
     </section>
     <section class="panel" aria-labelledby="ph-lessons"><h2 id="ph-lessons">Lessons <small class="quiz-score">${done} of ${p.lessons.length} done</small></h2>
-      <ol class="lessons">${p.lessons.map((l) => `<li class="lesson${store.isDone(l.id) ? ' done' : ''}"><div class="lesson-row" style="grid-template-columns:44px minmax(0,1fr) auto"><span class="check" aria-hidden="true">${store.isDone(l.id) ? '<span style="color:var(--lime)">✓</span>' : `<span class="tnum" style="color:var(--dim)">${pad2(l.n)}</span>`}</span><a class="lesson-link" href="#/learn/${l.id}">${esc(l.title)}<small>${l.id}</small></a>${isFull(l.id) ? '<span class="chip full">Full lesson</span>' : '<span class="chip">Outline</span>'}</div></li>`).join('')}</ol>
+      <ol class="lessons">${p.lessons.map((l) => `<li class="lesson${store.isDone(l.id) ? ' done' : ''}"><div class="lesson-row" style="grid-template-columns:44px minmax(0,1fr) auto"><span class="check" aria-hidden="true">${store.isDone(l.id) ? '<span style="color:var(--lime)">✓</span>' : `<span class="tnum" style="color:var(--dim)">${pad2(l.n)}</span>`}</span><a class="lesson-link" href="#/learn/${l.id}">${esc(l.title)}<small>${l.id}</small></a>${isFull(l.id) ? '<span class="chip full">Full lesson</span>' : ''}</div></li>`).join('')}</ol>
     </section></div>`;
   return p.title;
 }

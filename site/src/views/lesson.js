@@ -1,30 +1,19 @@
-// Lesson route: #/learn/:id. Full lessons render compiled HTML; others show the outline with a clear "coming soon".
-import { byId, isFull, loadLesson, neighbours, phaseFullCount } from '../course.js';
+// Lesson route: #/learn/:id. Every lesson renders its compiled HTML.
+import { byId, loadLesson, neighbours, phaseFullCount } from '../course.js';
 import { store } from '../store.js';
 import { esc, pad2, toast, download } from '../util-dom.js';
 import { questionEl } from './quiz.js';
 import { hydrateWidgets } from '../widgets/index.js';
 
-const LAB_NAMES = { pendulum: 'Balance the pendulum', arm: 'Drive the arm', quad: 'Fly the quadrotor', motor: 'Tune the motor' };
-
 function tocHTML(l) {
   const p = l.phase;
   return `<nav class="toc" aria-label="Lessons in phase ${p.number}"><h2>Phase ${pad2(p.number)} · ${esc(p.title)}</h2><ol>${p.lessons.map((x) => `
-    <li><a href="#/learn/${x.id}"${x.id === l.id ? ' aria-current="page"' : ''}><span class="n">${pad2(x.n)}</span><span>${esc(x.title)}${store.isDone(x.id) ? ' <span class="ok" aria-label="done">✓</span>' : ''}${isFull(x.id) ? '' : ' <span class="sr">(outline only)</span>'}</span></a></li>`).join('')}</ol>
+    <li><a href="#/learn/${x.id}"${x.id === l.id ? ' aria-current="page"' : ''}><span class="n">${pad2(x.n)}</span><span>${esc(x.title)}${store.isDone(x.id) ? ' <span class="ok" aria-label="done">✓</span>' : ''}</span></a></li>`).join('')}</ol>
     <p style="margin:14px 8px 0"><a class="btn btn-quiet btn-small" href="#/phase/${p.id}">Phase overview and test</a></p></nav>`;
 }
 
-function outlineHTML(l) {
-  return `<div class="soon" data-testid="coming-soon"><h2>Full lesson coming soon</h2><p>This lesson is an outline for now. The derivation, worked example, code, exercises and quiz are being written in order, phase by phase. Here’s what it will cover.</p></div>
-  <div class="outline prose"><dl>
-    <dt>Goal</dt><dd>${esc(l.goal)}</dd>
-    <dt>Derive</dt><dd>${esc(l.math)}</dd>
-    <dt>Code from scratch (${esc(l.code.lang)})</dt><dd>${esc(l.code.task)}</dd>
-    <dt>Lab or visual</dt><dd>${esc(l.lab)}${l.live_lab ? ` <a href="#lab-${l.live_lab}">Open the live lab: ${LAB_NAMES[l.live_lab]}</a>` : ''}</dd>
-    <dt>Test</dt><dd>${esc(l.test)}</dd>
-    <dt>Professional tool</dt><dd>${esc(l.tool)}</dd>
-    <dt>Maps to</dt><dd>${esc(l.course.title)}${l.course.eth ? ' (ETH Zurich course used as a syllabus reference)' : ''}</dd>
-  </dl></div>`;
+function missingHTML(l) {
+  return `<div class="panel" data-testid="lesson-missing"><p>This lesson’s content could not be loaded. Check your connection and reload the page.</p></div>`;
 }
 
 export async function renderLesson(root, id) {
@@ -48,21 +37,21 @@ export async function renderLesson(root, id) {
         <p class="lesson-kicker"><a href="#/phase/${p.id}">Phase ${pad2(p.number)}: ${esc(p.title)}</a></p>
         <h1 data-testid="lesson-title">${esc(l.title)}</h1>
         <div class="lesson-meta">
-          ${data ? `<span class="chip full">Full lesson</span><span class="chip">${data.minutes} min</span>` : '<span class="chip">Outline</span>'}
+          ${data ? `<span class="chip full">Full lesson</span><span class="chip">${data.minutes} min</span>` : ''}
           <span class="chip">${esc(l.code.lang)}</span>
           ${l.course.eth ? `<span class="chip eth" title="${esc(l.course.title)}">ETH syllabus</span>` : ''}
           ${l.live_lab ? `<a class="chip" href="#lab-${l.live_lab}">Live lab</a>` : ''}
         </div>
-        ${data ? `<p class="tldr">${data.summary}</p><div class="prose" data-testid="lesson-body">${data.html}</div>` : outlineHTML(l)}
+        ${data ? `<p class="tldr">${data.summary}</p><div class="prose" data-testid="lesson-body">${data.html}</div>` : missingHTML(l)}
         <div class="lesson-end">
           <div class="complete-card" data-testid="complete-card">
             <h2>${store.isDone(id) ? 'Lesson complete' : 'Finished this lesson?'}</h2>
-            <p>${data ? 'Mark it complete to earn 50 XP and keep your streak. Progress stays in this browser.' : 'You can still mark the outline as studied if you worked through it with the linked tools.'}</p>
+            <p>Mark it complete to earn 50 XP and keep your streak. Progress stays in this browser.</p>
             <div><button class="btn ${store.isDone(id) ? 'btn-quiet' : 'btn-primary'}" type="button" data-testid="mark-complete" aria-pressed="${store.isDone(id)}">${store.isDone(id) ? 'Completed ✓ (undo)' : 'Mark lesson complete'}</button></div>
           </div>
           <nav class="pn" aria-label="Lesson navigation">
             ${prev ? `<a class="prev" href="#/learn/${prev.id}" data-testid="prev"><span>Previous</span><b>${esc(prev.title)}</b></a>` : '<span></span>'}
-            ${next ? `<a class="next" href="#/learn/${next.id}" data-testid="next"><span>Next${isFull(next.id) ? '' : ' · outline'}</span><b>${esc(next.title)}</b></a>` : ''}
+            ${next ? `<a class="next" href="#/learn/${next.id}" data-testid="next"><span>Next</span><b>${esc(next.title)}</b></a>` : ''}
           </nav>
         </div>
       </article>
