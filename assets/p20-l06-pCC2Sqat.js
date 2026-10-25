@@ -1,0 +1,185 @@
+var e=`p20-l06`,t=45,n=`A capstone is not finished until you have tried to break it. You inject five faults into the balancing robot’s closed loop (ten times the sensor noise, extra delay, a weak motor, lost motors and a gyro bias) and check that each one is either detected by a monitor or explained quantitatively by the theory from earlier lessons.`,r=`<h2 id="detected-or-explained">Detected or explained</h2>
+<p>Fault injection (Phase 19) asks two questions of every fault: does a monitor detect it, and if it does not, can you explain what happens? An unexplained behaviour is the dangerous outcome, because it means the model, the code or the understanding is wrong. For the balancing robot:</p>
+<ul>
+<li><strong>Sensor noise</strong> passes through the gains into the voltage, so effort grows roughly with the noise power.</li>
+<li><strong>Delay</strong> eats phase margin; the loop fails near the delay margin <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">ϕ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> of Lesson 05.</li>
+<li><strong>A weak motor</strong> scales the loop gain; the LQR tolerates any factor down to one half. A running least-squares estimate of measured against commanded current, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9579em;"></span><span class="mord katex-accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9579em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span></span><span style="top:-3.2634em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.25em;"><span class="mord">^</span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.0972em;vertical-align:-0.2831em;"></span><span class="mop op-symbol small-op" style="position:relative;top:0em;">∑</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">i</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">s</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">i</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">c</span><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">d</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop op-symbol small-op" style="position:relative;top:0em;">∑</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">i</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-2.4169em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">c</span><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">d</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2831em;"><span></span></span></span></span></span></span></span></span></span>, detects it.</li>
+<li><strong>Lost motors</strong> make the robot fall; a tilt monitor cuts torque beyond 30° (requirement R4 of Lesson 01).</li>
+<li><strong>A gyro bias</strong> <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal">b</span></span></span></span> shifts the complementary filter’s estimate by <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">b</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="mord">/</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mclose">)</span></span></span></span>; the controller then parks the robot where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord text"><span class="mord">offset</span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">b</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>.</li>
+</ul>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="breakit" data-args="{}"></div></div><figcaption>The balancing robot with one fault injected. Choose the fault and its size; the readout says whether a monitor tripped and compares the outcome with the prediction.</figcaption></figure>
+<h2 id="worked-example">Worked example</h2>
+<p>Closed loop at 500 Hz from 3°, LQR of Lesson 05, complementary filter with <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.995</span></span></span></span>:</p>
+<ol>
+<li>Nominal: upright, effort 0.074 V²·s, no trips.</li>
+<li>Ten times the sensor noise: still upright, effort 3.155 V²·s (42.7 times), close to the 100 times the noise power would suggest for a loop dominated by noise.</li>
+<li>Extra delay: 10, 20, 40 and 60 ms are fine; 80 ms falls, consistent with the 79.5 ms delay margin.</li>
+<li>One motor weak (60 % torque): still upright, and the current monitor reports “current mismatch”.</li>
+<li>Motors lost: the robot falls; both the current monitor and the “tilt &gt; 30°” monitor trip and torque is cut.</li>
+<li>Gyro bias of 0.05 rad/s: upright with zero true tilt, the estimate is off by 1.14°, and the robot parks at −16.0 cm against a predicted −15.9 cm.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">break_it.py</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-python"><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">from</span> scipy.linalg <span class="hljs-keyword">import</span> solve_continuous_are
+
+M, m, r, l, Ib, Iw, g, kt, ke, R = <span class="hljs-number">0.9</span>, <span class="hljs-number">0.12</span>, <span class="hljs-number">0.04</span>, <span class="hljs-number">0.07</span>, <span class="hljs-number">0.004</span>, <span class="hljs-number">9.6e-5</span>, <span class="hljs-number">9.81</span>, <span class="hljs-number">0.25</span>, <span class="hljs-number">0.25</span>, <span class="hljs-number">4.0</span>   <span class="hljs-comment"># Lesson 02 robot</span>
+VMAX, T, SUB = <span class="hljs-number">11.1</span>, <span class="hljs-number">0.002</span>, <span class="hljs-number">10</span>                                     <span class="hljs-comment"># 500 Hz control, plant at 5 kHz</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">plant_f</span>(<span class="hljs-params">s, v, gain</span>):
+    x, xd, th, thd = s; c, sn = np.cos(th), np.sin(th); tau = gain * <span class="hljs-number">2</span> * kt * (v - ke * (xd / r - thd)) / R
+    a, b, d = M + m + Iw / r**<span class="hljs-number">2</span>, M * l * c, Ib + M * l**<span class="hljs-number">2</span>; f1 = tau / r + M * l * sn * thd**<span class="hljs-number">2</span>; f2 = M * g * l * sn - tau
+    det = a * d - b * b; <span class="hljs-keyword">return</span> np.array([xd, (d * f1 - b * f2) / det, thd, (a * f2 - b * f1) / det])
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">lin</span>():
+    eps = <span class="hljs-number">1e-6</span>; A = np.column_stack([(plant_f(np.eye(<span class="hljs-number">4</span>)[i] * eps, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>) - plant_f(-np.eye(<span class="hljs-number">4</span>)[i] * eps, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>)) / (<span class="hljs-number">2</span> * eps) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">4</span>)])
+    <span class="hljs-keyword">return</span> A, (plant_f(np.zeros(<span class="hljs-number">4</span>), eps, <span class="hljs-number">1</span>) - plant_f(np.zeros(<span class="hljs-number">4</span>), -eps, <span class="hljs-number">1</span>)) / (<span class="hljs-number">2</span> * eps)
+
+A, B = lin()
+K = -(B @ solve_continuous_are(A, B[:, <span class="hljs-literal">None</span>], np.diag([<span class="hljs-number">10</span>, <span class="hljs-number">1</span>, <span class="hljs-number">100</span>, <span class="hljs-number">1</span>]), np.array([[<span class="hljs-number">1.0</span>]])))
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">run</span>(<span class="hljs-params">noise=<span class="hljs-number">1.0</span>, delay=<span class="hljs-number">0</span>, gain=<span class="hljs-number">1.0</span>, gyro_bias=<span class="hljs-number">0.0</span>, t_end=<span class="hljs-number">6.0</span>, seed=<span class="hljs-number">0</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;closed loop with a complementary filter on gyro + accelerometer. Monitors: tilt beyond 30 deg -&gt; torque off;
+    measured motor current against the current the command should produce.&quot;&quot;&quot;</span>
+    rng = np.random.default_rng(seed); s = np.array([<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, np.radians(<span class="hljs-number">3</span>), <span class="hljs-number">0</span>]); th_est = s[<span class="hljs-number">2</span>]; buf = [np.zeros(<span class="hljs-number">4</span>)] * (delay + <span class="hljs-number">1</span>)
+    effort = <span class="hljs-number">0</span>; trips = []; t = <span class="hljs-number">0</span>; v = <span class="hljs-number">0.0</span>; th_log = []; sxy = sxx = <span class="hljs-number">0.0</span>
+    <span class="hljs-keyword">while</span> t &lt; t_end:
+        gyro = s[<span class="hljs-number">3</span>] + gyro_bias + <span class="hljs-number">0.002</span> * noise * rng.normal(); acc = s[<span class="hljs-number">2</span>] + <span class="hljs-number">0.02</span> * noise * rng.normal()
+        th_est = <span class="hljs-number">0.995</span> * (th_est + gyro * T) + <span class="hljs-number">0.005</span> * acc
+        meas = np.array([s[<span class="hljs-number">0</span>] + <span class="hljs-number">1e-4</span> * noise * rng.normal(), s[<span class="hljs-number">1</span>] + <span class="hljs-number">0.005</span> * noise * rng.normal(), th_est, gyro])
+        buf.append(meas); used = buf.pop(<span class="hljs-number">0</span>)                              <span class="hljs-comment"># &#x27;delay&#x27; extra samples of latency</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-string">&quot;tilt &gt; 30 deg&quot;</span> <span class="hljs-keyword">in</span> trips: v = <span class="hljs-number">0.0</span>
+        <span class="hljs-keyword">else</span>: v = <span class="hljs-built_in">float</span>(np.clip(K @ used, -VMAX, VMAX))
+        i_cmd = <span class="hljs-number">2</span> * (v - ke * (s[<span class="hljs-number">1</span>] / r - s[<span class="hljs-number">3</span>])) / R; i_meas = gain * i_cmd + <span class="hljs-number">0.02</span> * rng.normal()
+        sxy = <span class="hljs-number">0.995</span> * sxy + i_meas * i_cmd; sxx = <span class="hljs-number">0.995</span> * sxx + i_cmd * i_cmd     <span class="hljs-comment"># running least-squares torque gain</span>
+        <span class="hljs-keyword">if</span> sxx &gt; <span class="hljs-number">0.05</span> <span class="hljs-keyword">and</span> sxy / sxx &lt; <span class="hljs-number">0.8</span> <span class="hljs-keyword">and</span> <span class="hljs-string">&quot;current mismatch&quot;</span> <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> trips: trips.append(<span class="hljs-string">&quot;current mismatch&quot;</span>)
+        <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(SUB):
+            k1 = plant_f(s, v, gain); k2 = plant_f(s + T / SUB / <span class="hljs-number">2</span> * k1, v, gain); k3 = plant_f(s + T / SUB / <span class="hljs-number">2</span> * k2, v, gain); k4 = plant_f(s + T / SUB * k3, v, gain)
+            s = s + T / SUB / <span class="hljs-number">6</span> * (k1 + <span class="hljs-number">2</span> * k2 + <span class="hljs-number">2</span> * k3 + k4)
+        effort += v * v * T; t += T; th_log.append(s[<span class="hljs-number">2</span>])
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">abs</span>(s[<span class="hljs-number">2</span>]) &gt; np.radians(<span class="hljs-number">30</span>) <span class="hljs-keyword">and</span> <span class="hljs-string">&quot;tilt &gt; 30 deg&quot;</span> <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> trips: trips.append(<span class="hljs-string">&quot;tilt &gt; 30 deg&quot;</span>)
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">abs</span>(s[<span class="hljs-number">2</span>]) &gt; np.radians(<span class="hljs-number">80</span>): <span class="hljs-keyword">break</span>
+    th_log = np.array(th_log); upright = <span class="hljs-built_in">abs</span>(s[<span class="hljs-number">2</span>]) &lt; np.radians(<span class="hljs-number">5</span>)
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">dict</span>(upright=upright, effort=effort, trips=trips, tilt_end=np.degrees(np.mean(th_log[-<span class="hljs-number">500</span>:])), x=s[<span class="hljs-number">0</span>])
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_faults</span>():
+    base = run(); <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;nominal: upright <span class="hljs-subst">{base[<span class="hljs-string">&#x27;upright&#x27;</span>]}</span>, effort <span class="hljs-subst">{base[<span class="hljs-string">&#x27;effort&#x27;</span>]:<span class="hljs-number">.3</span>f}</span> V^2 s, trips <span class="hljs-subst">{base[<span class="hljs-string">&#x27;trips&#x27;</span>]}</span>&quot;</span>)
+    <span class="hljs-keyword">assert</span> base[<span class="hljs-string">&quot;upright&quot;</span>] <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> base[<span class="hljs-string">&quot;trips&quot;</span>]
+    <span class="hljs-comment"># 1. ten times the sensor noise: explained, effort grows but balance holds</span>
+    n = run(noise=<span class="hljs-number">10</span>); <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;noise x10: upright <span class="hljs-subst">{n[<span class="hljs-string">&#x27;upright&#x27;</span>]}</span>, effort <span class="hljs-subst">{n[<span class="hljs-string">&#x27;effort&#x27;</span>]:<span class="hljs-number">.3</span>f}</span> V^2 s (<span class="hljs-subst">{n[<span class="hljs-string">&#x27;effort&#x27;</span>] / base[<span class="hljs-string">&#x27;effort&#x27;</span>]:<span class="hljs-number">.1</span>f}</span>x)&quot;</span>)
+    <span class="hljs-keyword">assert</span> n[<span class="hljs-string">&quot;upright&quot;</span>] <span class="hljs-keyword">and</span> n[<span class="hljs-string">&quot;effort&quot;</span>] &gt; <span class="hljs-number">2</span> * base[<span class="hljs-string">&quot;effort&quot;</span>]
+    <span class="hljs-comment"># 2. delay: explained by the delay margin of Lesson 05 (about 80 ms in continuous time)</span>
+    res = {d: run(delay=d)[<span class="hljs-string">&quot;upright&quot;</span>] <span class="hljs-keyword">for</span> d <span class="hljs-keyword">in</span> (<span class="hljs-number">5</span>, <span class="hljs-number">10</span>, <span class="hljs-number">20</span>, <span class="hljs-number">30</span>, <span class="hljs-number">40</span>)}
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;extra delay: &quot;</span> + <span class="hljs-string">&quot;, &quot;</span>.join(<span class="hljs-string">f&quot;<span class="hljs-subst">{<span class="hljs-number">2</span> * d}</span> ms <span class="hljs-subst">{<span class="hljs-string">&#x27;ok&#x27;</span> <span class="hljs-keyword">if</span> ok <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;falls&#x27;</span>}</span>&quot;</span> <span class="hljs-keyword">for</span> d, ok <span class="hljs-keyword">in</span> res.items()))
+    first_fail = <span class="hljs-built_in">min</span>([d <span class="hljs-keyword">for</span> d, ok <span class="hljs-keyword">in</span> res.items() <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> ok], default=<span class="hljs-literal">None</span>)
+    <span class="hljs-keyword">assert</span> res[<span class="hljs-number">5</span>] <span class="hljs-keyword">and</span> first_fail <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span> <span class="hljs-keyword">and</span> <span class="hljs-number">2</span> * first_fail &lt;= <span class="hljs-number">80</span>
+    <span class="hljs-comment"># 3. one motor weak: 60 % torque, inside LQR&#x27;s guaranteed gain margin of 1/2; the current monitor flags it</span>
+    w = run(gain=<span class="hljs-number">0.6</span>); <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;60 % torque: upright <span class="hljs-subst">{w[<span class="hljs-string">&#x27;upright&#x27;</span>]}</span>, trips <span class="hljs-subst">{w[<span class="hljs-string">&#x27;trips&#x27;</span>]}</span>&quot;</span>)
+    <span class="hljs-keyword">assert</span> w[<span class="hljs-string">&quot;upright&quot;</span>] <span class="hljs-keyword">and</span> <span class="hljs-string">&quot;current mismatch&quot;</span> <span class="hljs-keyword">in</span> w[<span class="hljs-string">&quot;trips&quot;</span>]
+    <span class="hljs-comment"># 4. motors lost: the robot falls, the tilt monitor cuts torque</span>
+    d = run(gain=<span class="hljs-number">0.0</span>); <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;motor loss: upright <span class="hljs-subst">{d[<span class="hljs-string">&#x27;upright&#x27;</span>]}</span>, trips <span class="hljs-subst">{d[<span class="hljs-string">&#x27;trips&#x27;</span>]}</span>&quot;</span>)
+    <span class="hljs-keyword">assert</span> <span class="hljs-keyword">not</span> d[<span class="hljs-string">&quot;upright&quot;</span>] <span class="hljs-keyword">and</span> <span class="hljs-string">&quot;tilt &gt; 30 deg&quot;</span> <span class="hljs-keyword">in</span> d[<span class="hljs-string">&quot;trips&quot;</span>]
+    <span class="hljs-comment"># 5. gyro bias: explained. The filter&#x27;s tilt estimate is off by bias * alpha T / (1 - alpha); at equilibrium the true</span>
+    <span class="hljs-comment">#    tilt and rates are zero, so K . (x, 0, offset, bias) = 0 sets where the robot parks: x = -(K2 offset + K3 bias) / K0</span>
+    b = run(gyro_bias=<span class="hljs-number">0.05</span>, t_end=<span class="hljs-number">10</span>); off = <span class="hljs-number">0.05</span> * <span class="hljs-number">0.995</span> * T / <span class="hljs-number">0.005</span>; x_pred = -(K[<span class="hljs-number">2</span>] * off + K[<span class="hljs-number">3</span>] * <span class="hljs-number">0.05</span>) / K[<span class="hljs-number">0</span>]
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;gyro bias 0.05 rad/s: upright <span class="hljs-subst">{b[<span class="hljs-string">&#x27;upright&#x27;</span>]}</span>, true tilt <span class="hljs-subst">{b[<span class="hljs-string">&#x27;tilt_end&#x27;</span>]:<span class="hljs-number">.2</span>f}</span> deg, tilt estimate off by <span class="hljs-subst">{np.degrees(off):<span class="hljs-number">.2</span>f}</span> deg, &quot;</span>
+          <span class="hljs-string">f&quot;robot parks at <span class="hljs-subst">{<span class="hljs-number">100</span> * b[<span class="hljs-string">&#x27;x&#x27;</span>]:<span class="hljs-number">.1</span>f}</span> cm (predicted <span class="hljs-subst">{<span class="hljs-number">100</span> * x_pred:<span class="hljs-number">.1</span>f}</span> cm)&quot;</span>)
+    <span class="hljs-keyword">assert</span> b[<span class="hljs-string">&quot;upright&quot;</span>] <span class="hljs-keyword">and</span> <span class="hljs-built_in">abs</span>(b[<span class="hljs-string">&quot;x&quot;</span>] - x_pred) &lt; <span class="hljs-number">0.1</span> * <span class="hljs-built_in">abs</span>(x_pred)
+
+test_faults()
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;PASS&quot;</span>)</code></pre></div>
+<h2 id="in-practice">In practice</h2>
+<p>Run the same campaign in MuJoCo or Gazebo with a full model, then on the robot with care: delay can be added in firmware, noise by disabling filters, a weak motor by limiting its PWM. Try the site’s <a href="#lab-pendulum">live pendulum lab</a>: switch D off and add noise, and explain what you see before you change anything else.</p>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>Why does the gyro bias not leave the robot tilted?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>A robot at rest with a nonzero true tilt would accelerate and fall, so equilibrium needs zero true tilt. The bias instead appears in the estimate and the measured rate, and the controller balances those against a position offset: the robot parks away from its start.</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>Ten times the noise multiplied effort by about 43, not 100. Why?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>Part of the nominal effort is the recovery from the initial 3° tilt, which does not scale with noise, and the filters (the complementary filter and the plant’s own low-pass behaviour) attenuate some noise before it reaches the voltage.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p20-l06"></div>
+`,i=[{id:`detected-or-explained`,title:`Detected or explained`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`in-practice`,title:`In practice`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p20-l06-q1`,type:`num`,q:`<p>Filter offset for a 0.05 rad/s bias, α 0.995, T 2 ms (degrees)?</p>
+`,explain:`<p>b α T / (1 − α).</p>
+`,answer:1.14,tol:.005,unit:``},{id:`p20-l06-q2`,type:`num`,q:`<p>Noise power ratio for ten times the noise amplitude?</p>
+`,explain:`<p>Power goes with amplitude squared.</p>
+`,answer:100,tol:.001,unit:``},{id:`p20-l06-q3`,type:`num`,q:`<p>Torque gain estimate if Σ i_meas i_cmd = 0.6 and Σ i_cmd² = 1.0?</p>
+`,explain:`<p>Least-squares ratio.</p>
+`,answer:.6,tol:.001,unit:``},{id:`p20-l06-q4`,type:`num`,q:`<p>Parking position for K = (3.16, ·, 19.92, 2.10), offset 0.0199 rad, bias 0.05 rad/s (cm)?</p>
+`,explain:`<p>Solve K · s = 0 for x.</p>
+`,answer:-15.9,tol:.01,unit:``},{id:`p20-l06-q5`,type:`mc`,q:`<p>What is the worst outcome of a fault-injection test?</p>
+`,explain:`<p>It means the model or code is wrong.</p>
+`,options:[`Higher effort`,`Behaviour nobody can explain`,`A monitor trip`,`A fall caught by the tilt monitor`],answer:1},{id:`p20-l06-q6`,type:`mc`,q:`<p>Which fault does the LQR’s gain margin cover?</p>
+`,explain:`<p>Any gain from one half upward.</p>
+`,options:[`A motor producing 60 % of its torque`,`A stuck encoder`,`Total motor loss`,`An 80 ms delay`],answer:0}],o=[{file:`break_it.py`,lang:`python`,src:`import numpy as np
+from scipy.linalg import solve_continuous_are
+
+M, m, r, l, Ib, Iw, g, kt, ke, R = 0.9, 0.12, 0.04, 0.07, 0.004, 9.6e-5, 9.81, 0.25, 0.25, 4.0   # Lesson 02 robot
+VMAX, T, SUB = 11.1, 0.002, 10                                     # 500 Hz control, plant at 5 kHz
+
+def plant_f(s, v, gain):
+    x, xd, th, thd = s; c, sn = np.cos(th), np.sin(th); tau = gain * 2 * kt * (v - ke * (xd / r - thd)) / R
+    a, b, d = M + m + Iw / r**2, M * l * c, Ib + M * l**2; f1 = tau / r + M * l * sn * thd**2; f2 = M * g * l * sn - tau
+    det = a * d - b * b; return np.array([xd, (d * f1 - b * f2) / det, thd, (a * f2 - b * f1) / det])
+
+def lin():
+    eps = 1e-6; A = np.column_stack([(plant_f(np.eye(4)[i] * eps, 0, 1) - plant_f(-np.eye(4)[i] * eps, 0, 1)) / (2 * eps) for i in range(4)])
+    return A, (plant_f(np.zeros(4), eps, 1) - plant_f(np.zeros(4), -eps, 1)) / (2 * eps)
+
+A, B = lin()
+K = -(B @ solve_continuous_are(A, B[:, None], np.diag([10, 1, 100, 1]), np.array([[1.0]])))
+
+def run(noise=1.0, delay=0, gain=1.0, gyro_bias=0.0, t_end=6.0, seed=0):
+    """closed loop with a complementary filter on gyro + accelerometer. Monitors: tilt beyond 30 deg -> torque off;
+    measured motor current against the current the command should produce."""
+    rng = np.random.default_rng(seed); s = np.array([0, 0, np.radians(3), 0]); th_est = s[2]; buf = [np.zeros(4)] * (delay + 1)
+    effort = 0; trips = []; t = 0; v = 0.0; th_log = []; sxy = sxx = 0.0
+    while t < t_end:
+        gyro = s[3] + gyro_bias + 0.002 * noise * rng.normal(); acc = s[2] + 0.02 * noise * rng.normal()
+        th_est = 0.995 * (th_est + gyro * T) + 0.005 * acc
+        meas = np.array([s[0] + 1e-4 * noise * rng.normal(), s[1] + 0.005 * noise * rng.normal(), th_est, gyro])
+        buf.append(meas); used = buf.pop(0)                              # 'delay' extra samples of latency
+        if "tilt > 30 deg" in trips: v = 0.0
+        else: v = float(np.clip(K @ used, -VMAX, VMAX))
+        i_cmd = 2 * (v - ke * (s[1] / r - s[3])) / R; i_meas = gain * i_cmd + 0.02 * rng.normal()
+        sxy = 0.995 * sxy + i_meas * i_cmd; sxx = 0.995 * sxx + i_cmd * i_cmd     # running least-squares torque gain
+        if sxx > 0.05 and sxy / sxx < 0.8 and "current mismatch" not in trips: trips.append("current mismatch")
+        for _ in range(SUB):
+            k1 = plant_f(s, v, gain); k2 = plant_f(s + T / SUB / 2 * k1, v, gain); k3 = plant_f(s + T / SUB / 2 * k2, v, gain); k4 = plant_f(s + T / SUB * k3, v, gain)
+            s = s + T / SUB / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+        effort += v * v * T; t += T; th_log.append(s[2])
+        if abs(s[2]) > np.radians(30) and "tilt > 30 deg" not in trips: trips.append("tilt > 30 deg")
+        if abs(s[2]) > np.radians(80): break
+    th_log = np.array(th_log); upright = abs(s[2]) < np.radians(5)
+    return dict(upright=upright, effort=effort, trips=trips, tilt_end=np.degrees(np.mean(th_log[-500:])), x=s[0])
+
+def test_faults():
+    base = run(); print(f"nominal: upright {base['upright']}, effort {base['effort']:.3f} V^2 s, trips {base['trips']}")
+    assert base["upright"] and not base["trips"]
+    # 1. ten times the sensor noise: explained, effort grows but balance holds
+    n = run(noise=10); print(f"noise x10: upright {n['upright']}, effort {n['effort']:.3f} V^2 s ({n['effort'] / base['effort']:.1f}x)")
+    assert n["upright"] and n["effort"] > 2 * base["effort"]
+    # 2. delay: explained by the delay margin of Lesson 05 (about 80 ms in continuous time)
+    res = {d: run(delay=d)["upright"] for d in (5, 10, 20, 30, 40)}
+    print("extra delay: " + ", ".join(f"{2 * d} ms {'ok' if ok else 'falls'}" for d, ok in res.items()))
+    first_fail = min([d for d, ok in res.items() if not ok], default=None)
+    assert res[5] and first_fail is not None and 2 * first_fail <= 80
+    # 3. one motor weak: 60 % torque, inside LQR's guaranteed gain margin of 1/2; the current monitor flags it
+    w = run(gain=0.6); print(f"60 % torque: upright {w['upright']}, trips {w['trips']}")
+    assert w["upright"] and "current mismatch" in w["trips"]
+    # 4. motors lost: the robot falls, the tilt monitor cuts torque
+    d = run(gain=0.0); print(f"motor loss: upright {d['upright']}, trips {d['trips']}")
+    assert not d["upright"] and "tilt > 30 deg" in d["trips"]
+    # 5. gyro bias: explained. The filter's tilt estimate is off by bias * alpha T / (1 - alpha); at equilibrium the true
+    #    tilt and rates are zero, so K . (x, 0, offset, bias) = 0 sets where the robot parks: x = -(K2 offset + K3 bias) / K0
+    b = run(gyro_bias=0.05, t_end=10); off = 0.05 * 0.995 * T / 0.005; x_pred = -(K[2] * off + K[3] * 0.05) / K[0]
+    print(f"gyro bias 0.05 rad/s: upright {b['upright']}, true tilt {b['tilt_end']:.2f} deg, tilt estimate off by {np.degrees(off):.2f} deg, "
+          f"robot parks at {100 * b['x']:.1f} cm (predicted {100 * x_pred:.1f} cm)")
+    assert b["upright"] and abs(b["x"] - x_pred) < 0.1 * abs(x_pred)
+
+test_faults()
+print("PASS")`}],s={id:e,minutes:45,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};

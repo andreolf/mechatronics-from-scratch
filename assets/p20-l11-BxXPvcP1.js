@@ -1,0 +1,226 @@
+var e=`p20-l11`,t=40,n=`The robot-arm capstone starts with sizing. You lay out a three-joint arm, find the worst static torque at each joint by summing moments and check it by virtual work, add the torque to accelerate, apply a safety factor, pick motors from a catalogue, and write a URDF whose effort limits and masses match the design.`,r=`<h2 id="torque-from-statics">Torque from statics</h2>
+<p>Gravity loads the shoulder and elbow most when the arm is stretched horizontally. For point masses <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> at horizontal distance <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> from a joint, the static torque is</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.3277em;vertical-align:-1.2777em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">g</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.05em;"><span style="top:-1.8723em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2777em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span></span></span></span></span></div>
+<p>and the same result follows from virtual work, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.0961em;vertical-align:-0.247em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0962em;">J</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-2.453em;margin-left:-0.0962em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.044em;">z</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">⊤</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mord mathnormal">m</span><span class="mord mathnormal" style="margin-right:0.0359em;">g</span></span></span></span>, where <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0962em;">J</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0962em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.044em;">z</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> holds the derivatives of each mass’s height with respect to the joint angles (Phase 15). Moving the arm also takes <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">I</span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span></span></span>, with the worst-case inertia about the joint, again when stretched. The motor must provide</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.786em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight" style="margin-right:0.0278em;">or</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">c</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">I</span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mclose">)</span></span></span></span></span></div>
+<p>continuously, with a safety factor <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span><span class="mord mathnormal" style="margin-right:0.1389em;">F</span></span></span></span> for friction, cable drag and model error.</p>
+<h2 id="a-urdf-that-matches">A URDF that matches</h2>
+<p>The URDF (Unified Robot Description Format) describes links, their masses and inertias, and joints with axes and limits. Its effort limits should be the chosen motors’ ratings, and its masses should include the motors themselves; an inertia tensor must be physical, which for a diagonal tensor means each principal moment is at most the sum of the other two.</p>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="armsizing" data-args="{}"></div></div><figcaption>Static torque at the shoulder and elbow as the arm moves. Change the link lengths, the payload and the acceleration; the bars compare the requirement with the chosen motor.</figcaption></figure>
+<h2 id="worked-example">Worked example</h2>
+<p>Shoulder 0.10 m above the base, upper arm 0.25 m (0.30 kg), forearm 0.20 m (0.20 kg), elbow motor 0.15 kg, payload with gripper 0.20 kg, 3 rad/s², safety factor 1.5, illustrative motor catalogue:</p>
+<ol>
+<li>Worst static torque: shoulder 2.305 N·m, elbow 0.589 N·m, both with the arm horizontal; summing moments and virtual work agree everywhere in the workspace.</li>
+<li>Required: shoulder 3.824 N·m, elbow 0.931 N·m.</li>
+<li>Choice: G60 (6.0 N·m) at the shoulder, 64 % of its rating; S20 (2.0 N·m) at the elbow, 47 %, and it fits the 0.15 kg assumed for the elbow motor.</li>
+<li>URDF: 6 links, 5 joints, effort limits 3.5, 6.0 and 2.0 N·m, moving mass 0.90 kg.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">arm_design.py</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-python"><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np, xml.etree.ElementTree <span class="hljs-keyword">as</span> ET
+
+g = <span class="hljs-number">9.81</span>
+H, L2, L3 = <span class="hljs-number">0.10</span>, <span class="hljs-number">0.25</span>, <span class="hljs-number">0.20</span>                 <span class="hljs-comment"># base height to shoulder, upper arm, forearm (m)</span>
+M2, M3 = <span class="hljs-number">0.30</span>, <span class="hljs-number">0.20</span>                          <span class="hljs-comment"># link masses (kg), centre of mass at mid-link</span>
+M_ELBOW, M_LOAD = <span class="hljs-number">0.15</span>, <span class="hljs-number">0.20</span>                 <span class="hljs-comment"># elbow motor at the elbow, payload incl. gripper at the tip</span>
+ALPHA = <span class="hljs-number">3.0</span>                                  <span class="hljs-comment"># required joint acceleration (rad/s^2) when fully stretched</span>
+SF = <span class="hljs-number">1.5</span>                                     <span class="hljs-comment"># safety factor on torque</span>
+<span class="hljs-comment"># illustrative motor catalogue: name, continuous torque at the output (N m), mass (kg)</span>
+CATALOGUE = [(<span class="hljs-string">&quot;S20&quot;</span>, <span class="hljs-number">2.0</span>, <span class="hljs-number">0.06</span>), (<span class="hljs-string">&quot;S35&quot;</span>, <span class="hljs-number">3.5</span>, <span class="hljs-number">0.08</span>), (<span class="hljs-string">&quot;G60&quot;</span>, <span class="hljs-number">6.0</span>, <span class="hljs-number">0.17</span>), (<span class="hljs-string">&quot;G120&quot;</span>, <span class="hljs-number">12.0</span>, <span class="hljs-number">0.35</span>)]
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">box_inertia</span>(<span class="hljs-params">m, l, w=<span class="hljs-number">0.04</span></span>):              <span class="hljs-comment"># slender box along its own x axis</span>
+    <span class="hljs-keyword">return</span> np.diag([m * <span class="hljs-number">2</span> * w**<span class="hljs-number">2</span> / <span class="hljs-number">12</span>, m * (l**<span class="hljs-number">2</span> + w**<span class="hljs-number">2</span>) / <span class="hljs-number">12</span>, m * (l**<span class="hljs-number">2</span> + w**<span class="hljs-number">2</span>) / <span class="hljs-number">12</span>])
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">urdf</span>(<span class="hljs-params">eff_sh=<span class="hljs-number">6.0</span>, eff_el=<span class="hljs-number">2.0</span></span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">link</span>(<span class="hljs-params">name, m, l</span>):
+        I = box_inertia(m, l); <span class="hljs-keyword">return</span> <span class="hljs-string">f&#x27;&#x27;&#x27;  &lt;link name=&quot;<span class="hljs-subst">{name}</span>&quot;&gt;
+    &lt;inertial&gt;&lt;origin xyz=&quot;<span class="hljs-subst">{l / <span class="hljs-number">2</span>}</span> 0 0&quot;/&gt;&lt;mass value=&quot;<span class="hljs-subst">{m}</span>&quot;/&gt;
+      &lt;inertia ixx=&quot;<span class="hljs-subst">{I[<span class="hljs-number">0</span>, <span class="hljs-number">0</span>]:<span class="hljs-number">.6</span>g}</span>&quot; iyy=&quot;<span class="hljs-subst">{I[<span class="hljs-number">1</span>, <span class="hljs-number">1</span>]:<span class="hljs-number">.6</span>g}</span>&quot; izz=&quot;<span class="hljs-subst">{I[<span class="hljs-number">2</span>, <span class="hljs-number">2</span>]:<span class="hljs-number">.6</span>g}</span>&quot; ixy=&quot;0&quot; ixz=&quot;0&quot; iyz=&quot;0&quot;/&gt;&lt;/inertial&gt;
+    &lt;visual&gt;&lt;origin xyz=&quot;<span class="hljs-subst">{l / <span class="hljs-number">2</span>}</span> 0 0&quot;/&gt;&lt;geometry&gt;&lt;box size=&quot;<span class="hljs-subst">{<span class="hljs-built_in">max</span>(l, <span class="hljs-number">0.04</span>)}</span> 0.04 0.04&quot;/&gt;&lt;/geometry&gt;&lt;/visual&gt;
+  &lt;/link&gt;&#x27;&#x27;&#x27;</span>
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">joint</span>(<span class="hljs-params">name, parent, child, xyz, axis, lim, eff</span>):
+        <span class="hljs-keyword">return</span> <span class="hljs-string">f&#x27;&#x27;&#x27;  &lt;joint name=&quot;<span class="hljs-subst">{name}</span>&quot; type=&quot;revolute&quot;&gt;&lt;parent link=&quot;<span class="hljs-subst">{parent}</span>&quot;/&gt;&lt;child link=&quot;<span class="hljs-subst">{child}</span>&quot;/&gt;
+    &lt;origin xyz=&quot;<span class="hljs-subst">{xyz}</span>&quot;/&gt;&lt;axis xyz=&quot;<span class="hljs-subst">{axis}</span>&quot;/&gt;&lt;limit lower=&quot;<span class="hljs-subst">{-lim}</span>&quot; upper=&quot;<span class="hljs-subst">{lim}</span>&quot; effort=&quot;<span class="hljs-subst">{eff}</span>&quot; velocity=&quot;3.0&quot;/&gt;&lt;/joint&gt;&#x27;&#x27;&#x27;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;\\n&quot;</span>.join([<span class="hljs-string">&#x27;&lt;robot name=&quot;arm3&quot;&gt;&#x27;</span>, <span class="hljs-string">&#x27;  &lt;link name=&quot;base&quot;/&gt;&#x27;</span>, link(<span class="hljs-string">&quot;turret&quot;</span>, <span class="hljs-number">0.05</span>, <span class="hljs-number">0.01</span>),
+                      link(<span class="hljs-string">&quot;upper_arm&quot;</span>, M2, L2), link(<span class="hljs-string">&quot;forearm&quot;</span>, M3, L3), link(<span class="hljs-string">&quot;tool&quot;</span>, M_LOAD, <span class="hljs-number">0.0</span>), link(<span class="hljs-string">&quot;elbow_motor&quot;</span>, M_ELBOW, <span class="hljs-number">0.0</span>),
+                      joint(<span class="hljs-string">&quot;yaw&quot;</span>, <span class="hljs-string">&quot;base&quot;</span>, <span class="hljs-string">&quot;turret&quot;</span>, <span class="hljs-string">f&quot;0 0 <span class="hljs-subst">{H}</span>&quot;</span>, <span class="hljs-string">&quot;0 0 1&quot;</span>, <span class="hljs-number">3.14</span>, <span class="hljs-number">3.5</span>),
+                      joint(<span class="hljs-string">&quot;shoulder&quot;</span>, <span class="hljs-string">&quot;turret&quot;</span>, <span class="hljs-string">&quot;upper_arm&quot;</span>, <span class="hljs-string">&quot;0 0 0&quot;</span>, <span class="hljs-string">&quot;0 -1 0&quot;</span>, <span class="hljs-number">1.57</span>, eff_sh),
+                      joint(<span class="hljs-string">&quot;elbow&quot;</span>, <span class="hljs-string">&quot;upper_arm&quot;</span>, <span class="hljs-string">&quot;forearm&quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">{L2}</span> 0 0&quot;</span>, <span class="hljs-string">&quot;0 -1 0&quot;</span>, <span class="hljs-number">2.6</span>, eff_el),
+                      <span class="hljs-string">f&#x27;  &lt;joint name=&quot;tool_mount&quot; type=&quot;fixed&quot;&gt;&lt;parent link=&quot;forearm&quot;/&gt;&lt;child link=&quot;tool&quot;/&gt;&lt;origin xyz=&quot;<span class="hljs-subst">{L3}</span> 0 0&quot;/&gt;&lt;/joint&gt;&#x27;</span>,
+                      <span class="hljs-string">f&#x27;  &lt;joint name=&quot;motor_mount&quot; type=&quot;fixed&quot;&gt;&lt;parent link=&quot;upper_arm&quot;/&gt;&lt;child link=&quot;elbow_motor&quot;/&gt;&lt;origin xyz=&quot;<span class="hljs-subst">{L2}</span> 0 0&quot;/&gt;&lt;/joint&gt;&#x27;</span>, <span class="hljs-string">&quot;&lt;/robot&gt;&quot;</span>])
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">static_torques</span>(<span class="hljs-params">q2, q3</span>):
+    <span class="hljs-string">&quot;&quot;&quot;gravity torques at shoulder and elbow (planar, q2 from horizontal, q3 relative), by summing moments&quot;&quot;&quot;</span>
+    x_c2 = L2 / <span class="hljs-number">2</span> * np.cos(q2); x_e = L2 * np.cos(q2)
+    x_c3 = x_e + L3 / <span class="hljs-number">2</span> * np.cos(q2 + q3); x_t = x_e + L3 * np.cos(q2 + q3)
+    t_sh = g * (M2 * x_c2 + M_ELBOW * x_e + M3 * x_c3 + M_LOAD * x_t)
+    t_el = g * (M3 * (x_c3 - x_e) + M_LOAD * (x_t - x_e))
+    <span class="hljs-keyword">return</span> t_sh, t_el
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">static_torques_jacobian</span>(<span class="hljs-params">q2, q3</span>):
+    <span class="hljs-string">&quot;&quot;&quot;same thing by virtual work: tau = sum J_i^T m_i g for each point mass (z component only)&quot;&quot;&quot;</span>
+    pts = [(M2, L2 / <span class="hljs-number">2</span>, <span class="hljs-number">0</span>), (M_ELBOW, L2, <span class="hljs-number">0</span>), (M3, L2, L3 / <span class="hljs-number">2</span>), (M_LOAD, L2, L3)]
+    tau = np.zeros(<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">for</span> m, a, b <span class="hljs-keyword">in</span> pts:
+        Jz = np.array([a * np.cos(q2) + b * np.cos(q2 + q3), b * np.cos(q2 + q3)])   <span class="hljs-comment"># d(height)/dq</span>
+        tau += Jz * m * g
+    <span class="hljs-keyword">return</span> tau
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">inertia_about</span>(<span class="hljs-params">joint</span>):
+    <span class="hljs-string">&quot;&quot;&quot;worst-case (stretched) inertia about the shoulder or elbow, point masses plus slender rods&quot;&quot;&quot;</span>
+    <span class="hljs-keyword">if</span> joint == <span class="hljs-string">&quot;shoulder&quot;</span>:
+        <span class="hljs-keyword">return</span> (M2 * L2**<span class="hljs-number">2</span> / <span class="hljs-number">3</span> + M_ELBOW * L2**<span class="hljs-number">2</span> + M3 * (L2**<span class="hljs-number">2</span> + L2 * L3 + L3**<span class="hljs-number">2</span> / <span class="hljs-number">3</span>) + M_LOAD * (L2 + L3)**<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">return</span> M3 * L3**<span class="hljs-number">2</span> / <span class="hljs-number">3</span> + M_LOAD * L3**<span class="hljs-number">2</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_urdf</span>():
+    root = ET.fromstring(urdf()); links = {l.get(<span class="hljs-string">&quot;name&quot;</span>) <span class="hljs-keyword">for</span> l <span class="hljs-keyword">in</span> root.<span class="hljs-built_in">iter</span>(<span class="hljs-string">&quot;link&quot;</span>)}
+    joints = root.findall(<span class="hljs-string">&quot;joint&quot;</span>); <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;URDF: <span class="hljs-subst">{<span class="hljs-built_in">len</span>(links)}</span> links, <span class="hljs-subst">{<span class="hljs-built_in">len</span>(joints)}</span> joints&quot;</span>)
+    <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> joints:
+        <span class="hljs-keyword">assert</span> j.find(<span class="hljs-string">&quot;parent&quot;</span>).get(<span class="hljs-string">&quot;link&quot;</span>) <span class="hljs-keyword">in</span> links <span class="hljs-keyword">and</span> j.find(<span class="hljs-string">&quot;child&quot;</span>).get(<span class="hljs-string">&quot;link&quot;</span>) <span class="hljs-keyword">in</span> links
+        <span class="hljs-keyword">if</span> j.get(<span class="hljs-string">&quot;type&quot;</span>) == <span class="hljs-string">&quot;revolute&quot;</span>: <span class="hljs-keyword">assert</span> <span class="hljs-built_in">float</span>(j.find(<span class="hljs-string">&quot;limit&quot;</span>).get(<span class="hljs-string">&quot;effort&quot;</span>)) &gt; <span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> l <span class="hljs-keyword">in</span> root.<span class="hljs-built_in">iter</span>(<span class="hljs-string">&quot;link&quot;</span>):
+        i = l.find(<span class="hljs-string">&quot;inertial/inertia&quot;</span>)
+        <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+            ix, iy, iz = (<span class="hljs-built_in">float</span>(i.get(k)) <span class="hljs-keyword">for</span> k <span class="hljs-keyword">in</span> (<span class="hljs-string">&quot;ixx&quot;</span>, <span class="hljs-string">&quot;iyy&quot;</span>, <span class="hljs-string">&quot;izz&quot;</span>))
+            <span class="hljs-keyword">if</span> l.get(<span class="hljs-string">&quot;name&quot;</span>) <span class="hljs-keyword">in</span> (<span class="hljs-string">&quot;tool&quot;</span>, <span class="hljs-string">&quot;elbow_motor&quot;</span>): <span class="hljs-keyword">continue</span>      <span class="hljs-comment"># point masses</span>
+            <span class="hljs-keyword">assert</span> ix &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> iy &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> iz &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> ix + iy &gt;= iz <span class="hljs-keyword">and</span> iy + iz &gt;= ix <span class="hljs-keyword">and</span> ix + iz &gt;= iy   <span class="hljs-comment"># physical inertia</span>
+    children = [j.find(<span class="hljs-string">&quot;child&quot;</span>).get(<span class="hljs-string">&quot;link&quot;</span>) <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> joints]; <span class="hljs-keyword">assert</span> <span class="hljs-built_in">len</span>(<span class="hljs-built_in">set</span>(children)) == <span class="hljs-built_in">len</span>(children)  <span class="hljs-comment"># a tree</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_torques</span>():
+    qs = np.radians(np.linspace(-<span class="hljs-number">90</span>, <span class="hljs-number">90</span>, <span class="hljs-number">181</span>)); worst = np.zeros(<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">for</span> q2 <span class="hljs-keyword">in</span> qs:
+        <span class="hljs-keyword">for</span> q3 <span class="hljs-keyword">in</span> np.radians(np.linspace(-<span class="hljs-number">150</span>, <span class="hljs-number">150</span>, <span class="hljs-number">61</span>)):
+            a = np.array(static_torques(q2, q3)); <span class="hljs-keyword">assert</span> np.allclose(a, static_torques_jacobian(q2, q3))
+            worst = np.maximum(worst, np.<span class="hljs-built_in">abs</span>(a))
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;worst static torque: shoulder <span class="hljs-subst">{worst[<span class="hljs-number">0</span>]:<span class="hljs-number">.3</span>f}</span> N m, elbow <span class="hljs-subst">{worst[<span class="hljs-number">1</span>]:<span class="hljs-number">.3</span>f}</span> N m (arm stretched horizontally)&quot;</span>)
+    need = SF * (worst + ALPHA * np.array([inertia_about(<span class="hljs-string">&quot;shoulder&quot;</span>), inertia_about(<span class="hljs-string">&quot;elbow&quot;</span>)]))
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;required with <span class="hljs-subst">{ALPHA}</span> rad/s^2 and safety factor <span class="hljs-subst">{SF}</span>: shoulder <span class="hljs-subst">{need[<span class="hljs-number">0</span>]:<span class="hljs-number">.3</span>f}</span> N m, elbow <span class="hljs-subst">{need[<span class="hljs-number">1</span>]:<span class="hljs-number">.3</span>f}</span> N m&quot;</span>)
+    pick = [<span class="hljs-built_in">next</span>(c <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> CATALOGUE <span class="hljs-keyword">if</span> c[<span class="hljs-number">1</span>] &gt;= n) <span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> need]
+    <span class="hljs-keyword">for</span> jn, n, c <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>((<span class="hljs-string">&quot;shoulder&quot;</span>, <span class="hljs-string">&quot;elbow&quot;</span>), need, pick):
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{jn}</span>: <span class="hljs-subst">{c[<span class="hljs-number">0</span>]}</span> (<span class="hljs-subst">{c[<span class="hljs-number">1</span>]}</span> N m continuous) -&gt; <span class="hljs-subst">{<span class="hljs-number">100</span> * n / c[<span class="hljs-number">1</span>]:<span class="hljs-number">.0</span>f}</span> % of its rating&quot;</span>)
+        <span class="hljs-keyword">assert</span> c[<span class="hljs-number">1</span>] &gt;= n
+    <span class="hljs-keyword">assert</span> pick[<span class="hljs-number">1</span>][<span class="hljs-number">2</span>] &lt;= M_ELBOW                      <span class="hljs-comment"># the elbow motor fits the mass assumed for it</span>
+    root = ET.fromstring(urdf(pick[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>], pick[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>]))
+    eff = {j.get(<span class="hljs-string">&quot;name&quot;</span>): <span class="hljs-built_in">float</span>(j.find(<span class="hljs-string">&quot;limit&quot;</span>).get(<span class="hljs-string">&quot;effort&quot;</span>)) <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> root.findall(<span class="hljs-string">&quot;joint&quot;</span>) <span class="hljs-keyword">if</span> j.get(<span class="hljs-string">&quot;type&quot;</span>) == <span class="hljs-string">&quot;revolute&quot;</span>}
+    mass = <span class="hljs-built_in">sum</span>(<span class="hljs-built_in">float</span>(m.get(<span class="hljs-string">&quot;value&quot;</span>)) <span class="hljs-keyword">for</span> m <span class="hljs-keyword">in</span> root.<span class="hljs-built_in">iter</span>(<span class="hljs-string">&quot;mass&quot;</span>))
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;URDF effort limits:&quot;</span>, eff, <span class="hljs-string">f&quot;moving mass <span class="hljs-subst">{mass:<span class="hljs-number">.2</span>f}</span> kg&quot;</span>); <span class="hljs-keyword">assert</span> eff[<span class="hljs-string">&quot;shoulder&quot;</span>] &gt;= need[<span class="hljs-number">0</span>] <span class="hljs-keyword">and</span> eff[<span class="hljs-string">&quot;elbow&quot;</span>] &gt;= need[<span class="hljs-number">1</span>]
+    <span class="hljs-keyword">return</span> pick
+
+test_urdf(); test_torques(); <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;PASS&quot;</span>)</code></pre></div>
+<h2 id="in-practice">In practice</h2>
+<p>ROS 2 loads the URDF (often generated from xacro) for visualisation in RViz, for MoveIt planning and for ros2_control limits; <code>check_urdf</code> catches structural errors. Export it from CAD where possible so the masses and inertias are measured, not guessed, and weigh the real parts. Check the motor’s continuous rating at its thermal limit, not the peak torque on the front of the datasheet.</p>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>The payload doubles to 0.4 kg. What happens to the shoulder’s static torque?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>It rises by <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">9.81</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">0.2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.45</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.883</span></span></span></span> N·m to 3.188 N·m. With the extra inertia and the safety factor, the requirement grows to about 5.33 N·m, still within the G60.</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>Why size motors with the arm stretched, not at a typical pose?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>Because the arm will be stretched at some point (homing, a far target, an operator command) and a motor that cannot hold it there drops the load. Sizing for the worst case is sizing for safety.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p20-l11"></div>
+`,i=[{id:`torque-from-statics`,title:`Torque from statics`},{id:`a-urdf-that-matches`,title:`A URDF that matches`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`in-practice`,title:`In practice`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p20-l11-q1`,type:`num`,q:`<p>Static shoulder torque from a 0.2 kg payload at 0.45 m (N·m)?</p>
+`,explain:`<p>m g x.</p>
+`,answer:.883,tol:.005,unit:``},{id:`p20-l11-q2`,type:`num`,q:`<p>Inertia of a 0.3 kg, 0.25 m rod about its end (kg·m²)?</p>
+`,explain:`<p>m ℓ²/3.</p>
+`,answer:.00625,tol:.005,unit:``},{id:`p20-l11-q3`,type:`num`,q:`<p>Requirement for 2.305 N·m static, inertia 0.0813 kg·m², 3 rad/s², SF 1.5 (N·m)?</p>
+`,explain:`<p>SF (τ + Iα).</p>
+`,answer:3.824,tol:.005,unit:``},{id:`p20-l11-q4`,type:`num`,q:`<p>Share of a 6 N·m rating used by 3.824 N·m (%)?</p>
+`,explain:`<p>Ratio.</p>
+`,answer:63.7,tol:.005,unit:``},{id:`p20-l11-q5`,type:`mc`,q:`<p>Which inertia tensor is physical?</p>
+`,explain:`<p>Each moment must be at most the sum of the other two and positive.</p>
+`,options:[`diag(1, -1, 1)`,`diag(0, 2, 1)`,`diag(1, 1, 3)`,`diag(1, 2, 2.5)`],answer:3},{id:`p20-l11-q6`,type:`mc`,q:`<p>Where should a motor’s effort limit in the URDF come from?</p>
+`,explain:`<p>The limits protect the hardware.</p>
+`,options:[`The static torque`,`The chosen motor’s continuous rating`,`Any large number`,`The peak torque`],answer:1}],o=[{file:`arm_design.py`,lang:`python`,src:`import numpy as np, xml.etree.ElementTree as ET
+
+g = 9.81
+H, L2, L3 = 0.10, 0.25, 0.20                 # base height to shoulder, upper arm, forearm (m)
+M2, M3 = 0.30, 0.20                          # link masses (kg), centre of mass at mid-link
+M_ELBOW, M_LOAD = 0.15, 0.20                 # elbow motor at the elbow, payload incl. gripper at the tip
+ALPHA = 3.0                                  # required joint acceleration (rad/s^2) when fully stretched
+SF = 1.5                                     # safety factor on torque
+# illustrative motor catalogue: name, continuous torque at the output (N m), mass (kg)
+CATALOGUE = [("S20", 2.0, 0.06), ("S35", 3.5, 0.08), ("G60", 6.0, 0.17), ("G120", 12.0, 0.35)]
+
+def box_inertia(m, l, w=0.04):              # slender box along its own x axis
+    return np.diag([m * 2 * w**2 / 12, m * (l**2 + w**2) / 12, m * (l**2 + w**2) / 12])
+
+def urdf(eff_sh=6.0, eff_el=2.0):
+    def link(name, m, l):
+        I = box_inertia(m, l); return f'''  <link name="{name}">
+    <inertial><origin xyz="{l / 2} 0 0"/><mass value="{m}"/>
+      <inertia ixx="{I[0, 0]:.6g}" iyy="{I[1, 1]:.6g}" izz="{I[2, 2]:.6g}" ixy="0" ixz="0" iyz="0"/></inertial>
+    <visual><origin xyz="{l / 2} 0 0"/><geometry><box size="{max(l, 0.04)} 0.04 0.04"/></geometry></visual>
+  </link>'''
+    def joint(name, parent, child, xyz, axis, lim, eff):
+        return f'''  <joint name="{name}" type="revolute"><parent link="{parent}"/><child link="{child}"/>
+    <origin xyz="{xyz}"/><axis xyz="{axis}"/><limit lower="{-lim}" upper="{lim}" effort="{eff}" velocity="3.0"/></joint>'''
+    return "\\n".join(['<robot name="arm3">', '  <link name="base"/>', link("turret", 0.05, 0.01),
+                      link("upper_arm", M2, L2), link("forearm", M3, L3), link("tool", M_LOAD, 0.0), link("elbow_motor", M_ELBOW, 0.0),
+                      joint("yaw", "base", "turret", f"0 0 {H}", "0 0 1", 3.14, 3.5),
+                      joint("shoulder", "turret", "upper_arm", "0 0 0", "0 -1 0", 1.57, eff_sh),
+                      joint("elbow", "upper_arm", "forearm", f"{L2} 0 0", "0 -1 0", 2.6, eff_el),
+                      f'  <joint name="tool_mount" type="fixed"><parent link="forearm"/><child link="tool"/><origin xyz="{L3} 0 0"/></joint>',
+                      f'  <joint name="motor_mount" type="fixed"><parent link="upper_arm"/><child link="elbow_motor"/><origin xyz="{L2} 0 0"/></joint>', "</robot>"])
+
+def static_torques(q2, q3):
+    """gravity torques at shoulder and elbow (planar, q2 from horizontal, q3 relative), by summing moments"""
+    x_c2 = L2 / 2 * np.cos(q2); x_e = L2 * np.cos(q2)
+    x_c3 = x_e + L3 / 2 * np.cos(q2 + q3); x_t = x_e + L3 * np.cos(q2 + q3)
+    t_sh = g * (M2 * x_c2 + M_ELBOW * x_e + M3 * x_c3 + M_LOAD * x_t)
+    t_el = g * (M3 * (x_c3 - x_e) + M_LOAD * (x_t - x_e))
+    return t_sh, t_el
+
+def static_torques_jacobian(q2, q3):
+    """same thing by virtual work: tau = sum J_i^T m_i g for each point mass (z component only)"""
+    pts = [(M2, L2 / 2, 0), (M_ELBOW, L2, 0), (M3, L2, L3 / 2), (M_LOAD, L2, L3)]
+    tau = np.zeros(2)
+    for m, a, b in pts:
+        Jz = np.array([a * np.cos(q2) + b * np.cos(q2 + q3), b * np.cos(q2 + q3)])   # d(height)/dq
+        tau += Jz * m * g
+    return tau
+
+def inertia_about(joint):
+    """worst-case (stretched) inertia about the shoulder or elbow, point masses plus slender rods"""
+    if joint == "shoulder":
+        return (M2 * L2**2 / 3 + M_ELBOW * L2**2 + M3 * (L2**2 + L2 * L3 + L3**2 / 3) + M_LOAD * (L2 + L3)**2)
+    return M3 * L3**2 / 3 + M_LOAD * L3**2
+
+def test_urdf():
+    root = ET.fromstring(urdf()); links = {l.get("name") for l in root.iter("link")}
+    joints = root.findall("joint"); print(f"URDF: {len(links)} links, {len(joints)} joints")
+    for j in joints:
+        assert j.find("parent").get("link") in links and j.find("child").get("link") in links
+        if j.get("type") == "revolute": assert float(j.find("limit").get("effort")) > 0
+    for l in root.iter("link"):
+        i = l.find("inertial/inertia")
+        if i is not None:
+            ix, iy, iz = (float(i.get(k)) for k in ("ixx", "iyy", "izz"))
+            if l.get("name") in ("tool", "elbow_motor"): continue      # point masses
+            assert ix > 0 and iy > 0 and iz > 0 and ix + iy >= iz and iy + iz >= ix and ix + iz >= iy   # physical inertia
+    children = [j.find("child").get("link") for j in joints]; assert len(set(children)) == len(children)  # a tree
+
+def test_torques():
+    qs = np.radians(np.linspace(-90, 90, 181)); worst = np.zeros(2)
+    for q2 in qs:
+        for q3 in np.radians(np.linspace(-150, 150, 61)):
+            a = np.array(static_torques(q2, q3)); assert np.allclose(a, static_torques_jacobian(q2, q3))
+            worst = np.maximum(worst, np.abs(a))
+    print(f"worst static torque: shoulder {worst[0]:.3f} N m, elbow {worst[1]:.3f} N m (arm stretched horizontally)")
+    need = SF * (worst + ALPHA * np.array([inertia_about("shoulder"), inertia_about("elbow")]))
+    print(f"required with {ALPHA} rad/s^2 and safety factor {SF}: shoulder {need[0]:.3f} N m, elbow {need[1]:.3f} N m")
+    pick = [next(c for c in CATALOGUE if c[1] >= n) for n in need]
+    for jn, n, c in zip(("shoulder", "elbow"), need, pick):
+        print(f"{jn}: {c[0]} ({c[1]} N m continuous) -> {100 * n / c[1]:.0f} % of its rating")
+        assert c[1] >= n
+    assert pick[1][2] <= M_ELBOW                      # the elbow motor fits the mass assumed for it
+    root = ET.fromstring(urdf(pick[0][1], pick[1][1]))
+    eff = {j.get("name"): float(j.find("limit").get("effort")) for j in root.findall("joint") if j.get("type") == "revolute"}
+    mass = sum(float(m.get("value")) for m in root.iter("mass"))
+    print("URDF effort limits:", eff, f"moving mass {mass:.2f} kg"); assert eff["shoulder"] >= need[0] and eff["elbow"] >= need[1]
+    return pick
+
+test_urdf(); test_torques(); print("PASS")`}],s={id:e,minutes:40,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};
