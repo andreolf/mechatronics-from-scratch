@@ -1,0 +1,220 @@
+var e=`p17-l10`,t=35,n=`Feature matches always contain some wrong ones, and one bad match ruins a least-squares fit. You derive how many random samples RANSAC needs, implement it for homographies with an adaptive stopping rule, and recover an illustrative homography from matches that are 50 % (and up to 70 %) outliers, agreeing with OpenCV’s RANSAC.`,r=`<h2 id="outliers-break-least-squares">Outliers break least squares</h2>
+<p>Least squares minimises the sum of squared errors, so one match off by 200 px weighs as much as 10 000 matches off by 2 px. Even after the ratio test (lesson 08), some matches are wrong, and repeated texture can make half of them wrong.</p>
+<h2 id="random-sample-consensus">Random sample consensus</h2>
+<p><strong>RANSAC</strong> turns the problem around:</p>
+<ol>
+<li>Pick a minimal random sample, here 4 matches.</li>
+<li>Fit the model to it exactly (DLT).</li>
+<li>Count the <strong>inliers</strong>: matches with reprojection error below a threshold (a few pixels).</li>
+<li>Repeat, keeping the model with the most inliers.</li>
+<li>Refit on all of its inliers by least squares.</li>
+</ol>
+<p>A sample made only of inliers gives a good model, which gathers all the other inliers. Samples containing an outlier give models that gather few.</p>
+<h2 id="how-many-samples">How many samples</h2>
+<p>If a fraction <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0269em;">w</span></span></span></span> of matches are inliers, a sample of <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span> is all-inlier with probability <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6644em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0269em;">w</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span></span></span></span></span></span></span></span>. For confidence <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span></span></span></span> that at least one of <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> samples is clean:</p>
+<div class="math-scroll"><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.363em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0269em;">w</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">p</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></div>
+<p>For <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span> and <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">p</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.99</span></span></span></span>: <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0269em;">w</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.9</span></span></span></span> needs 5 samples, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0269em;">w</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.5</span></span></span></span> needs 72, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0269em;">w</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.3</span></span></span></span> needs 567. Since <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0269em;">w</span></span></span></span> is unknown, start pessimistic and recompute <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> from the best inlier count so far (adaptive RANSAC). Smaller models (<span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span> = 2 for a line, 3 for an affine map) need far fewer samples.</p>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="ransac" data-args="{}"></div></div><figcaption>Illustrative point matches for a line fit with a chosen fraction of outliers. Step through the samples, watch each candidate’s inliers, and compare the RANSAC line with the least-squares one.</figcaption></figure>
+<h2 id="worked-example">Worked example</h2>
+<p>200 illustrative matches between two views of a plane, 0.5 px noise, 99 of them replaced by random points (about 50 % outliers); inlier threshold 2 px.</p>
+<ol>
+<li>Least squares on all matches is off by 138.4 px RMS.</li>
+<li>RANSAC took 116 samples (the adaptive bound settles at 72, but the first clean sample arrived after some bad ones). It kept 100 inliers, 99 % of the true inliers and no outliers, and is off by 0.09 px.</li>
+<li><code>cv2.findHomography</code> with <code>RANSAC</code> and the same threshold finds the same 100 inliers and is off by 0.10 px.</li>
+<li>60 % outliers: 208 samples, 0.12 px. 70 % outliers: 1508 samples, 0.33 px.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">ransac.py</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-python"><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">try</span>:
+    <span class="hljs-keyword">import</span> cv2
+<span class="hljs-keyword">except</span> ImportError:
+    cv2 = <span class="hljs-literal">None</span>
+
+H_TRUE = np.array([[<span class="hljs-number">0.9</span>, -<span class="hljs-number">0.15</span>, <span class="hljs-number">40</span>], [<span class="hljs-number">0.05</span>, <span class="hljs-number">0.8</span>, <span class="hljs-number">30</span>], [<span class="hljs-number">4e-4</span>, -<span class="hljs-number">3e-4</span>, <span class="hljs-number">1</span>]])
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">apply</span>(<span class="hljs-params">H, p</span>):
+    q = np.c_[p, np.ones(<span class="hljs-built_in">len</span>(p))] @ H.T
+    <span class="hljs-keyword">return</span> q[:, :<span class="hljs-number">2</span>] / q[:, <span class="hljs-number">2</span>:]
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">dlt</span>(<span class="hljs-params">src, dst</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">nrm</span>(<span class="hljs-params">p</span>):
+        m = p.mean(<span class="hljs-number">0</span>); s = np.sqrt(<span class="hljs-number">2</span>) / <span class="hljs-built_in">max</span>(np.mean(np.linalg.norm(p - m, axis=<span class="hljs-number">1</span>)), <span class="hljs-number">1e-12</span>)
+        <span class="hljs-keyword">return</span> np.array([[s, <span class="hljs-number">0</span>, -s * m[<span class="hljs-number">0</span>]], [<span class="hljs-number">0</span>, s, -s * m[<span class="hljs-number">1</span>]], [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>]])
+    Ts, Td = nrm(src), nrm(dst); a, b = apply(Ts, src), apply(Td, dst); A = []
+    <span class="hljs-keyword">for</span> (x, y), (u, v) <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(a, b):
+        A += [[-x, -y, -<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, u * x, u * y, u], [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, -x, -y, -<span class="hljs-number">1</span>, v * x, v * y, v]]
+    H = np.linalg.inv(Td) @ np.linalg.svd(np.array(A))[<span class="hljs-number">2</span>][-<span class="hljs-number">1</span>].reshape(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>) @ Ts
+    <span class="hljs-keyword">return</span> H / H[<span class="hljs-number">2</span>, <span class="hljs-number">2</span>]
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">iterations</span>(<span class="hljs-params">inlier_frac, s=<span class="hljs-number">4</span>, p=<span class="hljs-number">0.99</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;samples needed so that, with probability p, at least one sample of s points is all inliers&quot;&quot;&quot;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">int</span>(np.ceil(np.log(<span class="hljs-number">1</span> - p) / np.log(<span class="hljs-number">1</span> - inlier_frac ** s)))
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">ransac</span>(<span class="hljs-params">src, dst, thresh=<span class="hljs-number">2.0</span>, p=<span class="hljs-number">0.99</span>, max_iter=<span class="hljs-number">5000</span>, seed=<span class="hljs-number">0</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;fit H to random 4-point samples, keep the one with most inliers, adapt the iteration count, refit on its inliers&quot;&quot;&quot;</span>
+    rng = np.random.default_rng(seed); n = <span class="hljs-built_in">len</span>(src); best = np.zeros(n, <span class="hljs-built_in">bool</span>); N, k = max_iter, <span class="hljs-number">0</span>
+    <span class="hljs-keyword">while</span> k &lt; N:
+        idx = rng.choice(n, <span class="hljs-number">4</span>, replace=<span class="hljs-literal">False</span>); k += <span class="hljs-number">1</span>
+        <span class="hljs-keyword">try</span>:
+            H = dlt(src[idx], dst[idx])
+        <span class="hljs-keyword">except</span> np.linalg.LinAlgError:
+            <span class="hljs-keyword">continue</span>
+        <span class="hljs-keyword">with</span> np.errstate(<span class="hljs-built_in">all</span>=<span class="hljs-string">&quot;ignore&quot;</span>):
+            err = np.linalg.norm(apply(H, src) - dst, axis=<span class="hljs-number">1</span>)
+        inl = err &lt; thresh
+        <span class="hljs-keyword">if</span> inl.<span class="hljs-built_in">sum</span>() &gt; best.<span class="hljs-built_in">sum</span>():
+            best = inl; N = <span class="hljs-built_in">min</span>(max_iter, iterations(<span class="hljs-built_in">max</span>(inl.mean(), <span class="hljs-number">1e-3</span>)))
+    H = dlt(src[best], dst[best])
+    <span class="hljs-keyword">return</span> H, np.linalg.norm(apply(H, src) - dst, axis=<span class="hljs-number">1</span>) &lt; thresh, k
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">make_data</span>(<span class="hljs-params">n=<span class="hljs-number">200</span>, outlier_frac=<span class="hljs-number">0.5</span>, noise=<span class="hljs-number">0.5</span>, seed=<span class="hljs-number">1</span></span>):
+    rng = np.random.default_rng(seed); src = rng.uniform([<span class="hljs-number">0</span>, <span class="hljs-number">0</span>], [<span class="hljs-number">400</span>, <span class="hljs-number">300</span>], (n, <span class="hljs-number">2</span>))
+    dst = apply(H_TRUE, src) + rng.normal(<span class="hljs-number">0</span>, noise, (n, <span class="hljs-number">2</span>)); bad = rng.random(n) &lt; outlier_frac
+    dst[bad] = rng.uniform([<span class="hljs-number">0</span>, <span class="hljs-number">0</span>], [<span class="hljs-number">400</span>, <span class="hljs-number">300</span>], (bad.<span class="hljs-built_in">sum</span>(), <span class="hljs-number">2</span>))
+    <span class="hljs-keyword">return</span> src, dst, ~bad
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_iteration_count</span>():
+    <span class="hljs-keyword">for</span> w <span class="hljs-keyword">in</span> (<span class="hljs-number">0.9</span>, <span class="hljs-number">0.7</span>, <span class="hljs-number">0.5</span>, <span class="hljs-number">0.3</span>):
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;inlier fraction <span class="hljs-subst">{w}</span>: <span class="hljs-subst">{iterations(w)}</span> samples of 4 for 99 % confidence&quot;</span>)
+    <span class="hljs-keyword">assert</span> iterations(<span class="hljs-number">0.5</span>) == <span class="hljs-number">72</span> <span class="hljs-keyword">and</span> iterations(<span class="hljs-number">0.3</span>) == <span class="hljs-number">567</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_least_squares_fails</span>():
+    src, dst, good = make_data()
+    test = np.random.default_rng(<span class="hljs-number">5</span>).uniform([<span class="hljs-number">0</span>, <span class="hljs-number">0</span>], [<span class="hljs-number">400</span>, <span class="hljs-number">300</span>], (<span class="hljs-number">500</span>, <span class="hljs-number">2</span>))
+    e_ls = np.sqrt(np.mean(np.<span class="hljs-built_in">sum</span>((apply(dlt(src, dst), test) - apply(H_TRUE, test)) ** <span class="hljs-number">2</span>, <span class="hljs-number">1</span>)))
+    H, inl, k = ransac(src, dst)
+    e_r = np.sqrt(np.mean(np.<span class="hljs-built_in">sum</span>((apply(H, test) - apply(H_TRUE, test)) ** <span class="hljs-number">2</span>, <span class="hljs-number">1</span>)))
+    tp = (inl &amp; good).<span class="hljs-built_in">sum</span>() / good.<span class="hljs-built_in">sum</span>(); fp = (inl &amp; ~good).<span class="hljs-built_in">sum</span>()
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{(~good).<span class="hljs-built_in">sum</span>()}</span> of <span class="hljs-subst">{<span class="hljs-built_in">len</span>(src)}</span> matches are outliers: least squares on all of them is off by <span class="hljs-subst">{e_ls:<span class="hljs-number">.1</span>f}</span> px RMS; &quot;</span>
+          <span class="hljs-string">f&quot;RANSAC took <span class="hljs-subst">{k}</span> samples, kept <span class="hljs-subst">{inl.<span class="hljs-built_in">sum</span>()}</span> inliers (<span class="hljs-subst">{<span class="hljs-number">100</span> * tp:<span class="hljs-number">.0</span>f}</span> % of the true inliers, <span class="hljs-subst">{fp}</span> outliers) and is off by <span class="hljs-subst">{e_r:<span class="hljs-number">.2</span>f}</span> px&quot;</span>)
+    <span class="hljs-keyword">assert</span> e_ls &gt; <span class="hljs-number">20</span> <span class="hljs-keyword">and</span> e_r &lt; <span class="hljs-number">0.5</span> <span class="hljs-keyword">and</span> tp &gt; <span class="hljs-number">0.95</span> <span class="hljs-keyword">and</span> fp &lt;= <span class="hljs-number">2</span>
+    <span class="hljs-keyword">if</span> cv2 <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>: <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;OpenCV not installed: skipping the comparison&quot;</span>); <span class="hljs-keyword">return</span>
+    Hc, mask = cv2.findHomography(src, dst, cv2.RANSAC, <span class="hljs-number">2.0</span>)
+    e_c = np.sqrt(np.mean(np.<span class="hljs-built_in">sum</span>((apply(Hc, test) - apply(H_TRUE, test)) ** <span class="hljs-number">2</span>, <span class="hljs-number">1</span>)))
+    agree = (mask.ravel().astype(<span class="hljs-built_in">bool</span>) == inl).mean()
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;cv2.findHomography with RANSAC: <span class="hljs-subst">{mask.<span class="hljs-built_in">sum</span>()}</span> inliers, off by <span class="hljs-subst">{e_c:<span class="hljs-number">.2</span>f}</span> px; inlier sets agree on <span class="hljs-subst">{<span class="hljs-number">100</span> * agree:<span class="hljs-number">.1</span>f}</span> % of matches&quot;</span>)
+    <span class="hljs-keyword">assert</span> e_c &lt; <span class="hljs-number">0.5</span> <span class="hljs-keyword">and</span> agree &gt; <span class="hljs-number">0.97</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_robust_to_more_outliers</span>():
+    <span class="hljs-keyword">for</span> frac <span class="hljs-keyword">in</span> (<span class="hljs-number">0.6</span>, <span class="hljs-number">0.7</span>):
+        src, dst, good = make_data(outlier_frac=frac, seed=<span class="hljs-number">2</span>)
+        H, inl, k = ransac(src, dst)
+        test = np.random.default_rng(<span class="hljs-number">5</span>).uniform([<span class="hljs-number">0</span>, <span class="hljs-number">0</span>], [<span class="hljs-number">400</span>, <span class="hljs-number">300</span>], (<span class="hljs-number">500</span>, <span class="hljs-number">2</span>))
+        e = np.sqrt(np.mean(np.<span class="hljs-built_in">sum</span>((apply(H, test) - apply(H_TRUE, test)) ** <span class="hljs-number">2</span>, <span class="hljs-number">1</span>)))
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{<span class="hljs-built_in">int</span>(<span class="hljs-number">100</span> * frac)}</span> % outliers: <span class="hljs-subst">{k}</span> samples, error <span class="hljs-subst">{e:<span class="hljs-number">.2</span>f}</span> px&quot;</span>)
+        <span class="hljs-keyword">assert</span> e &lt; <span class="hljs-number">1.0</span>
+
+test_iteration_count()
+test_least_squares_fails()
+test_robust_to_more_outliers()
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;PASS&quot;</span>)</code></pre></div>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>How many samples does a line fit (<span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">2</span></span></span></span>) need at 50 % inliers and 99 % confidence?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0.01/</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">0.25</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">16.0</span></span></span></span>, so 17 samples. The minimal sample size matters a lot: a homography needs 72 at the same inlier ratio.</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>What goes wrong if the inlier threshold is far too large, say 50 px?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>Outliers within 50 px of a bad model count as inliers, so wrong models score well and the final refit includes outliers. The threshold should be a few times the measurement noise.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p17-l10"></div>
+`,i=[{id:`outliers-break-least-squares`,title:`Outliers break least squares`},{id:`random-sample-consensus`,title:`Random sample consensus`},{id:`how-many-samples`,title:`How many samples`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p17-l10-q1`,type:`num`,q:`<p>RANSAC samples needed with s = 4, w = 0.6 and p = 0.99?</p>
+`,explain:`<p>log(1 - p) / log(1 - w^s), rounded up.</p>
+`,answer:34,tol:.001,unit:``},{id:`p17-l10-q2`,type:`num`,q:`<p>Probability that a random 4-sample is all inliers when w = 0.5?</p>
+`,explain:`<p>w^s.</p>
+`,answer:.0625,tol:.002,unit:``},{id:`p17-l10-q3`,type:`num`,q:`<p>Samples needed for a line (s = 2), w = 0.5, p = 0.99?</p>
+`,explain:`<p>Smaller samples need fewer iterations.</p>
+`,answer:17,tol:.001,unit:``},{id:`p17-l10-q4`,type:`num`,q:`<p>Minimal sample size for a 2D affine transform?</p>
+`,explain:`<p>6 parameters, 2 equations per point.</p>
+`,answer:3,tol:.001,unit:``},{id:`p17-l10-q5`,type:`mc`,q:`<p>Why fit to a minimal sample rather than to 20 random matches?</p>
+`,explain:`<p>The chance of a clean sample falls as w^s.</p>
+`,options:[`a minimal fit is more accurate`,`it uses less memory`,`a small sample is much more likely to contain no outliers`,`the DLT needs exactly four points`],answer:2},{id:`p17-l10-q6`,type:`mc`,q:`<p>After RANSAC selects the best model, you should…</p>
+`,explain:`<p>The refit averages the noise over all the inliers.</p>
+`,options:[`rerun with a larger threshold`,`use the four-point model as it is`,`discard the inliers`,`refit on all its inliers by least squares`],answer:3}],o=[{file:`ransac.py`,lang:`python`,src:`import numpy as np
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
+H_TRUE = np.array([[0.9, -0.15, 40], [0.05, 0.8, 30], [4e-4, -3e-4, 1]])
+
+def apply(H, p):
+    q = np.c_[p, np.ones(len(p))] @ H.T
+    return q[:, :2] / q[:, 2:]
+
+def dlt(src, dst):
+    def nrm(p):
+        m = p.mean(0); s = np.sqrt(2) / max(np.mean(np.linalg.norm(p - m, axis=1)), 1e-12)
+        return np.array([[s, 0, -s * m[0]], [0, s, -s * m[1]], [0, 0, 1]])
+    Ts, Td = nrm(src), nrm(dst); a, b = apply(Ts, src), apply(Td, dst); A = []
+    for (x, y), (u, v) in zip(a, b):
+        A += [[-x, -y, -1, 0, 0, 0, u * x, u * y, u], [0, 0, 0, -x, -y, -1, v * x, v * y, v]]
+    H = np.linalg.inv(Td) @ np.linalg.svd(np.array(A))[2][-1].reshape(3, 3) @ Ts
+    return H / H[2, 2]
+
+def iterations(inlier_frac, s=4, p=0.99):
+    """samples needed so that, with probability p, at least one sample of s points is all inliers"""
+    return int(np.ceil(np.log(1 - p) / np.log(1 - inlier_frac ** s)))
+
+def ransac(src, dst, thresh=2.0, p=0.99, max_iter=5000, seed=0):
+    """fit H to random 4-point samples, keep the one with most inliers, adapt the iteration count, refit on its inliers"""
+    rng = np.random.default_rng(seed); n = len(src); best = np.zeros(n, bool); N, k = max_iter, 0
+    while k < N:
+        idx = rng.choice(n, 4, replace=False); k += 1
+        try:
+            H = dlt(src[idx], dst[idx])
+        except np.linalg.LinAlgError:
+            continue
+        with np.errstate(all="ignore"):
+            err = np.linalg.norm(apply(H, src) - dst, axis=1)
+        inl = err < thresh
+        if inl.sum() > best.sum():
+            best = inl; N = min(max_iter, iterations(max(inl.mean(), 1e-3)))
+    H = dlt(src[best], dst[best])
+    return H, np.linalg.norm(apply(H, src) - dst, axis=1) < thresh, k
+
+def make_data(n=200, outlier_frac=0.5, noise=0.5, seed=1):
+    rng = np.random.default_rng(seed); src = rng.uniform([0, 0], [400, 300], (n, 2))
+    dst = apply(H_TRUE, src) + rng.normal(0, noise, (n, 2)); bad = rng.random(n) < outlier_frac
+    dst[bad] = rng.uniform([0, 0], [400, 300], (bad.sum(), 2))
+    return src, dst, ~bad
+
+def test_iteration_count():
+    for w in (0.9, 0.7, 0.5, 0.3):
+        print(f"inlier fraction {w}: {iterations(w)} samples of 4 for 99 % confidence")
+    assert iterations(0.5) == 72 and iterations(0.3) == 567
+
+def test_least_squares_fails():
+    src, dst, good = make_data()
+    test = np.random.default_rng(5).uniform([0, 0], [400, 300], (500, 2))
+    e_ls = np.sqrt(np.mean(np.sum((apply(dlt(src, dst), test) - apply(H_TRUE, test)) ** 2, 1)))
+    H, inl, k = ransac(src, dst)
+    e_r = np.sqrt(np.mean(np.sum((apply(H, test) - apply(H_TRUE, test)) ** 2, 1)))
+    tp = (inl & good).sum() / good.sum(); fp = (inl & ~good).sum()
+    print(f"{(~good).sum()} of {len(src)} matches are outliers: least squares on all of them is off by {e_ls:.1f} px RMS; "
+          f"RANSAC took {k} samples, kept {inl.sum()} inliers ({100 * tp:.0f} % of the true inliers, {fp} outliers) and is off by {e_r:.2f} px")
+    assert e_ls > 20 and e_r < 0.5 and tp > 0.95 and fp <= 2
+    if cv2 is None: print("OpenCV not installed: skipping the comparison"); return
+    Hc, mask = cv2.findHomography(src, dst, cv2.RANSAC, 2.0)
+    e_c = np.sqrt(np.mean(np.sum((apply(Hc, test) - apply(H_TRUE, test)) ** 2, 1)))
+    agree = (mask.ravel().astype(bool) == inl).mean()
+    print(f"cv2.findHomography with RANSAC: {mask.sum()} inliers, off by {e_c:.2f} px; inlier sets agree on {100 * agree:.1f} % of matches")
+    assert e_c < 0.5 and agree > 0.97
+
+def test_robust_to_more_outliers():
+    for frac in (0.6, 0.7):
+        src, dst, good = make_data(outlier_frac=frac, seed=2)
+        H, inl, k = ransac(src, dst)
+        test = np.random.default_rng(5).uniform([0, 0], [400, 300], (500, 2))
+        e = np.sqrt(np.mean(np.sum((apply(H, test) - apply(H_TRUE, test)) ** 2, 1)))
+        print(f"{int(100 * frac)} % outliers: {k} samples, error {e:.2f} px")
+        assert e < 1.0
+
+test_iteration_count()
+test_least_squares_fails()
+test_robust_to_more_outliers()
+print("PASS")`}],s={id:e,minutes:35,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};
