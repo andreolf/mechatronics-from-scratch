@@ -1,0 +1,134 @@
+var e=`p19-l18`,t=40,n=`An emergency stop must bring a machine to rest quickly and reliably. You learn the IEC 60204-1 stop categories and Safe Torque Off, simulate category 0 and category 1 stops of a motor joint, add a ramp monitor that catches a drive fault, check the stop times against their budgets, and turn the worst case into a minimum safety distance.`,r=`<h2 id="stop-categories">Stop categories</h2>
+<p>IEC 60204-1 defines three ways to stop:</p>
+<ul>
+<li><strong>Category 0</strong>: remove power to the actuators at once (an uncontrolled stop). The machine coasts, or a brake stops it.</li>
+<li><strong>Category 1</strong>: a controlled stop with power available to the actuators, then power removed once stopped. Usually the fastest stop for a servo axis, because the drive brakes harder than friction.</li>
+<li><strong>Category 2</strong>: a controlled stop with power left on, holding position. Not allowed for an emergency stop.</li>
+</ul>
+<p>An emergency stop must be category 0 or 1, and the choice follows from the risk assessment.</p>
+<h2 id="safe-torque-off">Safe Torque Off</h2>
+<p>Opening a contactor in the motor supply is slow and wears out. Modern drives instead offer <strong>Safe Torque Off</strong> (STO, defined with other drive safety functions in IEC 61800-5-2): two independent channels block the gate signals so the inverter cannot produce torque, even if the controller misbehaves. STO alone gives category 0. Category 1 adds <strong>Safe Stop 1</strong> (SS1): decelerate, then STO. In its monitored form (SS1-r), a safety function watches the speed against the expected ramp <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord mathnormal">t</span><span class="mord">/</span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span><span class="mord mathnormal mtight">am</span><span class="mord mathnormal mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7778em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">min</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> and triggers STO at once if the drive does not follow. The holding brake is applied with STO (safe brake control).</p>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="stopcat" data-args="{}"></div></div><figcaption>Speed against time for the stop categories with the monitoring envelope. Choose the category, inject a drive fault and toggle the holding brake.</figcaption></figure>
+<h2 id="worked-example">Worked example</h2>
+<p>Illustrative joint: 0.002 kg·m² at the motor, 300 rad/s, drive braking torque 3 N·m, holding brake 2 N·m, budgets 300 ms normally and 350 ms in the worst case:</p>
+<ol>
+<li>Category 0 with the brake: 288.5 ms; without the brake the joint coasts for 7884.6 ms.</li>
+<li>Category 1: decelerates along a 0.2 s ramp, torque off at 191.6 ms, at rest at 196.4 ms, within 300 ms.</li>
+<li>Category 1 with a drive fault (no braking torque): the monitor triggers STO at 30.0 ms and the brake stops the joint at 317.0 ms, within the 350 ms worst-case budget.</li>
+<li>Using the worst case, with a light curtain responding in 20 ms and detecting 30 mm objects (<span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">8</span><span class="mopen">(</span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">14</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">128</span></span></span></span> mm), the overall stopping time is 337 ms. ISO 13855’s <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span></span></span></span> with <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">2000</span></span></span></span> mm/s exceeds 500 mm, so <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1600</span></span></span></span> mm/s applies: the curtain must be at least 667 mm from the hazard.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">estop.py</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-python"><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+
+J, T_FRIC, B_VISC = <span class="hljs-number">0.002</span>, <span class="hljs-number">0.05</span>, <span class="hljs-number">2e-4</span>        <span class="hljs-comment"># illustrative joint: inertia at the motor (kg m^2), friction (N m), viscous (N m s)</span>
+T_DRIVE, T_BRAKE = <span class="hljs-number">3.0</span>, <span class="hljs-number">2.0</span>                    <span class="hljs-comment"># drive&#x27;s braking torque limit, holding brake torque (N m)</span>
+W0 = <span class="hljs-number">300.0</span>                                     <span class="hljs-comment"># motor speed when the stop is requested (rad/s)</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">stop</span>(<span class="hljs-params">category, drive_ok=<span class="hljs-literal">True</span>, brake=<span class="hljs-literal">True</span>, ramp_s=<span class="hljs-number">0.2</span>, sto_speed=<span class="hljs-number">5.0</span>, sto_timer=<span class="hljs-number">0.30</span>, slack=<span class="hljs-number">1.15</span>, dt=<span class="hljs-number">1e-4</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;IEC 60204-1 stop categories. 0: remove torque at once (STO) and drop the brake. 1: drive decelerates along a ramp,
+    then STO and brake once nearly stopped or when the safety timer expires; a monitor compares speed against the ramp
+    envelope and triggers STO early if the drive does not follow (a monitored SS1, IEC 61800-5-2).&quot;&quot;&quot;</span>
+    w, t, sto, t_sto, angle = W0, <span class="hljs-number">0.0</span>, category == <span class="hljs-number">0</span>, <span class="hljs-number">0.0</span> <span class="hljs-keyword">if</span> category == <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> <span class="hljs-literal">None</span>, <span class="hljs-number">0.0</span>
+    <span class="hljs-keyword">while</span> w &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> t &lt; <span class="hljs-number">10</span>:
+        envelope = W0 * <span class="hljs-built_in">max</span>(<span class="hljs-number">0.0</span>, <span class="hljs-number">1</span> - t / ramp_s) * slack + sto_speed
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> sto <span class="hljs-keyword">and</span> (w &lt; sto_speed <span class="hljs-keyword">or</span> t &gt;= sto_timer <span class="hljs-keyword">or</span> w &gt; envelope): sto, t_sto = <span class="hljs-literal">True</span>, t
+        <span class="hljs-keyword">if</span> sto: torque = T_BRAKE <span class="hljs-keyword">if</span> brake <span class="hljs-keyword">else</span> <span class="hljs-number">0.0</span>
+        <span class="hljs-keyword">else</span>: torque = <span class="hljs-built_in">min</span>(T_DRIVE, J * W0 / ramp_s + T_FRIC) <span class="hljs-keyword">if</span> drive_ok <span class="hljs-keyword">else</span> <span class="hljs-number">0.0</span>   <span class="hljs-comment"># controlled ramp</span>
+        dw = -(torque + T_FRIC + B_VISC * w) / J * dt
+        angle += w * dt; w = <span class="hljs-built_in">max</span>(<span class="hljs-number">0.0</span>, w + dw); t += dt
+    <span class="hljs-keyword">return</span> t, t_sto, angle
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_stop_categories</span>():
+    spec, spec_fault = <span class="hljs-number">0.30</span>, <span class="hljs-number">0.35</span>                                               <span class="hljs-comment"># normal and worst-case stop budgets</span>
+    rows = [(<span class="hljs-string">&quot;category 0, brake&quot;</span>, stop(<span class="hljs-number">0</span>)), (<span class="hljs-string">&quot;category 0, no brake&quot;</span>, stop(<span class="hljs-number">0</span>, brake=<span class="hljs-literal">False</span>)),
+            (<span class="hljs-string">&quot;category 1&quot;</span>, stop(<span class="hljs-number">1</span>)), (<span class="hljs-string">&quot;category 1, drive fault&quot;</span>, stop(<span class="hljs-number">1</span>, drive_ok=<span class="hljs-literal">False</span>))]
+    <span class="hljs-keyword">for</span> name, (t, t_sto, ang) <span class="hljs-keyword">in</span> rows:
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{name:24s}</span> stops in <span class="hljs-subst">{t * <span class="hljs-number">1000</span>:<span class="hljs-number">7.1</span>f}</span> ms, torque off at <span class="hljs-subst">{t_sto * <span class="hljs-number">1000</span>:<span class="hljs-number">6.1</span>f}</span> ms, travels <span class="hljs-subst">{ang:<span class="hljs-number">6.2</span>f}</span> rad at the motor&quot;</span>)
+    t1, ts1, _ = rows[<span class="hljs-number">2</span>][<span class="hljs-number">1</span>]; tf, tsf, _ = rows[<span class="hljs-number">3</span>][<span class="hljs-number">1</span>]
+    <span class="hljs-keyword">assert</span> t1 &lt;= spec <span class="hljs-keyword">and</span> ts1 &lt;= <span class="hljs-number">0.30</span>                                          <span class="hljs-comment"># category 1 meets the 300 ms spec</span>
+    <span class="hljs-keyword">assert</span> tsf &lt; <span class="hljs-number">0.05</span> <span class="hljs-keyword">and</span> tf &lt;= spec_fault                                         <span class="hljs-comment"># monitor catches the fault quickly, brake stops it</span>
+    <span class="hljs-keyword">assert</span> rows[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>][<span class="hljs-number">0</span>] &gt; <span class="hljs-number">10</span> * t1 <span class="hljs-keyword">or</span> rows[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>][<span class="hljs-number">0</span>] &gt;= <span class="hljs-number">10</span>                      <span class="hljs-comment"># coasting without a brake takes far longer</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_safety_distance</span>():
+    t_stop = <span class="hljs-built_in">max</span>(stop(<span class="hljs-number">1</span>)[<span class="hljs-number">0</span>], stop(<span class="hljs-number">1</span>, drive_ok=<span class="hljs-literal">False</span>)[<span class="hljs-number">0</span>])                       <span class="hljs-comment"># use the worst case, the drive fault</span>
+    t_detect = <span class="hljs-number">0.020</span>                                                           <span class="hljs-comment"># light curtain response (illustrative)</span>
+    T = t_detect + t_stop; d_mm = <span class="hljs-number">30</span>; C = <span class="hljs-number">8</span> * (d_mm - <span class="hljs-number">14</span>) / <span class="hljs-number">1000</span>             <span class="hljs-comment"># light curtain detecting 30 mm objects</span>
+    S = <span class="hljs-number">2.0</span> * T + C                                                            <span class="hljs-comment"># ISO 13855 form S = K T + C, K = 2000 mm/s</span>
+    <span class="hljs-keyword">if</span> S &gt; <span class="hljs-number">0.5</span>: S = <span class="hljs-built_in">max</span>(<span class="hljs-number">0.5</span>, <span class="hljs-number">1.6</span> * T + C)                                      <span class="hljs-comment"># beyond 500 mm the standard allows K = 1600 mm/s</span>
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;overall stopping time <span class="hljs-subst">{T * <span class="hljs-number">1000</span>:<span class="hljs-number">.0</span>f}</span> ms, C = <span class="hljs-subst">{C * <span class="hljs-number">1000</span>:<span class="hljs-number">.0</span>f}</span> mm -&gt; minimum distance <span class="hljs-subst">{S * <span class="hljs-number">1000</span>:<span class="hljs-number">.0</span>f}</span> mm&quot;</span>)
+    <span class="hljs-keyword">assert</span> <span class="hljs-number">0.3</span> &lt; S &lt; <span class="hljs-number">1.0</span>
+
+test_stop_categories()
+test_safety_distance()
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;PASS&quot;</span>)</code></pre></div>
+<h2 id="in-practice">In practice</h2>
+<p>E-stop buttons (ISO 13850) wire through safety relays or a safety PLC to the drive’s STO inputs; servo drives from many vendors include STO and SS1 certified to a stated PL and SIL. Stopping times are measured on the real machine with a stop-time meter, because the brake, load and wear change them, and re-measured after maintenance. This lesson is educational and not a substitute for the standards or a qualified assessment.</p>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>A drive brakes at 1500 rad/s² from 300 rad/s. How long does the controlled part of a category 1 stop take?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">300/1500</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0.2</span></span></span></span> s.</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>Why is category 2 not allowed for an emergency stop?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>In category 2 power stays on to hold position, so a fault in the drive or controller could still move the machine. An emergency stop must end with energy removed from the actuators.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p19-l18"></div>
+`,i=[{id:`stop-categories`,title:`Stop categories`},{id:`safe-torque-off`,title:`Safe Torque Off`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`in-practice`,title:`In practice`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p19-l18-q1`,type:`num`,q:`<p>Deceleration for 3 N·m on 0.002 kg·m² (rad/s²)?</p>
+`,explain:`<p>α = T / J.</p>
+`,answer:1500,tol:.002,unit:``},{id:`p19-l18-q2`,type:`num`,q:`<p>Kinetic energy at 300 rad/s with 0.002 kg·m² (J)?</p>
+`,explain:`<p>½ J ω².</p>
+`,answer:90,tol:.001,unit:``},{id:`p19-l18-q3`,type:`num`,q:`<p>ISO 13855 distance with K 2000 mm/s, T 0.15 s and C 128 mm (mm)?</p>
+`,explain:`<p>S = K T + C, under 500 mm so K = 2000 stands.</p>
+`,answer:428,tol:.002,unit:``},{id:`p19-l18-q4`,type:`num`,q:`<p>Intrusion allowance C for a light curtain detecting 14 mm objects (mm)?</p>
+`,explain:`<p>C = 8(d − 14).</p>
+`,answer:0,tol:.001,unit:``},{id:`p19-l18-q5`,type:`mc`,q:`<p>Which stop category keeps power on after stopping?</p>
+`,explain:`<p>Category 2 holds position with power.</p>
+`,options:[`Category 2`,`Category 0`,`None`,`Category 1`],answer:0},{id:`p19-l18-q6`,type:`mc`,q:`<p>What does Safe Torque Off do?</p>
+`,explain:`<p>It blocks the gate signals.</p>
+`,options:[`Brakes the motor with maximum torque`,`Disconnects the mains supply`,`Prevents the drive from producing torque through independent channels`,`Lowers the speed setpoint`],answer:2}],o=[{file:`estop.py`,lang:`python`,src:`import numpy as np
+
+J, T_FRIC, B_VISC = 0.002, 0.05, 2e-4        # illustrative joint: inertia at the motor (kg m^2), friction (N m), viscous (N m s)
+T_DRIVE, T_BRAKE = 3.0, 2.0                    # drive's braking torque limit, holding brake torque (N m)
+W0 = 300.0                                     # motor speed when the stop is requested (rad/s)
+
+def stop(category, drive_ok=True, brake=True, ramp_s=0.2, sto_speed=5.0, sto_timer=0.30, slack=1.15, dt=1e-4):
+    """IEC 60204-1 stop categories. 0: remove torque at once (STO) and drop the brake. 1: drive decelerates along a ramp,
+    then STO and brake once nearly stopped or when the safety timer expires; a monitor compares speed against the ramp
+    envelope and triggers STO early if the drive does not follow (a monitored SS1, IEC 61800-5-2)."""
+    w, t, sto, t_sto, angle = W0, 0.0, category == 0, 0.0 if category == 0 else None, 0.0
+    while w > 0 and t < 10:
+        envelope = W0 * max(0.0, 1 - t / ramp_s) * slack + sto_speed
+        if not sto and (w < sto_speed or t >= sto_timer or w > envelope): sto, t_sto = True, t
+        if sto: torque = T_BRAKE if brake else 0.0
+        else: torque = min(T_DRIVE, J * W0 / ramp_s + T_FRIC) if drive_ok else 0.0   # controlled ramp
+        dw = -(torque + T_FRIC + B_VISC * w) / J * dt
+        angle += w * dt; w = max(0.0, w + dw); t += dt
+    return t, t_sto, angle
+
+def test_stop_categories():
+    spec, spec_fault = 0.30, 0.35                                               # normal and worst-case stop budgets
+    rows = [("category 0, brake", stop(0)), ("category 0, no brake", stop(0, brake=False)),
+            ("category 1", stop(1)), ("category 1, drive fault", stop(1, drive_ok=False))]
+    for name, (t, t_sto, ang) in rows:
+        print(f"{name:24s} stops in {t * 1000:7.1f} ms, torque off at {t_sto * 1000:6.1f} ms, travels {ang:6.2f} rad at the motor")
+    t1, ts1, _ = rows[2][1]; tf, tsf, _ = rows[3][1]
+    assert t1 <= spec and ts1 <= 0.30                                          # category 1 meets the 300 ms spec
+    assert tsf < 0.05 and tf <= spec_fault                                         # monitor catches the fault quickly, brake stops it
+    assert rows[1][1][0] > 10 * t1 or rows[1][1][0] >= 10                      # coasting without a brake takes far longer
+
+def test_safety_distance():
+    t_stop = max(stop(1)[0], stop(1, drive_ok=False)[0])                       # use the worst case, the drive fault
+    t_detect = 0.020                                                           # light curtain response (illustrative)
+    T = t_detect + t_stop; d_mm = 30; C = 8 * (d_mm - 14) / 1000             # light curtain detecting 30 mm objects
+    S = 2.0 * T + C                                                            # ISO 13855 form S = K T + C, K = 2000 mm/s
+    if S > 0.5: S = max(0.5, 1.6 * T + C)                                      # beyond 500 mm the standard allows K = 1600 mm/s
+    print(f"overall stopping time {T * 1000:.0f} ms, C = {C * 1000:.0f} mm -> minimum distance {S * 1000:.0f} mm")
+    assert 0.3 < S < 1.0
+
+test_stop_categories()
+test_safety_distance()
+print("PASS")`}],s={id:e,minutes:40,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};
