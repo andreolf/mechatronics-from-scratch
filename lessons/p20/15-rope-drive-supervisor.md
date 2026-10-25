@@ -20,7 +20,7 @@ The stopping distance at speed $v$ with deceleration $a$ is $d = v^2/2a$. Too ge
 
 Two speed signals, the bullwheel's and the rope's, catch a slipping rope when they differ by more than $0.05 v_{nom} + 0.1$ m/s. Speed above 115 % is overspeed; negative speed on a loaded uphill line is rollback, the most dangerous failure of all. Any fault latches, and the line can only restart after a reset with no fault present.
 
-:::figure widget=ropedrive caption="The supervisor's states with the line speed. Inject a fault in a chosen state; the diagram highlights the path to the safe state and the readout gives the stopping time and distance."
+:::figure widget=ropedrive caption="The supervisor's states with the line speed. Inject a fault in a chosen state; the diagram highlights the path to the safe state and the readout gives its timeline and the peak deceleration."
 :::end
 
 ## Worked example

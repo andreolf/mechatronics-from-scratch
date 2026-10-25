@@ -14,7 +14,7 @@ is smooth but drifts with the bias. The accelerometer measures the specific forc
 
 A **complementary filter** blends them, $\hat x \leftarrow \alpha(\hat x + T\dot x_{gyro}) + (1-\alpha)x_{acc}$. An **EKF** adds the gyro biases to the state, predicts with the gyro, corrects with the accelerometer, and so learns the bias instead of carrying its offset.
 
-:::figure widget=attest caption="Roll estimate during manoeuvring flight. Choose the estimator and switch it on or off, change the gyro bias and the accelerometer disturbance; the readout gives the RMS error against the 2 degree specification."
+:::figure widget=attest caption="Roll estimate during manoeuvring flight. Choose the estimator, change the gyro bias, the manoeuvre acceleration and the complementary filter weight; the readout gives the RMS error against the 2 degree specification."
 :::end
 
 ## Worked example
