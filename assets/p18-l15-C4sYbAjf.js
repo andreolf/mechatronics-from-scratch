@@ -1,0 +1,208 @@
+var e=`p18-l15`,t=40,n=`A simulator is a numerical integrator plus a contact model, and both have limits you must respect. You compare explicit and semi-implicit Euler, build a spring-damper floor and find the time step where it creates energy, simulate a 2-link arm under PD control with gravity compensation, check it against kinematics, and measure the real-time factor.`,r=`<h2 id="what-a-physics-engine-does-every-step">What a physics engine does every step</h2>
+<p>Gazebo, MuJoCo, Isaac Sim, PyBullet and Drake all repeat, every time step <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span></span></span></span>:</p>
+<ol>
+<li>compute forces: gravity, joint torques from your controllers (through ros2_control, lesson 14), springs and damping,</li>
+<li>detect contacts between collision shapes (lesson 12) and compute contact forces,</li>
+<li>solve the equations of motion <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0359em;">q</span><span class="mclose">)</span><span class="mord katex-accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6679em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">q</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.1667em;"><span class="mord">¨</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1944em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0359em;">q</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord katex-accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6679em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">q</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.0556em;"><span class="mord">˙</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1944em;"><span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">G</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0359em;">q</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.1132em;">τ</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.0358em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0962em;">J</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8413em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.1076em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">co</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">c</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> (Phase 06),</li>
+<li>integrate velocities and positions to the next step.</li>
+</ol>
+<h2 id="integrators">Integrators</h2>
+<p><strong>Explicit Euler</strong> updates position and velocity from the old state. On an oscillator it adds energy every step, so a pendulum swings higher and higher. <strong>Semi-implicit (symplectic) Euler</strong> updates the velocity first and uses the new velocity for the position. It costs the same but keeps the energy error bounded, which is why game and robot engines use it or implicit variants. MuJoCo defaults to semi-implicit Euler, with RK4 and implicit options.</p>
+<h2 id="contact">Contact</h2>
+<p>The simplest contact model is a <strong>penalty</strong> spring-damper: when shapes overlap by <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span>, push them apart with <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.7778em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.9313em;"></span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord katex-accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9313em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal">d</span></span><span style="top:-3.2634em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:0.0278em;"><span class="mord">˙</span></span></span></span></span></span></span></span></span></span>. A stiff spring means less penetration but a high natural frequency <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.24em;vertical-align:-0.305em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.935em;"><span class="svg-align" style="top:-3.2em;"><span class="pstrut" style="height:3.2em;"></span><span class="mord" style="padding-left:1em;"><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mord">/</span><span class="mord mathnormal">m</span></span></span><span style="top:-2.895em;"><span class="pstrut" style="height:3.2em;"></span><span class="hide-tail" style="min-width:1.02em;height:1.28em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.28em" viewBox="0 0 400000 1296" preserveAspectRatio="xMinYMin slice"><path d="M263,681c0.7,0,18,39.7,52,119
+c34,79.3,68.167,158.7,102.5,238c34.3,79.3,51.8,119.3,52.5,120
+c340,-704.7,510.7,-1060.3,512,-1067
+l0 -0
+c4.7,-7.3,11,-11,19,-11
+H40000v40H1012.3
+s-271.3,567,-271.3,567c-38.7,80.7,-84,175,-136,283c-52,108,-89.167,185.3,-111.5,232
+c-22.3,46.7,-33.8,70.3,-34.5,71c-4.7,4.7,-12.3,7,-23,7s-12,-1,-12,-1
+s-109,-253,-109,-253c-72.7,-168,-109.3,-252,-110,-252c-10.7,8,-22,16.7,-34,26
+c-22,17.3,-33.3,26,-34,26s-26,-26,-26,-26s76,-59,76,-59s76,-60,76,-60z
+M1001 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.305em;"><span></span></span></span></span></span></span></span></span>, and an explicit step is only stable for roughly <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="mord">Δ</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">2</span></span></span></span>. Above that, the simulation creates energy: objects jitter, bounce higher than they fell or explode. Engines use soft constraints (MuJoCo) or complementarity solvers (ODE, Bullet) to handle contact more robustly, but a time step that is too large still breaks them.</p>
+<h2 id="real-time-factor">Real-time factor</h2>
+<p>The <strong>real-time factor</strong> (RTF) is simulated time divided by wall-clock time. RTF 1 means the simulation keeps pace with reality, which is what you need to run real ROS 2 nodes against it (with <code>use_sim_time</code> and the <code>/clock</code> topic). Above 1 you can train or test faster than real time.</p>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="simarm" data-args="{}"></div></div><figcaption>A simulated 2-link arm under PD control with gravity compensation. Change the gains, the time step and the integrator; the readout compares the simulated tool position with the kinematic target and shows the energy behaviour.</figcaption></figure>
+<h2 id="worked-example">Worked example</h2>
+<ol>
+<li>A pendulum released from 1 rad, 20 s at <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">10</span></span></span></span> ms: explicit Euler gains 266 % in energy, semi-implicit Euler stays within 1.47 %.</li>
+<li>A 1 kg ball dropped from 0.5 m onto a penalty floor with <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">50</span></span></span></span> N s/m: penetration 45.67 mm at <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span></span></span></span> N/m (and no rebound, it is overdamped), 22.92 mm at <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">4</span></span></span></span></span></span></span></span></span></span></span>, 8.88 mm at <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">5</span></span></span></span></span></span></span></span></span></span></span>.</li>
+<li>At <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">7</span></span></span></span></span></span></span></span></span></span></span> N/m and <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> ms, <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="mord">Δ</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">3.162</span></span></span></span>, and the ball rebounds at 4.04 m/s after hitting at 3.13 m/s: the step created energy. At <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">10</span></span></span></span> µs it rebounds at 3.06 m/s.</li>
+<li>The 2-link arm (illustrative masses 1.0 and 0.6 kg, links 0.4 and 0.3 m), commanded to <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">q</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0.8</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">−</span><span class="mord">0.6</span><span class="mclose">)</span></span></span></span> with <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> ms, settles with the tool at <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0.5727</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0.34654</span><span class="mclose">)</span></span></span></span> m, the same as forward kinematics to within 1 mm.</li>
+<li>The arm simulation ran at a real-time factor of about 87 on our build machine; your number will differ.</li>
+</ol>
+<h2 id="code-it-from-scratch">Code it from scratch</h2>
+
+<div class="code-card" data-code="0"><div class="code-head"><span class="fname" translate="no">sim_step.py</span><button class="btn btn-quiet btn-small" type="button" data-copy="0">Copy</button><button class="btn btn-quiet btn-small" type="button" data-download="0">Download</button></div><pre tabindex="0"><code class="language-python"><span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">pendulum</span>(<span class="hljs-params">method, dt=<span class="hljs-number">0.01</span>, T=<span class="hljs-number">20.0</span>, g=<span class="hljs-number">9.81</span>, L=<span class="hljs-number">1.0</span>, th0=<span class="hljs-number">1.0</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;integrate th&#x27;&#x27; = -(g/L) sin th; return the relative energy error at the end&quot;&quot;&quot;</span>
+    th, w = th0, <span class="hljs-number">0.0</span>; E = <span class="hljs-keyword">lambda</span> th, w: <span class="hljs-number">0.5</span> * L**<span class="hljs-number">2</span> * w**<span class="hljs-number">2</span> + g * L * (<span class="hljs-number">1</span> - np.cos(th))
+    E0 = E(th, w)
+    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-built_in">int</span>(T / dt)):
+        a = -g / L * np.sin(th)
+        <span class="hljs-keyword">if</span> method == <span class="hljs-string">&quot;explicit&quot;</span>: th, w = th + dt * w, w + dt * a          <span class="hljs-comment"># both from the old state</span>
+        <span class="hljs-keyword">else</span>: w = w + dt * a; th = th + dt * w                             <span class="hljs-comment"># semi-implicit: velocity first, then position</span>
+    <span class="hljs-keyword">return</span> (E(th, w) - E0) / E0
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">drop</span>(<span class="hljs-params">k=<span class="hljs-number">1e5</span>, c=<span class="hljs-number">50.0</span>, m=<span class="hljs-number">1.0</span>, dt=<span class="hljs-number">1e-4</span>, T=<span class="hljs-number">1.0</span>, h0=<span class="hljs-number">0.5</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;a ball dropped on a floor modelled as a spring-damper (penalty contact), active only while penetrating&quot;&quot;&quot;</span>
+    z, v, pen, bounce_v = h0, <span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-literal">None</span>
+    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-built_in">int</span>(T / dt)):
+        f = -m * <span class="hljs-number">9.81</span>
+        <span class="hljs-keyword">if</span> z &lt; <span class="hljs-number">0</span>:
+            f += -k * z - c * v; pen = <span class="hljs-built_in">max</span>(pen, -z)                         <span class="hljs-comment"># contact force pushes out of the floor</span>
+        v += dt * f / m; z += dt * v
+        <span class="hljs-keyword">if</span> bounce_v <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span> <span class="hljs-keyword">and</span> z &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> v &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> pen &gt; <span class="hljs-number">0</span>: bounce_v = v
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> np.isfinite(z) <span class="hljs-keyword">or</span> <span class="hljs-built_in">abs</span>(z) &gt; <span class="hljs-number">1e3</span>: <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>, <span class="hljs-literal">None</span>
+    <span class="hljs-keyword">return</span> pen, bounce_v
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">arm_sim</span>(<span class="hljs-params">q_goal, dt=<span class="hljs-number">1e-3</span>, T=<span class="hljs-number">3.0</span>, m=(<span class="hljs-params"><span class="hljs-number">1.0</span>, <span class="hljs-number">0.6</span></span>), l=(<span class="hljs-params"><span class="hljs-number">0.4</span>, <span class="hljs-number">0.3</span></span>), kp=<span class="hljs-number">60.0</span>, kd=<span class="hljs-number">8.0</span>, g=<span class="hljs-number">9.81</span></span>):
+    <span class="hljs-string">&quot;&quot;&quot;a 2-link arm in a vertical plane (point masses at the link ends), PD control plus gravity compensation&quot;&quot;&quot;</span>
+    m1, m2 = m; l1, l2 = l; q = np.zeros(<span class="hljs-number">2</span>); qd = np.zeros(<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">G</span>(<span class="hljs-params">q</span>): c1, c12 = np.cos(q[<span class="hljs-number">0</span>]), np.cos(q[<span class="hljs-number">0</span>] + q[<span class="hljs-number">1</span>]); <span class="hljs-keyword">return</span> np.array([(m1 + m2) * g * l1 * c1 + m2 * g * l2 * c12, m2 * g * l2 * c12])
+    wall = time.perf_counter()
+    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-built_in">int</span>(T / dt)):
+        c2, s2 = np.cos(q[<span class="hljs-number">1</span>]), np.sin(q[<span class="hljs-number">1</span>])
+        M = np.array([[m1 * l1**<span class="hljs-number">2</span> + m2 * (l1**<span class="hljs-number">2</span> + l2**<span class="hljs-number">2</span> + <span class="hljs-number">2</span> * l1 * l2 * c2), m2 * (l2**<span class="hljs-number">2</span> + l1 * l2 * c2)],
+                      [m2 * (l2**<span class="hljs-number">2</span> + l1 * l2 * c2), m2 * l2**<span class="hljs-number">2</span>]])
+        Cv = np.array([-m2 * l1 * l2 * s2 * (<span class="hljs-number">2</span> * qd[<span class="hljs-number">0</span>] * qd[<span class="hljs-number">1</span>] + qd[<span class="hljs-number">1</span>]**<span class="hljs-number">2</span>), m2 * l1 * l2 * s2 * qd[<span class="hljs-number">0</span>]**<span class="hljs-number">2</span>])
+        tau = kp * (q_goal - q) - kd * qd + G(q)                             <span class="hljs-comment"># the controller under test</span>
+        qdd = np.linalg.solve(M, tau - Cv - G(q))                            <span class="hljs-comment"># the physics engine&#x27;s job</span>
+        qd = qd + dt * qdd; q = q + dt * qd
+    wall = time.perf_counter() - wall
+    <span class="hljs-keyword">return</span> q, T / wall
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">fk</span>(<span class="hljs-params">q, l=(<span class="hljs-params"><span class="hljs-number">0.4</span>, <span class="hljs-number">0.3</span></span>)</span>):
+    <span class="hljs-keyword">return</span> np.array([l[<span class="hljs-number">0</span>] * np.cos(q[<span class="hljs-number">0</span>]) + l[<span class="hljs-number">1</span>] * np.cos(q[<span class="hljs-number">0</span>] + q[<span class="hljs-number">1</span>]), l[<span class="hljs-number">0</span>] * np.sin(q[<span class="hljs-number">0</span>]) + l[<span class="hljs-number">1</span>] * np.sin(q[<span class="hljs-number">0</span>] + q[<span class="hljs-number">1</span>])])
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_integrators</span>():
+    ex, si = pendulum(<span class="hljs-string">&quot;explicit&quot;</span>), pendulum(<span class="hljs-string">&quot;semi&quot;</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;pendulum 20 s at dt = 10 ms: energy error explicit Euler <span class="hljs-subst">{<span class="hljs-number">100</span> * ex:+<span class="hljs-number">.1</span>f}</span> %, semi-implicit <span class="hljs-subst">{<span class="hljs-number">100</span> * si:+<span class="hljs-number">.2</span>f}</span> %&quot;</span>)
+    <span class="hljs-keyword">assert</span> ex &gt; <span class="hljs-number">0.5</span> <span class="hljs-keyword">and</span> <span class="hljs-built_in">abs</span>(si) &lt; <span class="hljs-number">0.02</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_contact</span>():
+    rows = []
+    <span class="hljs-keyword">for</span> k <span class="hljs-keyword">in</span> (<span class="hljs-number">1e3</span>, <span class="hljs-number">1e4</span>, <span class="hljs-number">1e5</span>):
+        pen, bv = drop(k=k); rows.append(pen); <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;floor stiffness <span class="hljs-subst">{k:<span class="hljs-number">8.0</span>f}</span> N/m: max penetration <span class="hljs-subst">{<span class="hljs-number">1000</span> * pen:<span class="hljs-number">6.2</span>f}</span> mm, &quot;</span> + (<span class="hljs-string">f&quot;rebound speed <span class="hljs-subst">{bv:<span class="hljs-number">.2</span>f}</span> m/s&quot;</span> <span class="hljs-keyword">if</span> bv <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;no rebound (damping ratio too high)&quot;</span>))
+    <span class="hljs-keyword">assert</span> rows[<span class="hljs-number">0</span>] &gt; rows[<span class="hljs-number">1</span>] &gt; rows[<span class="hljs-number">2</span>]
+    v_in = np.sqrt(<span class="hljs-number">2</span> * <span class="hljs-number">9.81</span> * <span class="hljs-number">0.5</span>)                                         <span class="hljs-comment"># impact speed from 0.5 m</span>
+    <span class="hljs-keyword">for</span> dt <span class="hljs-keyword">in</span> (<span class="hljs-number">1e-3</span>, <span class="hljs-number">1e-5</span>):
+        _, bv = drop(k=<span class="hljs-number">1e7</span>, dt=dt)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;k = 1e7 N/m at dt = <span class="hljs-subst">{dt:g}</span> s: omega dt = <span class="hljs-subst">{np.sqrt(<span class="hljs-number">1e7</span>) * dt:<span class="hljs-number">.3</span>f}</span>, impact <span class="hljs-subst">{v_in:<span class="hljs-number">.2</span>f}</span> m/s, rebound <span class="hljs-subst">{bv:<span class="hljs-number">.2</span>f}</span> m/s&quot;</span>
+              + (<span class="hljs-string">&quot; (faster than it hit: the step created energy)&quot;</span> <span class="hljs-keyword">if</span> bv &gt; v_in <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;&quot;</span>))
+        <span class="hljs-keyword">assert</span> (bv &gt; v_in) == (dt == <span class="hljs-number">1e-3</span>)                                    <span class="hljs-comment"># the stiff contact needs a smaller step</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">test_arm_matches_kinematics</span>():
+    goal = np.array([<span class="hljs-number">0.8</span>, -<span class="hljs-number">0.6</span>]); q, rtf = arm_sim(goal)
+    ee, ref = fk(q), fk(goal)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;arm settles at q = <span class="hljs-subst">{np.<span class="hljs-built_in">round</span>(q, <span class="hljs-number">5</span>)}</span>, tool <span class="hljs-subst">{np.<span class="hljs-built_in">round</span>(ee, <span class="hljs-number">5</span>)}</span> vs kinematics <span class="hljs-subst">{np.<span class="hljs-built_in">round</span>(ref, <span class="hljs-number">5</span>)}</span>, &quot;</span>
+          <span class="hljs-string">f&quot;error <span class="hljs-subst">{<span class="hljs-number">1000</span> * np.linalg.norm(ee - ref):<span class="hljs-number">.3</span>f}</span> mm&quot;</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;real-time factor on this machine: <span class="hljs-subst">{rtf:<span class="hljs-number">.0</span>f}</span> (simulated seconds per wall second; varies by machine)&quot;</span>)
+    <span class="hljs-keyword">assert</span> np.linalg.norm(ee - ref) &lt; <span class="hljs-number">1e-3</span> <span class="hljs-keyword">and</span> rtf &gt; <span class="hljs-number">1</span>
+
+test_integrators()
+test_contact()
+test_arm_matches_kinematics()
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;PASS&quot;</span>)</code></pre></div>
+<h2 id="in-practice">In practice</h2>
+<p>Gazebo (<code>gz sim</code>, the successor of Gazebo Classic) connects to ROS 2 through <code>ros_gz_bridge</code> and to ros2_control through <code>gz_ros2_control</code>, which loads your URDF’s controllers against simulated joints. MuJoCo is fast and accurate for contact-rich manipulation and learning, with ROS 2 integrations maintained by the community. Check RTF, contact parameters and inertias (lesson 12) before trusting a result, and validate against hardware: the sim-to-real gap is real.</p>
+<h2 id="exercises">Exercises</h2>
+
+<div class="exercise"><div class="ex-q"><p>Your simulated gripper jitters when it closes on an object. Name three things to check.</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>Contact stiffness against the time step (<span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="mord">Δ</span><span class="mord mathnormal">t</span></span></span></span> too large), inertias of small links (tiny masses give high natural frequencies), and the controller gains, which may be too high for the simulated time step. Reduce the step, soften the contact or fix the inertias.</p>
+</div></details></div>
+
+<div class="exercise"><div class="ex-q"><p>A simulation runs at RTF 0.4. What happens to a ROS 2 controller node that uses wall-clock time?</p>
+</div><details><summary>Show the solution</summary><div class="ex-s"><p>It runs 2.5 times too often relative to simulated time, so its gains and filters behave differently. Use <code>use_sim_time:=true</code> so the node follows <code>/clock</code>, and the controller then runs at its rate in simulated time.</p>
+</div></details></div>
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz" data-quiz="p18-l15"></div>
+`,i=[{id:`what-a-physics-engine-does-every-step`,title:`What a physics engine does every step`},{id:`integrators`,title:`Integrators`},{id:`contact`,title:`Contact`},{id:`real-time-factor`,title:`Real-time factor`},{id:`worked-example`,title:`Worked example`},{id:`code-it-from-scratch`,title:`Code it from scratch`},{id:`in-practice`,title:`In practice`},{id:`exercises`,title:`Exercises`},{id:`quiz`,title:`Quiz`}],a=[{id:`p18-l15-q1`,type:`num`,q:`<p>Natural frequency of a 1 kg mass on a 1e6 N/m contact spring (rad/s)?</p>
+`,explain:`<p>sqrt(k/m).</p>
+`,answer:1e3,tol:.002,unit:``},{id:`p18-l15-q2`,type:`num`,q:`<p>Largest stable step for that contact with the rule omega dt &lt; 2 (ms)?</p>
+`,explain:`<p>2/omega seconds.</p>
+`,answer:2,tol:.002,unit:``},{id:`p18-l15-q3`,type:`num`,q:`<p>Real-time factor if 30 s of simulation take 12 s of wall time?</p>
+`,explain:`<p>Simulated over wall time.</p>
+`,answer:2.5,tol:.002,unit:``},{id:`p18-l15-q4`,type:`num`,q:`<p>Impact speed of a ball dropped from 0.5 m (m/s)?</p>
+`,explain:`<p>sqrt(2 g h).</p>
+`,answer:3.13,tol:.005,unit:``},{id:`p18-l15-q5`,type:`mc`,q:`<p>Semi-implicit Euler updates…</p>
+`,explain:`<p>That keeps energy bounded.</p>
+`,options:[`both from the old state`,`only the position`,`position first, then velocity`,`velocity first, then position with the new velocity`],answer:3},{id:`p18-l15-q6`,type:`mc`,q:`<p>A contact spring that is too stiff for the time step makes objects…</p>
+`,explain:`<p>The integrator injects energy.</p>
+`,options:[`stop moving entirely`,`sink slowly through the floor`,`simulate faster`,`jitter or bounce higher than they fell`],answer:3}],o=[{file:`sim_step.py`,lang:`python`,src:`import time
+import numpy as np
+
+def pendulum(method, dt=0.01, T=20.0, g=9.81, L=1.0, th0=1.0):
+    """integrate th'' = -(g/L) sin th; return the relative energy error at the end"""
+    th, w = th0, 0.0; E = lambda th, w: 0.5 * L**2 * w**2 + g * L * (1 - np.cos(th))
+    E0 = E(th, w)
+    for _ in range(int(T / dt)):
+        a = -g / L * np.sin(th)
+        if method == "explicit": th, w = th + dt * w, w + dt * a          # both from the old state
+        else: w = w + dt * a; th = th + dt * w                             # semi-implicit: velocity first, then position
+    return (E(th, w) - E0) / E0
+
+def drop(k=1e5, c=50.0, m=1.0, dt=1e-4, T=1.0, h0=0.5):
+    """a ball dropped on a floor modelled as a spring-damper (penalty contact), active only while penetrating"""
+    z, v, pen, bounce_v = h0, 0.0, 0.0, None
+    for _ in range(int(T / dt)):
+        f = -m * 9.81
+        if z < 0:
+            f += -k * z - c * v; pen = max(pen, -z)                         # contact force pushes out of the floor
+        v += dt * f / m; z += dt * v
+        if bounce_v is None and z > 0 and v > 0 and pen > 0: bounce_v = v
+        if not np.isfinite(z) or abs(z) > 1e3: return None, None
+    return pen, bounce_v
+
+def arm_sim(q_goal, dt=1e-3, T=3.0, m=(1.0, 0.6), l=(0.4, 0.3), kp=60.0, kd=8.0, g=9.81):
+    """a 2-link arm in a vertical plane (point masses at the link ends), PD control plus gravity compensation"""
+    m1, m2 = m; l1, l2 = l; q = np.zeros(2); qd = np.zeros(2)
+    def G(q): c1, c12 = np.cos(q[0]), np.cos(q[0] + q[1]); return np.array([(m1 + m2) * g * l1 * c1 + m2 * g * l2 * c12, m2 * g * l2 * c12])
+    wall = time.perf_counter()
+    for _ in range(int(T / dt)):
+        c2, s2 = np.cos(q[1]), np.sin(q[1])
+        M = np.array([[m1 * l1**2 + m2 * (l1**2 + l2**2 + 2 * l1 * l2 * c2), m2 * (l2**2 + l1 * l2 * c2)],
+                      [m2 * (l2**2 + l1 * l2 * c2), m2 * l2**2]])
+        Cv = np.array([-m2 * l1 * l2 * s2 * (2 * qd[0] * qd[1] + qd[1]**2), m2 * l1 * l2 * s2 * qd[0]**2])
+        tau = kp * (q_goal - q) - kd * qd + G(q)                             # the controller under test
+        qdd = np.linalg.solve(M, tau - Cv - G(q))                            # the physics engine's job
+        qd = qd + dt * qdd; q = q + dt * qd
+    wall = time.perf_counter() - wall
+    return q, T / wall
+
+def fk(q, l=(0.4, 0.3)):
+    return np.array([l[0] * np.cos(q[0]) + l[1] * np.cos(q[0] + q[1]), l[0] * np.sin(q[0]) + l[1] * np.sin(q[0] + q[1])])
+
+def test_integrators():
+    ex, si = pendulum("explicit"), pendulum("semi")
+    print(f"pendulum 20 s at dt = 10 ms: energy error explicit Euler {100 * ex:+.1f} %, semi-implicit {100 * si:+.2f} %")
+    assert ex > 0.5 and abs(si) < 0.02
+
+def test_contact():
+    rows = []
+    for k in (1e3, 1e4, 1e5):
+        pen, bv = drop(k=k); rows.append(pen); print(f"floor stiffness {k:8.0f} N/m: max penetration {1000 * pen:6.2f} mm, " + (f"rebound speed {bv:.2f} m/s" if bv else "no rebound (damping ratio too high)"))
+    assert rows[0] > rows[1] > rows[2]
+    v_in = np.sqrt(2 * 9.81 * 0.5)                                         # impact speed from 0.5 m
+    for dt in (1e-3, 1e-5):
+        _, bv = drop(k=1e7, dt=dt)
+        print(f"k = 1e7 N/m at dt = {dt:g} s: omega dt = {np.sqrt(1e7) * dt:.3f}, impact {v_in:.2f} m/s, rebound {bv:.2f} m/s"
+              + (" (faster than it hit: the step created energy)" if bv > v_in else ""))
+        assert (bv > v_in) == (dt == 1e-3)                                    # the stiff contact needs a smaller step
+
+def test_arm_matches_kinematics():
+    goal = np.array([0.8, -0.6]); q, rtf = arm_sim(goal)
+    ee, ref = fk(q), fk(goal)
+    print(f"arm settles at q = {np.round(q, 5)}, tool {np.round(ee, 5)} vs kinematics {np.round(ref, 5)}, "
+          f"error {1000 * np.linalg.norm(ee - ref):.3f} mm")
+    print(f"real-time factor on this machine: {rtf:.0f} (simulated seconds per wall second; varies by machine)")
+    assert np.linalg.norm(ee - ref) < 1e-3 and rtf > 1
+
+test_integrators()
+test_contact()
+test_arm_matches_kinematics()
+print("PASS")`}],s={id:e,minutes:40,summary:n,html:r,toc:i,quiz:a,code:o};export{o as code,s as default,r as html,e as id,t as minutes,a as quiz,n as summary,i as toc};

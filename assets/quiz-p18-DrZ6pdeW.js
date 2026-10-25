@@ -1,0 +1,205 @@
+var e={"p18-l01":[{id:`p18-l01-q1`,type:`num`,q:`<p>Actual rate of a loop that works 0.25 ms and then sleeps 1 ms?</p>
+`,explain:`<p>The period is 1.25 ms.</p>
+`,answer:800,tol:.001,unit:`Hz`},{id:`p18-l01-q2`,type:`num`,q:`<p>Jitter of a measured period of 1.07 ms in a 1 kHz loop?</p>
+`,explain:`<p>Measured minus nominal period.</p>
+`,answer:70,tol:.002,unit:`µs`},{id:`p18-l01-q3`,type:`num`,q:`<p>Deadline misses expected per hour in a 1 kHz loop that misses once in a million iterations?</p>
+`,explain:`<p>3.6 million iterations per hour.</p>
+`,answer:3.6,tol:.002,unit:``},{id:`p18-l01-q4`,type:`num`,q:`<p>Processor share of a task with WCET 0.2 ms and period 1 ms?</p>
+`,explain:`<p>Utilisation C/T.</p>
+`,answer:.2,tol:.002,unit:``},{id:`p18-l01-q5`,type:`mc`,q:`<p>A dropped video frame in a teleoperation display is an example of a…</p>
+`,explain:`<p>The late frame is useless but the system carries on.</p>
+`,options:[`soft deadline with no value loss`,`firm deadline`,`non-real-time task`,`hard deadline`],answer:1},{id:`p18-l01-q6`,type:`mc`,q:`<p>The longest execution time observed in testing is…</p>
+`,explain:`<p>Unobserved runs may be longer.</p>
+`,options:[`the average execution time`,`a lower bound on the WCET`,`an upper bound on the WCET`,`the WCET`],answer:1}],"p18-l02":[{id:`p18-l02-q1`,type:`num`,q:`<p>Liu-Layland bound for 2 tasks?</p>
+`,explain:`<p>n(2^(1/n) - 1).</p>
+`,answer:.8284,tol:.002,unit:``},{id:`p18-l02-q2`,type:`num`,q:`<p>Utilisation of tasks (1, 5), (2, 10) and (3, 20)?</p>
+`,explain:`<p>Sum of C/T.</p>
+`,answer:.55,tol:.002,unit:``},{id:`p18-l02-q3`,type:`num`,q:`<p>Response time of the lowest-priority task in (1, 4), (2, 5), (1, 10)?</p>
+`,explain:`<p>1 → 4 → 1 + 1 + 2 = 4.</p>
+`,answer:4,tol:.001,unit:``},{id:`p18-l02-q4`,type:`num`,q:`<p>Hyperperiod of tasks with periods 4, 6 and 10?</p>
+`,explain:`<p>The least common multiple.</p>
+`,answer:60,tol:.001,unit:``},{id:`p18-l02-q5`,type:`mc`,q:`<p>A task set with U = 0.9 and three tasks under rate-monotonic scheduling…</p>
+`,explain:`<p>The bound is sufficient, not necessary.</p>
+`,options:[`may or may not be schedulable; run the exact test`,`needs earliest-deadline-first`,`is always schedulable`,`is never schedulable`],answer:0},{id:`p18-l02-q6`,type:`mc`,q:`<p>Rate-monotonic scheduling gives the highest priority to…</p>
+`,explain:`<p>Priority by rate.</p>
+`,options:[`the task released first`,`the most important task`,`the task with the longest execution time`,`the task with the shortest period`],answer:3}],"p18-l03":[{id:`p18-l03-q1`,type:`num`,q:`<p>Utilisation of the three example tasks (1/4, 2/10, 5/50)?</p>
+`,explain:`<p>Sum of C/T.</p>
+`,answer:.55,tol:.002,unit:``},{id:`p18-l03-q2`,type:`num`,q:`<p>Mean period of a task that uses vTaskDelay(10) and always takes 3 ticks to finish after release?</p>
+`,explain:`<p>Response time plus the relative delay.</p>
+`,answer:13,tol:.001,unit:``},{id:`p18-l03-q3`,type:`num`,q:`<p>Jobs of a 4-tick-period task in 1000 ticks?</p>
+`,explain:`<p>One per period.</p>
+`,answer:250,tol:.001,unit:``},{id:`p18-l03-q4`,type:`num`,q:`<p>Tick period in milliseconds for a 1 kHz tick?</p>
+`,explain:`<p>configTICK_RATE_HZ of 1000.</p>
+`,answer:1,tol:.001,unit:``},{id:`p18-l03-q5`,type:`mc`,q:`<p>A ready task does not run because…</p>
+`,explain:`<p>The other three describe blocked or suspended tasks.</p>
+`,options:[`it is waiting for a semaphore`,`a higher-priority task is running`,`it has been suspended`,`its delay has not expired`],answer:1},{id:`p18-l03-q6`,type:`mc`,q:`<p>To keep a control loop’s period exact under preemption, use…</p>
+`,explain:`<p>It blocks until an absolute time.</p>
+`,options:[`vTaskDelay`,`a lower priority`,`vTaskDelayUntil`,`a busy-wait loop`],answer:2}],"p18-l04":[{id:`p18-l04-q1`,type:`num`,q:`<p>High-priority response time in the example without inheritance (ticks)?</p>
+`,explain:`<p>From the simulated timeline.</p>
+`,answer:14,tol:.001,unit:``},{id:`p18-l04-q2`,type:`num`,q:`<p>High-priority response time in the example with inheritance (ticks)?</p>
+`,explain:`<p>W’s remaining critical section, then H.</p>
+`,answer:4,tol:.001,unit:``},{id:`p18-l04-q3`,type:`num`,q:`<p>Response-time bound with C = 2, blocking B = 3, and one higher task (1, 10)?</p>
+`,explain:`<p>R = C + B + ceil(R/T) C_j = 2 + 3 + 1.</p>
+`,answer:6,tol:.001,unit:``},{id:`p18-l04-q4`,type:`num`,q:`<p>Items a depth-8 queue accepts when nobody reads it?</p>
+`,explain:`<p>Then it is full.</p>
+`,answer:8,tol:.001,unit:``},{id:`p18-l04-q5`,type:`mc`,q:`<p>In priority inheritance, the task that temporarily gets a higher priority is…</p>
+`,explain:`<p>The holder inherits the waiter’s priority.</p>
+`,options:[`the high-priority task waiting`,`the medium-priority task`,`the idle task`,`the low-priority task holding the mutex`],answer:3},{id:`p18-l04-q6`,type:`mc`,q:`<p>In FreeRTOS, which object provides priority inheritance?</p>
+`,explain:`<p>Only mutexes inherit priority.</p>
+`,options:[`a binary semaphore`,`a queue`,`a mutex`,`a counting semaphore`],answer:2}],"p18-l05":[{id:`p18-l05-q1`,type:`num`,q:`<p>Loop budget left for computation in a 1 kHz loop with a worst-case wake-up latency of 120 µs?</p>
+`,explain:`<p>The period minus the latency.</p>
+`,answer:880,tol:.002,unit:`µs`},{id:`p18-l05-q2`,type:`num`,q:`<p>Wake-ups recorded by cyclictest at 1 ms intervals in one hour?</p>
+`,explain:`<p>1000 per second.</p>
+`,answer:36e5,tol:.001,unit:``},{id:`p18-l05-q3`,type:`num`,q:`<p>Highest SCHED_FIFO priority on Linux?</p>
+`,explain:`<p>sched_get_priority_max(SCHED_FIFO).</p>
+`,answer:99,tol:.001,unit:``},{id:`p18-l05-q4`,type:`num`,q:`<p>Factor by which worst-case latency improves going from 2 ms to 50 µs?</p>
+`,explain:`<p>The ratio of the maxima.</p>
+`,answer:40,tol:.002,unit:``},{id:`p18-l05-q5`,type:`mc`,q:`<p>The figure that decides if a machine can run your control loop is…</p>
+`,explain:`<p>Rare long delays cause deadline misses.</p>
+`,options:[`the median latency`,`the maximum latency under load`,`the CPU clock frequency`,`the mean latency when idle`],answer:1},{id:`p18-l05-q6`,type:`mc`,q:`<p>PREEMPT_RT makes most kernel spinlocks…</p>
+`,explain:`<p>So high-priority threads can preempt them.</p>
+`,options:[`disappear entirely`,`disable interrupts for longer`,`sleeping locks with priority inheritance`,`run only on core 0`],answer:2}],"p18-l06":[{id:`p18-l06-q1`,type:`num`,q:`<p>Interleavings of a 2-step writer and a 2-step reader (choose 2 of 4)?</p>
+`,explain:`<p>Positions of the reader’s steps among 4.</p>
+`,answer:6,tol:.001,unit:``},{id:`p18-l06-q2`,type:`num`,q:`<p>Buffers in a triple buffer?</p>
+`,explain:`<p>Front, middle, back.</p>
+`,answer:3,tol:.001,unit:``},{id:`p18-l06-q3`,type:`num`,q:`<p>Torn reads the checker found for the naive struct?</p>
+`,explain:`<p>Out of 56 interleavings.</p>
+`,answer:24,tol:.001,unit:``},{id:`p18-l06-q4`,type:`num`,q:`<p>Seqlock counter value after the writer has published 5 samples, starting at 0?</p>
+`,explain:`<p>Two increments per write.</p>
+`,answer:10,tol:.001,unit:``},{id:`p18-l06-q5`,type:`mc`,q:`<p>A seqlock reader must retry if…</p>
+`,explain:`<p>Either means a write overlapped.</p>
+`,options:[`the data is zero`,`the counter is even`,`the writer is idle`,`the counter was odd or changed during the read`],answer:3},{id:`p18-l06-q6`,type:`mc`,q:`<p>To publish data safely with a flag, the flag store should use…</p>
+`,explain:`<p>Release-acquire orders the data before the flag.</p>
+`,options:[`release ordering, read with acquire`,`relaxed ordering on both sides`,`a sleep between the stores`,`a plain volatile int`],answer:0}],"p18-l07":[{id:`p18-l07-q1`,type:`num`,q:`<p>Topics in the example’s topic list?</p>
+`,explain:`<p>/imu/data, /map, /odom and /robot1/scan.</p>
+`,answer:4,tol:.001,unit:``},{id:`p18-l07-q2`,type:`num`,q:`<p>Connections that failed to match in the example?</p>
+`,explain:`<p>Reliability, deadline, type and durability.</p>
+`,answer:4,tol:.001,unit:``},{id:`p18-l07-q3`,type:`num`,q:`<p>Default ROS_DOMAIN_ID?</p>
+`,explain:`<p>Unset means domain 0.</p>
+`,answer:0,tol:.001,unit:``},{id:`p18-l07-q4`,type:`num`,q:`<p>Samples a keep-last subscription of depth 10 can buffer?</p>
+`,explain:`<p>The history depth.</p>
+`,answer:10,tol:.001,unit:``},{id:`p18-l07-q5`,type:`mc`,q:`<p>A best-effort subscriber and a reliable publisher…</p>
+`,explain:`<p>The publisher offers more than requested.</p>
+`,options:[`match only on the same machine`,`match after a timeout`,`do not match`,`match, and the link behaves as best effort`],answer:3},{id:`p18-l07-q6`,type:`mc`,q:`<p>In namespace /arm, node gripper resolves ~/state to…</p>
+`,explain:`<p>Private names include the node name.</p>
+`,options:[`/arm/state`,`/arm/gripper/state`,`/gripper/state`,`/state`],answer:1}],"p18-l08":[{id:`p18-l08-q1`,type:`num`,q:`<p>Messages the listener received in the integration test?</p>
+`,explain:`<p>hello 0 to hello 4.</p>
+`,answer:5,tol:.001,unit:``},{id:`p18-l08-q2`,type:`num`,q:`<p>Last element of the Fibonacci result for order 5?</p>
+`,explain:`<p>0, 1, 1, 2, 3, 5.</p>
+`,answer:5,tol:.001,unit:``},{id:`p18-l08-q3`,type:`num`,q:`<p>Feedback messages in the example action?</p>
+`,explain:`<p>One per added term.</p>
+`,answer:4,tol:.001,unit:``},{id:`p18-l08-q4`,type:`num`,q:`<p>Messages per second from a 0.1 s timer?</p>
+`,explain:`<p>10 Hz.</p>
+`,answer:10,tol:.001,unit:``},{id:`p18-l08-q5`,type:`mc`,q:`<p>Calling a service synchronously inside a callback on a single-threaded executor…</p>
+`,explain:`<p>Use call_async instead.</p>
+`,options:[`works but is slow`,`deadlocks, because the response needs the busy executor`,`raises a type error`,`is required for reliability`],answer:1},{id:`p18-l08-q6`,type:`mc`,q:`<p>The best fit for a long task with progress and cancel is…</p>
+`,explain:`<p>Actions provide feedback and cancel.</p>
+`,options:[`a service`,`a parameter`,`a topic`,`an action`],answer:3}],"p18-l09":[{id:`p18-l09-q1`,type:`num`,q:`<p>Maximum processed rate with a 4 ms callback?</p>
+`,explain:`<p>One callback at a time.</p>
+`,answer:250,tol:.001,unit:`Hz`},{id:`p18-l09-q2`,type:`num`,q:`<p>Expected rate received from 500 Hz with 3 % best-effort loss?</p>
+`,explain:`<p>The loss fraction is gone.</p>
+`,answer:485,tol:.002,unit:`Hz`},{id:`p18-l09-q3`,type:`num`,q:`<p>Age of the oldest sample in a full depth-50 queue of a 200 Hz stream?</p>
+`,explain:`<p>Depth times period.</p>
+`,answer:250,tol:.002,unit:`ms`},{id:`p18-l09-q4`,type:`num`,q:`<p>Allowed received-rate band for 200 Hz within 1 % (lower edge)?</p>
+`,explain:`<p>1 % of 200 Hz is 2 Hz.</p>
+`,answer:198,tol:.001,unit:`Hz`},{id:`p18-l09-q5`,type:`mc`,q:`<p>A message’s header stamp should be…</p>
+`,explain:`<p>Consumers fuse and measure latency against it.</p>
+`,options:[`the time the measurement was taken`,`zero for sensor data`,`the time the message was published`,`the time it was received`],answer:0},{id:`p18-l09-q6`,type:`mc`,q:`<p>A subscriber that only needs the freshest sample should use…</p>
+`,explain:`<p>Old samples are overwritten.</p>
+`,options:[`transient local durability`,`depth 1000`,`keep-all history`,`keep-last with depth 1`],answer:3}],"p18-l10":[{id:`p18-l10-q1`,type:`num`,q:`<p>Bytes for a CDR string “base_link” including its length field?</p>
+`,explain:`<p>Length, 9 characters, NUL.</p>
+`,answer:14,tol:.001,unit:``},{id:`p18-l10-q2`,type:`num`,q:`<p>Padding before a float64 that would start at payload offset 28?</p>
+`,explain:`<p>The next multiple of 8 is 32.</p>
+`,answer:4,tol:.001,unit:``},{id:`p18-l10-q3`,type:`num`,q:`<p>Total serialized size of the example message in bytes?</p>
+`,explain:`<p>4 header plus 74 payload.</p>
+`,answer:78,tol:.001,unit:``},{id:`p18-l10-q4`,type:`num`,q:`<p>Bytes for an int16[] sequence of 5 elements starting aligned?</p>
+`,explain:`<p>Count plus elements.</p>
+`,answer:14,tol:.001,unit:``},{id:`p18-l10-q5`,type:`mc`,q:`<p>In a .msg file, uint8 LEFT=0 is…</p>
+`,explain:`<p>Upper-case name with = defines a constant.</p>
+`,options:[`a field with default 0`,`a comment`,`a constant`,`an array`],answer:2},{id:`p18-l10-q6`,type:`mc`,q:`<p>The first 4 bytes 00 01 00 00 of a ROS 2 sample mean…</p>
+`,explain:`<p>Encapsulation kind 0x0001.</p>
+`,options:[`sequence number 1`,`big-endian CDR encapsulation`,`little-endian CDR encapsulation`,`message length 256`],answer:2}],"p18-l11":[{id:`p18-l11-q1`,type:`num`,q:`<p>Edges on the path from laser to camera_optical in the example tree?</p>
+`,explain:`<p>laser to base_link, base_link to camera_link, camera_link to camera_optical.</p>
+`,answer:3,tol:.001,unit:``},{id:`p18-l11-q2`,type:`num`,q:`<p>Interpolation fraction for a lookup at 1.05 s between samples at 1.0 and 1.1 s?</p>
+`,explain:`<p>Halfway.</p>
+`,answer:.5,tol:.001,unit:``},{id:`p18-l11-q3`,type:`num`,q:`<p>Default tf2 buffer length in seconds?</p>
+`,explain:`<p>The cache time.</p>
+`,answer:10,tol:.001,unit:``},{id:`p18-l11-q4`,type:`num`,q:`<p>Odometry samples kept in 10 s at 50 Hz?</p>
+`,explain:`<p>Rate times cache time.</p>
+`,answer:500,tol:.001,unit:``},{id:`p18-l11-q5`,type:`mc`,q:`<p>The rotation part of an interpolated transform uses…</p>
+`,explain:`<p>Spherical linear interpolation.</p>
+`,options:[`the latest sample`,`the nearest sample`,`slerp of the quaternions`,`linear interpolation of Euler angles`],answer:2},{id:`p18-l11-q6`,type:`mc`,q:`<p>Which transform should localisation publish according to REP 105?</p>
+`,explain:`<p>Odometry owns odom to base_link.</p>
+`,options:[`map to odom`,`map to base_link`,`base_link to laser`,`odom to base_link`],answer:0}],"p18-l12":[{id:`p18-l12-q1`,type:`num`,q:`<p>Izz of a solid cylinder of 2 kg and radius 0.05 m about its axis?</p>
+`,explain:`<p>m r² / 2.</p>
+`,answer:.0025,tol:.002,unit:`kg m²`},{id:`p18-l12-q2`,type:`num`,q:`<p>Tool height of the example arm at zero joint angles?</p>
+`,explain:`<p>All links point straight up.</p>
+`,answer:.75,tol:.001,unit:`m`},{id:`p18-l12-q3`,type:`num`,q:`<p>Joints in a tree of 5 links?</p>
+`,explain:`<p>Each link but the root has one parent joint.</p>
+`,answer:4,tol:.001,unit:``},{id:`p18-l12-q4`,type:`num`,q:`<p>Ixx of a 1 kg cylinder of radius 0.02 m and length 0.2 m about its centre?</p>
+`,explain:`<p>m(3r² + h²)/12.</p>
+`,answer:.003433,tol:.002,unit:`kg m²`},{id:`p18-l12-q5`,type:`mc`,q:`<p>A joint’s axis in URDF is expressed in…</p>
+`,explain:`<p>The frame defined by the joint origin.</p>
+`,options:[`the parent link’s visual frame`,`the world frame`,`the root link frame`,`the joint (child) frame`],answer:3},{id:`p18-l12-q6`,type:`mc`,q:`<p>The node that turns /joint_states into tf2 transforms using the URDF is…</p>
+`,explain:`<p>It computes forward kinematics from the URDF.</p>
+`,options:[`static_transform_publisher`,`joint_state_broadcaster`,`controller_manager`,`robot_state_publisher`],answer:3}],"p18-l13":[{id:`p18-l13-q1`,type:`num`,q:`<p>Nodes started in the default launch of the example?</p>
+`,explain:`<p>Driver, controller and logger.</p>
+`,answer:3,tol:.001,unit:``},{id:`p18-l13-q2`,type:`num`,q:`<p>Rate the example controller gets (Hz)?</p>
+`,explain:`<p>Its own section overrides the wildcard.</p>
+`,answer:200,tol:.001,unit:``},{id:`p18-l13-q3`,type:`num`,q:`<p>Rate the example driver gets (Hz)?</p>
+`,explain:`<p>Only the wildcard sets it.</p>
+`,answer:50,tol:.001,unit:``},{id:`p18-l13-q4`,type:`num`,q:`<p>Nodes started with with_logger:=false?</p>
+`,explain:`<p>The tools group is skipped.</p>
+`,answer:2,tol:.001,unit:``},{id:`p18-l13-q5`,type:`mc`,q:`<p>In a ROS 2 parameter file, /** matches…</p>
+`,explain:`<p>Any number of name tokens.</p>
+`,options:[`nothing; it is a comment`,`only the first node`,`every node in every namespace`,`only nodes in the root namespace`],answer:2},{id:`p18-l13-q6`,type:`mc`,q:`<p>A remapping cmd_vel to base/cmd_vel in namespace /robot1 renames the topic to…</p>
+`,explain:`<p>Relative names resolve in the node’s namespace.</p>
+`,options:[`/robot1/base/cmd_vel`,`/cmd_vel`,`/base/cmd_vel`,`/robot1/cmd_vel/base`],answer:0}],"p18-l14":[{id:`p18-l14-q1`,type:`num`,q:`<p>Update cycles in 3 s at update_rate 100?</p>
+`,explain:`<p>One read-update-write per cycle.</p>
+`,answer:300,tol:.001,unit:``},{id:`p18-l14-q2`,type:`num`,q:`<p>Controllers that can claim joint2/position at the same time?</p>
+`,explain:`<p>Command interfaces are exclusive.</p>
+`,answer:1,tol:.001,unit:``},{id:`p18-l14-q3`,type:`num`,q:`<p>Hermite blending weight h01 at the midpoint of a segment?</p>
+`,explain:`<p>-2s³ + 3s².</p>
+`,answer:.5,tol:.001,unit:``},{id:`p18-l14-q4`,type:`num`,q:`<p>Lifecycle transitions from unconfigured to active?</p>
+`,explain:`<p>Configure, then activate.</p>
+`,answer:2,tol:.001,unit:``},{id:`p18-l14-q5`,type:`mc`,q:`<p>A controller writes commands in update() only when it is…</p>
+`,explain:`<p>Inactive controllers are loaded but idle.</p>
+`,options:[`unconfigured`,`active`,`finalized`,`inactive`],answer:1},{id:`p18-l14-q6`,type:`mc`,q:`<p>mock_components/GenericSystem…</p>
+`,explain:`<p>For testing the stack without hardware.</p>
+`,options:[`talks to a real motor driver`,`simulates full rigid-body physics`,`replaces the controller manager`,`mirrors command interfaces to state interfaces`],answer:3}],"p18-l15":[{id:`p18-l15-q1`,type:`num`,q:`<p>Natural frequency of a 1 kg mass on a 1e6 N/m contact spring (rad/s)?</p>
+`,explain:`<p>sqrt(k/m).</p>
+`,answer:1e3,tol:.002,unit:``},{id:`p18-l15-q2`,type:`num`,q:`<p>Largest stable step for that contact with the rule omega dt &lt; 2 (ms)?</p>
+`,explain:`<p>2/omega seconds.</p>
+`,answer:2,tol:.002,unit:``},{id:`p18-l15-q3`,type:`num`,q:`<p>Real-time factor if 30 s of simulation take 12 s of wall time?</p>
+`,explain:`<p>Simulated over wall time.</p>
+`,answer:2.5,tol:.002,unit:``},{id:`p18-l15-q4`,type:`num`,q:`<p>Impact speed of a ball dropped from 0.5 m (m/s)?</p>
+`,explain:`<p>sqrt(2 g h).</p>
+`,answer:3.13,tol:.005,unit:``},{id:`p18-l15-q5`,type:`mc`,q:`<p>Semi-implicit Euler updates…</p>
+`,explain:`<p>That keeps energy bounded.</p>
+`,options:[`both from the old state`,`only the position`,`position first, then velocity`,`velocity first, then position with the new velocity`],answer:3},{id:`p18-l15-q6`,type:`mc`,q:`<p>A contact spring that is too stiff for the time step makes objects…</p>
+`,explain:`<p>The integrator injects energy.</p>
+`,options:[`stop moving entirely`,`sink slowly through the floor`,`simulate faster`,`jitter or bounce higher than they fell`],answer:3}],"p18-l16":[{id:`p18-l16-q1`,type:`num`,q:`<p>Bytes per second a 115200 baud UART carries with 10 bits per byte?</p>
+`,explain:`<p>Start and stop bits included.</p>
+`,answer:11520,tol:.001,unit:``},{id:`p18-l16-q2`,type:`num`,q:`<p>Link load for 200 Hz frames of 30 bytes at 115200 baud (percent)?</p>
+`,explain:`<p>Bits sent over bits available.</p>
+`,answer:52.08,tol:.002,unit:``},{id:`p18-l16-q3`,type:`num`,q:`<p>Expected published rate at 100 Hz with 5 % of frames corrupted?</p>
+`,explain:`<p>Corrupted frames are dropped.</p>
+`,answer:95,tol:.002,unit:`Hz`},{id:`p18-l16-q4`,type:`num`,q:`<p>Escaped value sent for a data byte 0x7E (decimal)?</p>
+`,explain:`<p>0x5E after the escape byte 0x7D.</p>
+`,answer:94,tol:.001,unit:``},{id:`p18-l16-q5`,type:`mc`,q:`<p>The micro-ROS agent…</p>
+`,explain:`<p>The MCU speaks DDS-XRCE to the agent.</p>
+`,options:[`replaces the RTOS scheduler`,`creates DDS entities on behalf of the MCU client`,`compiles the firmware`,`runs on the microcontroller`],answer:1},{id:`p18-l16-q6`,type:`mc`,q:`<p>A frame whose CRC does not match is…</p>
+`,explain:`<p>A CRC detects errors; it does not correct them.</p>
+`,options:[`dropped, or retransmitted on a reliable stream`,`corrected automatically by the CRC`,`published with a warning`,`sent back to the MCU unchanged`],answer:0}],"p18-l17":[{id:`p18-l17-q1`,type:`num`,q:`<p>Messages in the example bag?</p>
+`,explain:`<p>500 IMU plus 100 odometry.</p>
+`,answer:600,tol:.001,unit:``},{id:`p18-l17-q2`,type:`num`,q:`<p>Wall time to replay a 60 s bag at rate 2 (seconds)?</p>
+`,explain:`<p>Twice as fast.</p>
+`,answer:30,tol:.001,unit:``},{id:`p18-l17-q3`,type:`num`,q:`<p>Messages in 10 s of a 100 Hz IMU and a 20 Hz odometry topic?</p>
+`,explain:`<p>Rate times duration per topic.</p>
+`,answer:1200,tol:.001,unit:``},{id:`p18-l17-q4`,type:`num`,q:`<p>IMU poses after seeking to 2.5 s in the 5 s bag?</p>
+`,explain:`<p>The second half of the IMU samples.</p>
+`,answer:250,tol:.001,unit:``},{id:`p18-l17-q5`,type:`mc`,q:`<p>The default rosbag2 storage format from ROS 2 Iron on is…</p>
+`,explain:`<p>sqlite3 is still available as a plugin.</p>
+`,options:[`CSV`,`ROS 1 .bag`,`MCAP`,`sqlite3`],answer:2},{id:`p18-l17-q6`,type:`mc`,q:`<p>To make a node replay deterministically, it should take time differences from…</p>
+`,explain:`<p>Then the output depends only on the data.</p>
+`,options:[`the number of callbacks`,`the wall clock`,`message header stamps or sim time`,`the CPU cycle counter`],answer:2}]};export{e as default};
