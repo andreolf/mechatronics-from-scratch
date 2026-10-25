@@ -20,7 +20,7 @@ Best-effort streams drop bad frames; reliable XRCE streams retransmit them.
 
 ## Budget the link
 
-A UART at 115200 baud with 10 bits per byte (start, 8 data, stop) carries 11 520 bytes/s. At 100 Hz, frames of 26 bytes use 22.6 % of it, which leaves room for other topics and retransmissions.
+A UART at 115200 baud with 10 bits per byte (start, 8 data, stop) carries 11 520 bytes/s. The load is $\text{load} = f \, n_{bytes} \cdot 10 / \text{baud}$, so at 100 Hz, frames of 26 bytes use $100 \times 26 \times 10 / 115200 = 22.6\,\%$ of it, which leaves room for other topics and retransmissions.
 
 :::figure widget=microros caption="An encoder MCU publishing through a micro-ROS agent. Change the publish rate, baud rate and bit-error rate; the readout shows link load, frames rejected by CRC and the rate seen in the ROS 2 graph."
 :::end

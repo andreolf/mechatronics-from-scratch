@@ -29,7 +29,7 @@ Each node declares its parameters and reads them at start-up. Values come from, 
   ros__parameters: {kp: 2.5, rate: 200.0}
 ```
 
-Launch passes substituted strings through YAML rules, so `'false'` becomes a boolean.
+So for each key, the final value is $v_{i^*}$ from the last source that sets it, $i^* = \max\{i : \text{source } i \text{ sets the key}\}$. Launch passes substituted strings through YAML rules, so `'false'` becomes a boolean.
 
 :::figure widget=launchtree caption="The launch tree of an illustrative bringup. Change the launch arguments; each node shows its resolved name, parameters (with where each value came from) and remappings."
 :::end

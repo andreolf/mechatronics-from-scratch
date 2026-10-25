@@ -20,7 +20,7 @@ At build time, `rosidl` generates C, C++ and Python classes and the serializatio
 
 DDS sends messages in **CDR** (Common Data Representation). ROS 2 uses a 4-byte encapsulation header (`00 01 00 00` for little-endian CDR) and then the fields in order:
 
-- each primitive is **aligned** to its own size (a `float64` starts at a multiple of 8, counted from the end of the header), with zero padding,
+- each primitive is **aligned** to its own size (a `float64` starts at a multiple of 8, counted from the end of the header), with zero padding: a field of size $s$ that would start at offset $o$ is preceded by $(-o) \bmod s$ padding bytes,
 - a string is a `uint32` length including the terminating NUL, then the bytes and the NUL,
 - a sequence is a `uint32` element count, then the elements; a fixed array has no count,
 - nested messages are simply inlined.

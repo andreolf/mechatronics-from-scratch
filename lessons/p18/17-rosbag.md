@@ -6,7 +6,7 @@ summary: Recording a robot's topics and replaying them later lets you debug and 
 
 ## What a bag is
 
-`ros2 bag record /imu /odom` subscribes to topics and stores every serialized message (the CDR bytes of lesson 10) with its receive timestamp, plus each topic's name, type and QoS. `ros2 bag play` publishes them again in recorded order, at the original pace or faster or slower, and can publish `/clock` so nodes follow the bag's time.
+`ros2 bag record /imu /odom` subscribes to topics and stores every serialized message (the CDR bytes of lesson 10) with its receive timestamp, plus each topic's name, type and QoS. `ros2 bag play` publishes them again in recorded order, at the original pace or faster or slower (at rate $r$, a message recorded at $t$ is published at wall time $t_{start} + (t - t_0)/r$), and can publish `/clock` so nodes follow the bag's time.
 
 rosbag2 has pluggable storage. Early releases used **sqlite3**: a `topics` table and a `messages` table of (topic id, timestamp, data). From Iron on, the default is **MCAP**, a single-file append-only container that is faster to write and readable by tools such as Foxglove. The ideas are the same, and this lesson uses the sqlite3 layout because Python ships with sqlite.
 
