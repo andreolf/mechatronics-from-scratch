@@ -112,20 +112,40 @@
     <div id="view-page" class="view" hidden></div>
   </main>
 
-  <footer class="site-foot" id="colophon" aria-labelledby="foot-title">
+  <footer class="foot" id="colophon" aria-labelledby="foot-h">
     <div class="wrap">
-      <h2 id="foot-title" class="sr">About this course</h2>
-      <div class="titleblock">
-        <div class="tb-cell tb-main">
-          <p class="tb-key">Project</p>
-          <p class="tb-title">Mechatronics from Scratch</p>
-          <p class="tb-desc">A free course with no paywall, no signup and no tracking. Your progress stays in this browser.</p>
-        </div>
-        <div class="tb-cell"><p class="tb-key">Licence</p><p><a href="https://github.com/andreolf/mechatronics-from-scratch/blob/main/LICENSE">MIT</a>: fork it, teach it, translate it</p></div>
-        <div class="tb-cell"><p class="tb-key">Source</p><p><a href="https://github.com/andreolf/mechatronics-from-scratch">GitHub repository</a></p></div>
-        <div class="tb-cell"><p class="tb-key">Curated by</p><p>Francesco Andreoli<br /><a href="https://x.com/francescoswiss">@francescoswiss</a> · <a href="https://www.youtube.com/@swissintech">YouTube</a></p></div>
-        <div class="tb-cell"><p class="tb-key">Revision</p><p id="build-info" class="tnum">v0.2</p></div>
-        <div class="tb-cell tb-wide"><p class="tb-key">Notes</p><p>Course mappings marked ETH name real ETH Zurich course titles for orientation only. This project is independent and not affiliated with or endorsed by ETH Zurich or any company. Certificates are free certificates of completion, not accredited qualifications. Simulations are educational approximations.</p></div>
+      <h2 class="sr" id="foot-h">About this site</h2>
+      <div class="foot-top">
+        <a class="foot-brand" href="#/" aria-label="Mechatronics from Scratch, home"><svg class="brand-mark" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><circle cx="9" cy="22" r="3" fill="currentColor"/><path d="M9 22 L15 11 L24 14" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15" cy="11" r="1.8" fill="#000" stroke="currentColor" stroke-width="1.6"/></svg><span translate="no">Mechatronics from Scratch</span></a>
+      </div>
+      <div class="foot-grid">
+        <nav class="foot-col" aria-labelledby="foot-course">
+          <h3 class="foot-h" id="foot-course">This course</h3>
+          <ul class="foot-list">
+            <li><a href="#/course">All phases and lessons</a></li>
+            <li><a href="#/labs">Labs</a></li>
+            <li><a href="#/progress">Your progress</a></li>
+            <li><a href="#/verify">Verify a certificate</a></li>
+            <li><a href="https://github.com/andreolf/mechatronics-from-scratch">Source on GitHub</a></li>
+          </ul>
+        </nav>
+        <nav class="foot-col" aria-labelledby="foot-more" data-testid="sibling-courses">
+          <h3 class="foot-h" id="foot-more">More from Scratch</h3>
+          <ul class="foot-list foot-list-desc">
+            <li><a href="https://andreolf.github.io/security-from-scratch/" target="_blank" rel="noopener"><span class="foot-link-t" translate="no">Security from Scratch</span><span class="foot-link-d">Phone scams, fake messages and passwords, in calm, big-text lessons</span></a></li>
+            <li><a href="https://andreolf.github.io/ai-safety-from-scratch/" target="_blank" rel="noopener"><span class="foot-link-t" translate="no">AI Safety from Scratch</span><span class="foot-link-d">How AI works, how it fails, and how to stay in control</span></a></li>
+            <li><a href="https://andreolf.github.io/mechanical-engineering-from-scratch/" target="_blank" rel="noopener"><span class="foot-link-t" translate="no">Mechanical Engineering from Scratch</span><span class="foot-link-d">Mechanical engineering, derived by hand and coded from scratch</span></a></li>
+          </ul>
+        </nav>
+        <section class="foot-col foot-about" aria-labelledby="foot-about">
+          <h3 class="foot-h" id="foot-about">About</h3>
+          <p>A free course with no paywall, no signup and no tracking. MIT licence: fork it, teach it, translate it. Curated by Francesco Andreoli.</p>
+          <p>Course mappings marked ETH name real ETH Zurich course titles for orientation only. This project is independent and not affiliated with or endorsed by ETH Zurich or any company. Certificates are free certificates of completion, not accredited qualifications. Simulations are educational approximations.</p>
+        </section>
+      </div>
+      <div class="foot-bottom">
+        <p>Your progress stays in this browser.</p>
+        <p id="build-info" class="tnum">v0.2</p>
       </div>
     </div>
   </footer>

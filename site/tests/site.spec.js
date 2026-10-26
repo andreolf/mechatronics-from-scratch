@@ -21,6 +21,16 @@ test('home: hero, honest stats, tutor line and footer', async ({ page }) => {
   await expect(foot).toContainText('no paywall, no signup');
   await expect(foot).toContainText('MIT');
   await expect(foot).toContainText('not affiliated with or endorsed by ETH Zurich');
+  await expect(foot.locator('.foot-h')).toHaveText(['This course', 'More from Scratch', 'About']);
+  const sib = foot.getByTestId('sibling-courses');
+  for (const [name, url] of [['Security from Scratch', 'https://andreolf.github.io/security-from-scratch/'], ['AI Safety from Scratch', 'https://andreolf.github.io/ai-safety-from-scratch/'], ['Mechanical Engineering from Scratch', 'https://andreolf.github.io/mechanical-engineering-from-scratch/']])
+    await expect(sib.getByRole('link', { name })).toHaveAttribute('href', url);
+  await expect(sib.getByRole('link', { name: /Mechatronics from Scratch/ })).toHaveCount(0);
+  await foot.scrollIntoViewIfNeeded();
+  const links = await foot.locator('.foot-list a').evaluateAll((as) => as.map((a) => ({ h: a.getBoundingClientRect().height, d: getComputedStyle(a).textDecorationLine, t: getComputedStyle(a.querySelector('.foot-link-t') || a).textDecorationLine })));
+  expect(links.length).toBe(8);
+  for (const l of links) { expect(l.h).toBeGreaterThanOrEqual(44); expect(l.d).toBe('none'); expect(l.t).toBe('none'); }
+  await expect(page.locator('main')).not.toContainText(/Sister course|Sibling courses/);
   for (const id of ['loop', 'labs', 'course', 'tutor', 'colophon']) { await page.locator('#' + id).scrollIntoViewIfNeeded(); await page.waitForTimeout(200); }
 });
 

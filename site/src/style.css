@@ -203,21 +203,43 @@ mark { background: #c6ff1a40; color: inherit; border-radius: 3px; padding: 0 1px
 .install-line { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border: 1px solid var(--rule-2); border-radius: var(--r-m); background: var(--graphite); }
 .install-line code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 14px; color: var(--bone); padding: 8px 0; }
 
-/* footer: drawing title block */
-.site-foot { border-top: 1px solid var(--rule); padding: 48px 0 calc(32px + env(safe-area-inset-bottom)); background: var(--ink); }
-.titleblock { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule-2); border-radius: var(--r-m); overflow: hidden; gap: 1px; background: var(--rule-2); }
-.tb-cell { background: var(--ink); padding: 14px 16px; min-width: 0; }
-.tb-cell p { margin: 0; font-size: var(--t-0); color: var(--bone); overflow-wrap: anywhere; }
-.tb-cell .tb-key { color: var(--dim); font-size: 11px; margin-bottom: 4px; font-weight: 500; }
-.tb-main, .tb-wide { grid-column: 1 / -1; }
-.tb-title { font: 800 var(--t-4)/1.05 var(--sans) !important; letter-spacing: -0.03em; margin: 2px 0 8px !important; }
-.tb-desc { color: var(--fog) !important; font-size: var(--t-1) !important; max-width: 48ch; }
-.tb-wide p:last-child { color: var(--fog); }
-@media (min-width: 900px) {
-  .titleblock { grid-template-columns: 2fr 1fr 1fr 1.3fr 0.8fr; }
-  .tb-main { grid-column: 1; grid-row: span 2; padding: 24px; }
-  .tb-wide { grid-column: 2 / -1; }
+/* footer: shared "from Scratch" footer (spec v1). Signal token names mapped to this site's tokens, scoped to the footer. */
+.foot {
+  --surface: var(--graphite-2); --surface-2: var(--graphite); --line: var(--rule); --fg: var(--bone); --muted-strong: var(--fog);
+  --accent: var(--lime); --on-accent: var(--lime-ink); --accent-ink: var(--lime); --font-body: var(--sans);
+  --weight-black: 800; --weight-extrabold: 700; --weight-bold: 600; --weight-regular: 400; --stretch-expanded: 100%;
+  --text-sm: var(--t-1); --text-body: var(--t-2); --text-lg: var(--t-3); --text-xl: var(--t-4); --leading-snug: 1.25; --leading-body: 1.55;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --radius: var(--r-m); --tap-min: 44px; --tap: 48px;
+  color: var(--fg);
 }
+/* Footer: its own band. Top row = brand + emergency callout; grid of three columns; muted bottom row. */
+.foot { background: var(--surface-2); border-top: 1px solid var(--line); margin-top: 0; padding: var(--space-7) 0 calc(var(--space-8) + 64px); font-size: 1.125rem; line-height: var(--leading-body); }
+.foot a { text-decoration: none; }
+.foot-brand:hover span:last-child, .foot-brand:focus-visible span:last-child { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.foot a:hover .foot-link-t, .foot a:focus-visible .foot-link-t, .foot-list:not(.foot-list-desc) a:hover, .foot-list:not(.foot-list-desc) a:focus-visible { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: var(--accent-ink); }
+.foot-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-5); padding-bottom: var(--space-6); border-bottom: 1px solid var(--line); }
+.foot-brand { display: inline-flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); font-weight: var(--weight-black); font-stretch: var(--stretch-expanded); font-size: clamp(var(--text-body), 4.6vw, var(--text-lg)); line-height: 1; white-space: nowrap; }
+.foot-sos { margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); padding: var(--space-4) var(--space-5); background: var(--surface); border: 2px solid var(--fg); border-radius: var(--radius); }
+.foot-sos-label { font-size: var(--text-sm); font-weight: var(--weight-extrabold); line-height: var(--leading-snug); }
+.foot-sos-nums { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: var(--space-6); }
+.foot-sos-nums > span { display: flex; flex-direction: column; gap: var(--space-1); white-space: nowrap; color: var(--muted-strong); font-size: var(--text-sm); }
+.foot-sos-nums b { color: var(--fg); font-weight: var(--weight-black); font-stretch: var(--stretch-expanded); font-size: var(--text-xl); line-height: 1; font-variant-numeric: tabular-nums; }
+.foot-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.6fr); gap: var(--space-6) var(--space-7); padding: var(--space-6) 0; }
+.foot-h { margin: 0 0 var(--space-3); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-extrabold); text-transform: uppercase; letter-spacing: .06em; color: var(--muted-strong); line-height: var(--leading-snug); }
+.foot-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); }
+.foot-list a { display: flex; align-items: center; min-height: var(--tap-min); font-weight: var(--weight-bold); line-height: var(--leading-snug); }
+.foot-list-desc { gap: var(--space-3); }
+.foot-list-desc a { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; padding: var(--space-1) 0; }
+.foot-link-d { font-weight: var(--weight-regular); font-size: var(--text-sm); color: var(--muted-strong); }
+.foot-about p { margin: 0 0 var(--space-3); max-width: 62ch; font-size: var(--text-body); }
+.foot-about p:last-child { margin-bottom: 0; }
+.foot-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2) var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--line); color: var(--muted-strong); font-size: var(--text-sm); }
+.foot-bottom p { margin: 0; }
+@media (max-width: 960px) { .foot-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); } .foot-about { grid-column: 1 / -1; } }
+@media (max-width: 600px) { .foot { padding-top: var(--space-6); } .foot-sos-nums { align-self: stretch; justify-content: space-between; gap: var(--space-4); } .foot-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-6); } .foot-sos { width: 100%; } }
+.foot a { color: var(--fg); }
+.foot-brand .brand-mark { flex: none; color: var(--accent); }
 
 /* ---------- lesson pages ---------- */
 .page { max-width: 1200px; margin: 0 auto; padding: 0 var(--pad-r) 64px var(--pad); }
