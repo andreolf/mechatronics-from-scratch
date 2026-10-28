@@ -74,9 +74,9 @@ test('lesson progress and XP persist across reloads; prev/next navigation works'
   await expect(page).toHaveURL(/p01-l03$/);
 });
 
-test('the whole course is written: 352 lessons, no outlines, every phase test open', async ({ page }) => {
-  expect(fullIds().length).toBe(352);
-  for (const id of ['p20-l01', 'p20-l16']) {
+test('the whole course is written: 363 lessons, no outlines, every phase test open', async ({ page }) => {
+  expect(fullIds().length).toBe(363);
+  for (const id of ['p20-l01', 'p20-l16', 'p21-l01', 'p21-l11']) {
     await page.goto('./#/learn/' + id);
     await expect(page.getByTestId('lesson-body')).toBeVisible();
     await expect(page.locator('main')).not.toContainText(/coming soon|outline only/i);
@@ -86,6 +86,45 @@ test('the whole course is written: 352 lessons, no outlines, every phase test op
   await expect(page.locator('main')).not.toContainText(/Outline|coming soon/);
   await page.goto('./#/test/p20');
   await expect(page.getByTestId('phase-test').getByTestId('question')).toHaveCount(15);
+  await page.goto('./#/test/p21');
+  await expect(page.getByTestId('phase-test').getByTestId('question')).toHaveCount(15);
+});
+
+test('cable-robot track: inline simulator, its own certificate, and it does not gate the course certificate', async ({ page }) => {
+  await page.goto('./#/learn/p21-l03');
+  await expect(page.getByTestId('lesson-title')).toHaveText(/^Cables only pull/);
+  const lab = page.locator('.lab-cable.lab-embedded').first();
+  await lab.scrollIntoViewIfNeeded();
+  await expect(lab).toHaveAttribute('data-state', /.+/);
+  await expect.poll(async () => (await lab.getAttribute('data-tensions'))?.split(',').length).toBe(4);
+  await expect(page.locator('main')).toContainText('Neufangled');
+  await expect(page.locator('main')).not.toContainText(/\bXP\b/);
+  await page.goto('./#/phase/p21');
+  await expect(page.locator('main')).toContainText('optional build-along track');
+  const bank = new Map(quizBank('p21').map((q) => [q.id, q]));
+  await page.goto('./#/test/p21');
+  const qs = page.getByTestId('phase-test').getByTestId('question');
+  await expect(qs).toHaveCount(15);
+  for (let i = 0; i < 15; i++) { const el = qs.nth(i); await answer(bank.get(await el.getAttribute('data-qid')), el, true); }
+  await page.getByTestId('submit-test').click();
+  await expect(page.getByTestId('test-result')).toHaveAttribute('data-pass', 'true');
+  await page.getByTestId('to-cert').click();
+  await expect(page.getByTestId('cert-canvas')).toHaveAttribute('data-ready', '1');
+  await page.getByTestId('cert-name').fill('Ada Lovelace');
+  await expect.poll(() => page.evaluate(() => window.__mfs.store.get().certs.p21?.name)).toBe('Ada Lovelace');
+  await expect(page.getByTestId('cert-canvas')).toHaveAttribute('data-ready', '1');
+  const code = (await page.getByTestId('cert-code').textContent()).trim();
+  const today = await page.evaluate(() => window.__mfs.store.today());
+  await page.goto('./#/verify');
+  await page.getByTestId('v-name').fill('Ada Lovelace');
+  await page.getByTestId('v-key').selectOption('p21');
+  await page.getByTestId('v-date').fill(today);
+  await page.getByTestId('v-code').fill(code);
+  await page.getByTestId('v-submit').click();
+  await expect(page.getByTestId('v-out')).toHaveAttribute('data-ok', 'true');
+  // the track is optional: passing it alone does not unlock the full-course certificate
+  await page.goto('./#/certificate/course');
+  await expect(page.getByTestId('cert-locked')).toContainText('0 passed');
 });
 
 test('phase test: failing, then passing, unlocks a verifiable certificate', async ({ page }) => {
@@ -148,7 +187,7 @@ test('phase test: failing, then passing, unlocks a verifiable certificate', asyn
   await expect(page.getByTestId('dashboard')).toBeVisible();
 });
 
-const ROUTES = ['#/', '#/course', '#/labs', '#/learn/p01-l01', '#/learn/p01-l12', '#/learn/p02-l13', '#/learn/p02-l11', '#/learn/p20-l01', '#/phase/p01', '#/phase/p02', '#/test/p02', '#/progress', '#/certificate/p01', '#/certificate/course', '#/verify', '#/nope'];
+const ROUTES = ['#/', '#/course', '#/labs', '#/learn/p01-l01', '#/learn/p01-l12', '#/learn/p02-l13', '#/learn/p02-l11', '#/learn/p20-l01', '#/learn/p21-l07', '#/phase/p21', '#/phase/p01', '#/phase/p02', '#/test/p02', '#/progress', '#/certificate/p01', '#/certificate/course', '#/verify', '#/nope'];
 test('every key route: no horizontal overflow, no console errors, touch targets ≥44px', async ({ page, isMobile }) => {
   for (const r of ROUTES) {
     await page.goto('./' + r); await page.waitForTimeout(500);
@@ -179,7 +218,7 @@ test('every full lesson renders its maths, code, quiz and widgets without errors
   }
 });
 
-test('full course: pass all 20 phase tests in the UI, earn the course certificate and verify it', async ({ page }, info) => {
+test('full course: pass all 20 core phase tests in the UI, earn the course certificate and verify it', async ({ page }, info) => {
   test.skip(!['desktop', 'pixel-7'].includes(info.project.name), 'long end-to-end run: desktop and one phone');
   test.setTimeout(600_000);
   await page.goto('./#/certificate/course');

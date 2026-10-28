@@ -12,8 +12,9 @@ test.afterEach(async ({ page }) => {
 test('home: hero, honest stats, tutor line and footer', async ({ page }) => {
   await expect(page).toHaveTitle(/Mechatronics from Scratch/);
   await expect(page.locator('h1:visible').first()).toContainText('Mechatronics');
-  await expect(page.locator('#stats')).toContainText('352');
+  await expect(page.locator('#stats')).toContainText('363');
   await expect(page.locator('#stats')).toContainText('20');
+  await expect(page.locator('#stats')).toContainText('+ 1 track');
   await expect(page.getByTestId('full-count')).toHaveText(String(fullIds().length));
   await expect(page.getByTestId('tutor-cmd')).toContainText('git clone https://github.com/andreolf/mechatronics-from-scratch');
   await expect(page.locator('#tutor')).not.toContainText(/coming soon|placeholder/i);
@@ -122,9 +123,66 @@ test('lab 04 motor: follows setpoint, loses speed under load without integral ac
   await expect(page.getByTestId('lab-motor-status')).toHaveAttribute('data-state', /OFF SETPOINT|SATURATED/);
 });
 
-test('course map: 20 phases, expand, search, open a Phase 20 lesson', async ({ page }) => {
+const setRange = (page, id, v) => page.getByTestId(id).evaluate((e, v) => { e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); }, v);
+const nums = async (lab, attr) => (await lab.getAttribute(attr)).split(',').map(Number);
+test('lab 05 cable robot: four positive tensions, swing damping works, relaxes at the limit and re-arms', async ({ page, isMobile }) => {
+  const lab = await gotoLab(page, 'cable');
+  await expect.poll(async () => (await nums(lab, 'data-tensions')).length).toBe(4);
+  // at rest the lines hold the weight with no slack line
+  await page.waitForTimeout(1500);
+  expect((await nums(lab, 'data-tensions')).every((t) => t > 0)).toBe(true);
+  await expect(lab).toHaveAttribute('data-relaxed', 'false');
+  // IK answers a slider: moving towards anchor 3 (+x, +y) shortens line 3
+  const before = await nums(lab, 'data-lengths');
+  await setRange(page, 'cable-x', 2);
+  await setRange(page, 'cable-y', 2);
+  await expect.poll(async () => (await nums(lab, 'data-lengths'))[2], { timeout: 20_000 }).toBeLessThan(before[2] - 1);
+  // a kicked swing dies out with damping on and keeps going with it off
+  await page.getByTestId('cable-kick').click();
+  await expect.poll(async () => +(await lab.getAttribute('data-swing')), { timeout: 5_000 }).toBeGreaterThan(4);
+  await expect.poll(async () => +(await lab.getAttribute('data-swing')), { timeout: 15_000 }).toBeLessThan(1.5);
+  await page.getByTestId('cable-damp').click();
+  await page.waitForTimeout(3000);
+  await page.getByTestId('cable-kick').click();
+  await page.waitForTimeout(4000);
+  // the angle passes through small values twice a period, so look for a peak over a couple of seconds
+  await expect.poll(async () => +(await lab.getAttribute('data-swing')), { timeout: 4_000, intervals: [100] }).toBeGreaterThan(3);
+  await page.getByTestId('cable-damp').click();
+  // pushing the gripper past the 28 N limit relaxes every line, and it stays relaxed (latched)
+  await setRange(page, 'cable-push', 35);
+  await expect(lab).toHaveAttribute('data-relaxed', 'true', { timeout: 10_000 });
+  await expect(page.getByTestId('lab-cable-status')).toHaveAttribute('data-state', /RELAXED/);
+  await setRange(page, 'cable-push', 0);
+  await page.waitForTimeout(800);
+  await expect(lab).toHaveAttribute('data-relaxed', 'true');
+  // re-arm once the gripper is down: catching a load that is still falling and swinging can trip the limit again, as it should
+  await expect(page.getByTestId('lab-cable-status')).toHaveAttribute('data-state', /ON THE FLOOR/, { timeout: 20_000 });
+  await page.getByTestId('cable-rearm').click();
+  await expect(lab).toHaveAttribute('data-relaxed', 'false');
+  // with relax off, a 5 N limit is exceeded and the bars say so
+  await page.getByTestId('cable-relax').click();
+  await setRange(page, 'cable-limit', 5);
+  await expect(lab.locator('.cable-bar[data-state=over]').first()).toBeVisible({ timeout: 10_000 });
+  if (isMobile) {
+    const small = await lab.evaluate((root) => [...root.querySelectorAll('button, select, a')].filter((e) => { const b = e.getBoundingClientRect(); return b.width && (b.height < 43.5 || b.width < 43.5); }).map((e) => e.outerHTML.slice(0, 80)));
+    expect(small).toEqual([]);
+  }
+});
+
+test('lab 05 under reduced motion: paused, but still answers its controls', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./');
+  const lab = await gotoLab(page, 'cable');
+  await expect(page.getByTestId('lab-cable-pause')).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(async () => (await lab.getAttribute('data-lengths'))?.split(',').length).toBe(4);
+  const before = await lab.getAttribute('data-lengths');
+  await setRange(page, 'cable-x', -2);
+  await expect.poll(() => lab.getAttribute('data-lengths')).not.toBe(before);
+});
+
+test('course map: 20 phases plus the cable-robot track, expand, search, open a Phase 20 lesson', async ({ page }) => {
   await page.locator('#course').scrollIntoViewIfNeeded();
-  await expect(page.getByTestId('phase')).toHaveCount(20);
+  await expect(page.getByTestId('phase')).toHaveCount(21);
   const p20 = page.locator('[data-phase="p20"]');
   await p20.getByTestId('phase-btn').click();
   await expect(p20).toHaveClass(/open/);
@@ -140,7 +198,7 @@ test('course map: 20 phases, expand, search, open a Phase 20 lesson', async ({ p
   await page.getByTestId('search').fill('zzqxv');
   await expect(page.locator('#search-status')).toContainText('0 lessons');
   await page.getByTestId('search').fill('');
-  await expect(page.getByTestId('phase')).toHaveCount(20);
+  await expect(page.getByTestId('phase')).toHaveCount(21);
   await p20.getByTestId('phase-btn').click();
   await p20.locator('#lesson-p20-l07').getByTestId('lesson-link').click();
   await expect(page).toHaveURL(/#\/learn\/p20-l07$/);
@@ -154,10 +212,10 @@ test('checkbox progress persists across reloads and resets with a second tap', a
   await p1.getByTestId('phase-btn').click();
   await p1.getByTestId('lesson-check').nth(0).check();
   await p1.getByTestId('lesson-check').nth(2).check();
-  await expect(page.locator('#progress-label')).toHaveText('2 of 352 lessons done');
+  await expect(page.locator('#progress-label')).toHaveText('2 of 363 lessons done');
   await page.reload();
   await page.locator('#course').scrollIntoViewIfNeeded();
-  await expect(page.locator('#progress-label')).toHaveText('2 of 352 lessons done');
+  await expect(page.locator('#progress-label')).toHaveText('2 of 363 lessons done');
   const p1b = page.locator('[data-phase="p01"]');
   await expect(p1b.locator('.phase-meta')).toContainText('2 of 18 done');
   await p1b.getByTestId('phase-btn').click();
@@ -165,7 +223,7 @@ test('checkbox progress persists across reloads and resets with a second tap', a
   await expect(p1b.getByTestId('lesson-check').nth(2)).toBeChecked();
   await page.getByTestId('reset-progress').click();
   await page.getByTestId('reset-progress').click();
-  await expect(page.locator('#progress-label')).toHaveText('0 of 352 lessons done');
+  await expect(page.locator('#progress-label')).toHaveText('0 of 363 lessons done');
 });
 
 test('graceful WebGL fallback still runs the simulations', async ({ page }) => {

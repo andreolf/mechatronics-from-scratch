@@ -1,12 +1,12 @@
 # Mechatronics from Scratch
 
-**Derive it. Code it. Break it.** A free, open-source (MIT) mechatronics curriculum: 20 phases, 352 lessons, from linear algebra to a self-balancing robot, a quadcopter and a robot arm. Every idea is derived by hand and coded from scratch (Python/NumPy, or bare-metal C for embedded) before you pick up the pro tool it maps to.
+**Derive it. Code it. Break it.** A free, open-source (MIT) mechatronics curriculum: 20 phases and 352 lessons, from linear algebra to a self-balancing robot, a quadcopter and a robot arm, plus an optional 11-lesson build-along track on room-scale cable robots (363 lessons in all). Every idea is derived by hand and coded from scratch (Python/NumPy, or bare-metal C for embedded) before you pick up the pro tool it maps to.
 
 Curated by Francesco Andreoli (ETH Zurich mechanical-engineering alumnus · `@francescoswiss` · YouTube `@swissintech`).
 
 > Live site: https://andreolf.github.io/mechatronics-from-scratch/
 
-> Status: v0.2.0. **All 352 lessons are complete** (Phase 01: all 18, Phase 02: all 16, Phase 03: all 14, Phase 04: all 12, Phase 05: all 23, Phase 06: all 16, Phase 07: all 18, Phase 08: all 16, Phase 09: all 20, Phase 10: all 22, Phase 11: all 14, Phase 12: all 18, Phase 13: all 20, Phase 14: all 18, Phase 15: all 18, Phase 16: all 14, Phase 17: all 20, Phase 18: all 17, Phase 19: all 22, Phase 20: all 16). Every phase has a phase test and a phase certificate, and the full-course certificate can be earned by passing all 20.
+> Status: v0.2.0. **All 363 lessons are complete** (Phase 01: all 18, Phase 02: all 16, Phase 03: all 14, Phase 04: all 12, Phase 05: all 23, Phase 06: all 16, Phase 07: all 18, Phase 08: all 16, Phase 09: all 20, Phase 10: all 22, Phase 11: all 14, Phase 12: all 18, Phase 13: all 20, Phase 14: all 18, Phase 15: all 18, Phase 16: all 14, Phase 17: all 20, Phase 18: all 17, Phase 19: all 22, Phase 20: all 16, Phase 21 track: all 11). Every phase has a phase test and a phase certificate, and the full-course certificate can be earned by passing all 20. Phase 21, the optional cable-robot build-along track (11 lessons, after Neufangled's open-source [Stringman](https://neufangled.com/)), has its own phase test and certificate and is not needed for the full-course certificate.
 
 ## Full lessons
 
@@ -27,9 +27,9 @@ Lessons are Markdown files in `lessons/pNN/*.md` with a few fenced blocks:
 ## Progress, phase tests and certificates
 
 - Everything is stored in your browser (`localStorage`, key `mfs-v2`). No accounts, no backend, no analytics. Export and import your progress as JSON from `#/progress`.
-- XP: 50 per completed lesson, 10 per quiz question right first time, 250 per passed phase test. Streaks count consecutive days with activity.
-- **Phase tests** (`#/test/pNN`) draw 15 questions from the phase's quiz bank. The pass mark is 80 %. Each retake draws a new set. Every phase has one (Phases 01 to 20).
-- **Certificates** (`#/certificate/pNN`, and `#/certificate/course` after all 20 phase tests) are drawn in the browser and download as PNG or PDF. Each carries a verification code: the first 80 bits of SHA-256 over the name, credential, phases and date, in Crockford base32. Anyone can recompute it at `#/verify`. It proves the certificate wasn't edited after it was made, nothing more: the code is computed client-side, so anyone could generate one.
+- Points: 50 per completed lesson, 10 per quiz question right first time, 250 per passed phase test. Streaks count consecutive days with activity.
+- **Phase tests** (`#/test/pNN`) draw 15 questions from the phase's quiz bank. The pass mark is 80 %. Each retake draws a new set. Every phase has one (Phases 01 to 21).
+- **Certificates** (`#/certificate/pNN`, and `#/certificate/course` after the 20 core phase tests; the Phase 21 track does not count towards it, so older course certificates still verify) are drawn in the browser and download as PNG or PDF. Each carries a verification code: the first 80 bits of SHA-256 over the name, credential, phases and date, in Crockford base32. Anyone can recompute it at `#/verify`. It proves the certificate wasn't edited after it was made, nothing more: the code is computed client-side, so anyone could generate one.
 - **These are free certificates of completion. They are not accredited, and this project is not affiliated with or endorsed by ETH Zurich.**
 
 ## Routes
@@ -38,14 +38,14 @@ Lessons are Markdown files in `lessons/pNN/*.md` with a few fenced blocks:
 
 ## What every lesson contains
 
-Each of the 352 lessons in `curriculum/curriculum.json` has:
+Each of the 363 lessons in `curriculum/curriculum.json` has:
 
 | field | meaning |
 |---|---|
 | `id`, `title`, `goal` | e.g. `p13-l07` · PID control · one-line goal |
 | `math` | what you derive by hand |
 | `code` | `{lang, task}`: the from-scratch exercise (Python/NumPy or C) |
-| `lab` / `live_lab` | the interactive visual idea; `live_lab` links to one of the four labs running on the site |
+| `lab` / `live_lab` | the interactive visual idea; `live_lab` links to one of the five labs running on the site |
 | `test` | the test that proves your implementation works |
 | `tool` | the open-source / professional tool it maps to (ngspice, KiCad, python-control, ROS 2, MuJoCo, Gazebo, PlatformIO…) |
 | `course` | `{title, eth}`: `eth: true` only where the title is a real ETH Zurich course name we are confident about; otherwise a generic topic |
@@ -75,7 +75,8 @@ Each of the 352 lessons in `curriculum/curriculum.json` has:
 | 18 | [Real-Time Software & ROS 2](curriculum/18-realtime-ros2.md) | 17 | Real-time systems (generic) |
 | 19 | [Power Electronics, Batteries & Safety](curriculum/19-power-safety.md) | 22 | Power Electronics (ETH) |
 | 20 | [Capstones](curriculum/20-capstones.md) | 16 | Project work (generic) |
-| | **Total** | **352** | |
+| 21 | [Build-along track: Cable Robots, after Stringman (optional)](curriculum/21-cable-robot-build.md) | 11 | Cable-driven parallel robots (generic) |
+| | **Total** | **363** | |
 
 ## Repository layout
 
@@ -91,7 +92,7 @@ site/                  Vite + vanilla JS + three.js (bundled from npm, no CDN at
   src/widgets/         touch-friendly interactive figures used inside lessons
   src/cert.js          certificate drawing, verification code, PNG/PDF export
   src/sim/             pure-JS physics + control models used by the labs (no rendering code)
-  src/labs/            the four "break the machine" labs (three.js scenes + controls + oscilloscope)
+  src/labs/            the five "break the machine" labs (three.js scenes + controls + oscilloscope)
   src/hero.js          hero scene: 3-DOF arm solving IK to follow the cursor
   src/phasemap.js      phase map, lesson search, localStorage progress
   tests/               Playwright e2e on a desktop + phone matrix, plus screenshot capture
@@ -122,7 +123,7 @@ SHOTS=1 npx playwright test screenshots --project=desktop --project=iphone-14 --
 BASE_URL=https://andreolf.github.io/mechatronics-from-scratch/ npx playwright test   # against the live site
 ```
 
-Playwright projects: desktop Chrome (1280), iPhone 13 and iPhone 14 (WebKit), Pixel 7 (Chromium), a 360 px Android, and iPhone 14 landscape. Every test fails on a console error or horizontal overflow. The suite covers: the hero canvas renders; each lab reacts to input, including tap-to-place in the arm lab's explicit drag mode on touch; the course map, search and checkbox progress; a lesson renders KaTeX, code, widgets and hidden solutions; code downloads; quiz grading for multiple choice, numeric tolerance and invalid input; lesson progress and XP survive a reload; prev/next; the whole course is written (352 lessons, no outlines, every phase test open); a failed then passed phase test unlocks a certificate whose PNG and PDF download and whose code verifies (and fails for a different name); passing all 20 phase tests through the UI unlocks the full-course certificate, whose PDF downloads and whose code verifies (and fails for a different credential); every key route has no overflow and touch targets of at least 44 px on phones; the `?nowebgl=1` fallback. Headless Chromium uses SwiftShader (`--enable-unsafe-swiftshader`).
+Playwright projects: desktop Chrome (1280), iPhone 13 and iPhone 14 (WebKit), Pixel 7 (Chromium), a 360 px Android, and iPhone 14 landscape. Every test fails on a console error or horizontal overflow. The suite covers: the hero canvas renders; each lab reacts to input, including tap-to-place in the arm lab's explicit drag mode on touch; the course map, search and checkbox progress; a lesson renders KaTeX, code, widgets and hidden solutions; code downloads; quiz grading for multiple choice, numeric tolerance and invalid input; lesson progress and points survive a reload; prev/next; the whole course is written (363 lessons, no outlines, every phase test open); a failed then passed phase test unlocks a certificate whose PNG and PDF download and whose code verifies (and fails for a different name); passing all 20 phase tests through the UI unlocks the full-course certificate, whose PDF downloads and whose code verifies (and fails for a different credential); every key route has no overflow and touch targets of at least 44 px on phones; the `?nowebgl=1` fallback. Headless Chromium uses SwiftShader (`--enable-unsafe-swiftshader`).
 
 ## The labs (educational approximations)
 
@@ -130,12 +131,13 @@ Playwright projects: desktop Chrome (1280), iPhone 13 and iPhone 14 (WebKit), Pi
 2. **Robot arm IK**: 2-link vertical arm, full M(q)/C/g dynamics (RK4 1 kHz), PD servos with torque limits. Analytic vs damped-least-squares IK, joint limits, gravity compensation, kill the elbow motor, drag the target.
 3. **Quadcopter attitude**: rigid body with quaternions, motor lag, simulated IMU (gyro noise/bias, accel noise + vibration), complementary filter vs gyro-only vs accel-only, cascaded position → attitude control, kill any motor, gusts.
 4. **DC motor + encoder**: electrical + mechanical ODE (RK4 20 kHz), quadrature encoder quantisation (4–4096 CPR), 1 kHz PI with anti-windup, load torque.
+5. **Cable robot (after Stringman)**: four top-corner winches, closed-form IK and live line lengths, static tension distribution in the null space (non-negative, within the limit, min-norm or minimax), lines coloured by tension (coral when slack or over), a payload-capacity slice of the workspace, a 0.5 m pole pendulum on a moving pivot with switchable swing damping (PD on pivot acceleration), and a latching 28 N relax-at-the-limit demo with re-arm. Adjustable room size.
 
 Parameters are illustrative, not validated against specific hardware.
 
 ## Known limitations
 
-- Only 4 live 3D labs exist; lessons also have 2D interactive figures. Other lessons' "lab" field is a design idea.
+- Only 5 live 3D labs exist; lessons also have 2D interactive figures. Other lessons' "lab" field is a design idea.
 - Certificate codes show integrity, not identity: there is no server, so anyone could compute one.
 - Course mappings are orientation only; this project is not affiliated with or endorsed by ETH Zurich.
 
