@@ -31,8 +31,12 @@ def run_py(src, label, cwd):
     if p.returncode != 0:
         fails.append(f"{label}: exit {p.returncode}\n{p.stderr[-1500:]}")
 
-import sys
-PAT = sys.argv[1] if len(sys.argv) > 1 else "p[0-9][0-9]"   # e.g. p03 or p03/0[1-4]*
+import os
+# --skip-hdl (or SKIP_HDL=1) skips only the Verilog blocks, e.g. where iverilog is not installed; they are listed as skipped.
+SKIP_HDL = "--skip-hdl" in sys.argv or os.environ.get("SKIP_HDL") == "1"
+args = [a for a in sys.argv[1:] if a != "--skip-hdl"]
+skipped = []
+PAT = args[0] if args else "p[0-9][0-9]"   # e.g. p03 or p03/0[1-4]*
 for md in sorted(ROOT.glob(f"lessons/{PAT}*.md" if "/" in PAT else f"lessons/{PAT}/*.md")):
     text = md.read_text()
     lid = re.search(r"^id:\s*(\S+)", text, re.M).group(1)
@@ -47,6 +51,8 @@ for md in sorted(ROOT.glob(f"lessons/{PAT}*.md" if "/" in PAT else f"lessons/{PA
                     checked["files"] = checked.get("files", 0) + 1   # cross-compiled / support file: built by a later python block
                 elif m.group(1) == "python":
                     run_py(m.group(2), f"{lid} code {attrs}", tmp); checked["code"] += 1
+                elif m.group(1) == "verilog" and SKIP_HDL:
+                    skipped.append(f"{lid} Verilog {attrs}".strip())
                 elif m.group(1) == "verilog":
                     src = pathlib.Path(tmp) / "x.v"; src.write_text(m.group(2))
                     c = subprocess.run(["iverilog", "-g2012", "-Wall", "-o", str(pathlib.Path(tmp) / "x.vvp"), str(src)], capture_output=True, text=True)
@@ -85,6 +91,8 @@ for md in sorted(ROOT.glob(f"lessons/{PAT}*.md" if "/" in PAT else f"lessons/{PA
                         if not (0 <= q["answer"] < len(q["options"])): fails.append(f"{lid} q{n}: bad mc index")
                         checked["mc"] += 1
 print("checked:", checked)
+if skipped:
+    print(f"SKIPPED {len(skipped)} Verilog block(s) (--skip-hdl; not verified):"); print("\n".join("  skipped " + x for x in skipped))
 if fails:
     print("\n".join("FAIL " + f for f in fails)); sys.exit(1)
 print("all lesson checks passed")

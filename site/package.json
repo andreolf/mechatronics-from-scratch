@@ -9,7 +9,7 @@
     "build": "python3 ../tools/build_curriculum.py && node scripts/build-lessons.mjs && vite build",
     "preview": "vite preview --port 4791 --strictPort",
     "test": "vite build && playwright test",
-    "test:sim": "node --test tests-unit/",
+    "test:sim": "node --test tests-unit/*.test.mjs",
     "test:e2e": "playwright test",
     "lessons": "node scripts/build-lessons.mjs",
     "verify:lessons": "python3 ../tools/verify_lessons.py"
