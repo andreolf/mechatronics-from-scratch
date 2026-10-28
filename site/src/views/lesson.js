@@ -21,6 +21,7 @@ export async function renderLesson(root, id) {
   if (!l) { root.innerHTML = `<div class="page"><div class="page-head"><h1>Lesson not found</h1><p>No lesson has the id “${esc(id)}”. <a href="#/course">Browse the course map</a>.</p></div></div>`; return 'Lesson not found'; }
   const p = l.phase, { prev, next } = neighbours(id);
   const data = await loadLesson(id);
+  if (location.hash.split('?')[0].replace(/\/$/, '') !== '#/learn/' + id) return null; // navigated away while loading
   store.visit(id);
   const phaseDone = store.doneCount(p.lessons.map((x) => x.id));
   root.innerHTML = `<div class="page lesson-page" data-lesson="${l.id}" data-full="${data ? 1 : 0}">
