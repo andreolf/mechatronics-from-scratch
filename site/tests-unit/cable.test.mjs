@@ -116,3 +116,14 @@ test('28 N safety relax: a hard push trips it, the gripper sinks to the floor, a
   sim.c.push = 0; sim.rearm(); for (let i = 0; i < 60 * 10; i++) sim.step(1 / 60);
   assert.equal(sim.relaxed, false); assert.ok(sim.state.peak < 28);
 });
+
+test('a steady push with damping on leans the gripper but does not drive the pivot away', () => {
+  const s = new CableSim({ mass: 1.25, relax: false });
+  s.reset([0.8, 0.4, 0.9]); s.c.push = 15;
+  for (let k = 0; k < 1200; k++) s.step(1 / 60);
+  const st = s.state, e = Math.hypot(st.pivot[0] - 0.8, st.pivot[1] - 0.4);
+  assert.ok(e < 0.05, `pivot drifted ${e.toFixed(3)} m`);
+  // static lean: tan(alpha) = F / (m g)
+  const d = st.gripper[0] - st.pivot[0], z = st.pivot[2] - st.gripper[2];
+  assert.ok(Math.abs(Math.atan2(d, z) - Math.atan2(15, 1.25 * G)) < 0.01);
+});

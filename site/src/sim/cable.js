@@ -107,6 +107,7 @@ export class CableSim {
       w: 7, d: 7, h: 3, mass: 1, pole: 0.5, tLimit: 28, vmax: 0.4, amax: 1.5, amaxH: 3, damping: true, relax: true, push: 0,
       kx: 1.0, kv: 4.0, // tracking: desired velocity = kx * position error (capped at vmax), accel = kv * velocity error
       swingKp: 0, swingKd: 0, // set from the pole length in setPole unless given
+      swingTau: 2, // s, low-pass that separates a steady lean from a swing
       air: 0.02, // passive swing damping, 1/s: a real pendulum rings down slowly
       tRelax: 2, vRelax: 0.3, // relaxed motors: a few newtons per line, paying out at most 0.3 m/s
     }, o);
@@ -116,10 +117,11 @@ export class CableSim {
   }
   setPole(l, kd) {
     this.c.pole = l; const w2 = G / l;
-    // PD on the pivot acceleration: a += kp * d + kd * d', with d the gripper's horizontal offset from the pivot.
-    // On its own that gives d'' = -(g/l + kp) d - kd d'. The tracking loop couples in, so the gains were checked with the
-    // eigenvalues of the full 4-state linear model (lesson p21-l07): kp = 0.5 g/l and kd = 0.9 sqrt(g/l) keep every mode
-    // damped for poles from 0.1 m to 1 m. Real robots measure d' with an IMU on the gripper; here the state is exact.
+    // PD on the pivot acceleration: a += kp * (d - dbar) + kd * d', with d the gripper's horizontal offset from the pivot and
+    // dbar a 2 s low-pass of d, so a steady lean (someone pushing) is not chased across the room; only the swing is.
+    // On its own the swing then obeys d'' = -(g/l + kp) d - kd d'. The tracking loop and the filter couple in, so the gains
+    // were checked with the eigenvalues of the 5-state linear model (lesson p21-l07): kp = 0.5 g/l and kd = 0.9 sqrt(g/l)
+    // keep every mode damped for poles from 0.1 m to 1 m. Real robots measure d' with an IMU on the gripper; here it is exact.
     this.c.swingKp = 0.5 * w2; this.c.swingKd = kd ?? 0.9 * Math.sqrt(w2);
   }
   setRoom(w, d, h) { Object.assign(this.c, { w, d, h }); this.anchors = cornerAnchors(w, d, h); if (this.target) this.setTarget(...this.target); }
@@ -134,11 +136,12 @@ export class CableSim {
     // gripper at its static equilibrium: the pole lines up with g + F/m, and the pole force per unit mass is |g + F/m|
     const e = [this.c.push / this.c.mass, 0, -G], en = norm(e);
     this.r = [this.p[0] + (pole * e[0]) / en, this.p[1], this.p[2] + (pole * e[2]) / en]; this.rv = [0, 0, 0]; this.lam = en;
+    this.db = [this.r[0] - this.p[0], this.r[1] - this.p[1]];
     this.relaxed = false; this.relaxReason = ''; this.onFloor = false; this.time = 0;
     this.solve();
   }
   kick(v = 0.6) { this.rv[0] += v; this.rv[1] += v * 0.4; }
-  rearm() { this.relaxed = false; this.relaxReason = ''; this.onFloor = false; }
+  rearm() { this.relaxed = false; this.relaxReason = ''; this.onFloor = false; this.db = [this.r[0] - this.p[0], this.r[1] - this.p[1]]; }
   swingAngle() { const d = sub(this.r, this.p); return Math.atan2(Math.hypot(d[0], d[1]), -d[2]); }
   step(dt) {
     const n = Math.max(1, Math.ceil(dt / 0.002)), h = dt / n;
@@ -149,12 +152,13 @@ export class CableSim {
     const c = this.c, l = c.pole, p = this.p, pv = this.pv;
     const d = sub(this.r, p), dv = sub(this.rv, pv);
     let a = [0, 0, 0];
+    for (const i of [0, 1]) this.db[i] += ((d[i] - this.db[i]) * h) / c.swingTau;
     if (!this.relaxed) {
       const tgt = [this.target[0], this.target[1], this.target[2] + l];
       const e = sub(tgt, p); const en = norm(e); const vs = Math.min(c.vmax, c.kx * en);
       const vd = en > 1e-9 ? [e[0] / en * vs, e[1] / en * vs, e[2] / en * vs] : [0, 0, 0];
       a = [c.kv * (vd[0] - pv[0]), c.kv * (vd[1] - pv[1]), c.kv * (vd[2] - pv[2])];
-      if (c.damping) for (const i of [0, 1]) a[i] += c.swingKp * d[i] + c.swingKd * dv[i];
+      if (c.damping) for (const i of [0, 1]) a[i] += c.swingKp * (d[i] - this.db[i]) + c.swingKd * dv[i];
       const ah = Math.hypot(a[0], a[1]); if (ah > c.amaxH) { a[0] *= c.amaxH / ah; a[1] *= c.amaxH / ah; }
       a[2] = clamp(a[2], -c.amax, c.amax);
     } else {
@@ -163,6 +167,9 @@ export class CableSim {
       pv[2] = this.onFloor ? 0 : -c.vRelax;
     }
     for (let i = 0; i < 3; i++) { if (!(this.relaxed && i === 2)) pv[i] += a[i] * h; p[i] += pv[i] * h; }
+    // the pivot cannot leave the volume under the anchors
+    const lim = this.limits(), box = [lim.x, lim.y, [lim.z[0] + l * 0.98, lim.z[1] + l]];
+    for (let i = 0; i < 3; i++) { if (p[i] < box[i][0]) { p[i] = box[i][0]; if (pv[i] < 0) pv[i] = 0; } else if (p[i] > box[i][1]) { p[i] = box[i][1]; if (pv[i] > 0) pv[i] = 0; } }
     this.pa = this.relaxed ? [a[0], a[1], 0] : a;
     // gripper: r'' = g + F/m - lam d/l, with lam from the pole constraint |r - p| = l
     if (this.onFloor) { this.rv = [0, 0, 0]; p[2] = this.r[2] + l * 0.98; return; }
