@@ -37,7 +37,7 @@ Take Stringman's 7 × 7 × 3 m example room with every line limited to 28 N, the
 
 Near the floor the best spot is the centre, 5.15 kg with the gripper on the floor, because the four lines share the load at the steepest common angle. Near the ceiling it flips. At 2.4 m the centre lines are almost horizontal and the best places are under the anchors, where one line hangs nearly straight down and carries the load alone. Close under the ceiling and halfway along a wall is the worst: 0.165 kg at $(3.4, 0, 2.9)$, because two lines run along the wall and two run almost flat across the room.
 
-Neufangled publishes its own version of this map on its home page, with an interactive version for your own room dimensions. Their figure is computed at the rated torque of the DM-H6215 motors, not at the 28 N relax limit, and it quotes up to 2 kg near the floor and 1.25 kg on average over the work volume. In this lesson's point-mass model, 2 kg at the floor centre corresponds to a working tension of about 10.9 N per line, and a 1.25 kg mean to roughly 15 N if you count pivot heights from 0.5 to 2.9 m. We cannot reproduce their figure exactly because we do not have their spool radius or their definition of the work volume, but the order of magnitude says something useful: the relax limit sits about twice above the tension the robot normally works at, so ordinary motion does not trip it.
+Neufangled publishes its own version of this map on its home page, with an interactive version for your own room dimensions. Their figure is computed at the rated torque of the DM-H6215 motors, not at the 28 N relax limit, and it quotes up to 2 kg near the floor and 1.25 kg on average over the work volume. In this lesson's point-mass model, 2 kg at the floor centre corresponds to a working tension of only about 10.9 N per line, and a 1.25 kg mean to roughly 15 N if you count pivot heights from 0.5 to 2.9 m. Yet Lesson 5 shows that 1 N·m on Stringman's 36 mm spool radius is about 28 N. So their published figure is well below what an ideal point-mass model predicts at the same tension. We cannot say exactly why, because we do not have their capacity code or their definition of the work volume. Friction in the eyelets, the redirected lines of the Arpeggio version, the gripper's own weight and a margin for acceleration and swing would all push the number down. Treat the gap as the useful lesson: a static point-mass map is an upper bound, and a vendor who quotes well below it is leaving room for the real machine.
 
 :::figure widget=cablebot args={"preset":"workspace"} caption="Capacity map. The slice is drawn at the pivot height; coral cells cannot hold the payload within the tension limit. Change the payload, the limit, or the room, and drag the gripper up to see the centre go from best to worst."
 :::end
@@ -48,9 +48,9 @@ A 1.5 kg load in the example room, gripper at a 0.75 m desk, so the pivot is at 
 
 1. At the centre, $\sin\theta = 1.75 / \sqrt{24.5 + 1.75^2} = 0.333$, so $m_\text{max} = 4 \times 28 \times 0.333 / 9.81 = 3.80$ kg.
 2. The lowest capacity at that height, close to a wall, is about 2.55 kg.
-3. Even that leaves room for the gripper's own weight. With the working tension nearer 11 N, though, the same map scales by 11/28, and the wall becomes about 1.0 kg. A 1.5 kg load at desk height near the walls would then need the motors to work above their rated tension.
+3. Even that leaves room for the gripper's own weight. If you derate to about 11 N per line, the working tension that Neufangled's 2 kg floor figure implies in this model, the same map scales by 11/28 and the wall becomes about 1.0 kg. A 1.5 kg load at desk height near the walls is then out of bounds.
 
-That last line is the kind of check worth doing before you promise a payload: decide which limit you mean, rated or trip, and read the map at that limit.
+That last line is the kind of check worth doing before you promise a payload: decide which limit you mean, a derated working tension or the trip limit, and read the map at that limit.
 
 ## Code it from scratch
 
