@@ -2,7 +2,9 @@
 """Build curriculum/curriculum.json and one markdown file per phase from tools/src/*.txt.
 
 Source format (one record per line, fields separated by ' | '):
-  @phase NN | slug | title | tagline | course | eth(yes/no) | default tool | default lang
+  @phase NN | slug | title | tagline | course | eth(yes/no) | default tool | default lang [| track]
+  (a ninth field "track" marks an optional build-along track: it has its own test and certificate but is not
+  required for the full-course certificate)
   L title | goal | math | code | lab | test [| tool]
 A code field starting with [C] / [Python] overrides the language.
 A lab field starting with [live:ID] links the lesson to an interactive lab on the site.
@@ -36,9 +38,12 @@ def parse():
                 continue
             parts = [p.strip() for p in line[1:].split(" | ")] if line.startswith("@") else None
             if line.startswith("@phase"):
-                num, slug, title, tagline, course, eth, tool, lang = [p.strip() for p in line[len("@phase"):].split(" | ")]
+                fields = [p.strip() for p in line[len("@phase"):].split(" | ")]
+                num, slug, title, tagline, course, eth, tool, lang = fields[:8]
+                track = len(fields) > 8 and fields[8] == "track"
                 phases.append(dict(id=f"p{int(num):02d}", number=int(num), slug=slug, title=title, tagline=tagline,
-                                   course=dict(title=course, eth=(eth == "yes")), default_tool=tool, lang=lang, lessons=[]))
+                                   course=dict(title=course, eth=(eth == "yes")), default_tool=tool, lang=lang, lessons=[],
+                                   **({"track": True} if track else {})))
             elif line.startswith("L "):
                 fields = [p.strip() for p in line[2:].split(" | ")]
                 if len(fields) not in (6, 7):
@@ -70,7 +75,7 @@ def parse():
 
 def md(ph):
     c = ph["course"]
-    out = [f"# Phase {ph['number']:02d} · {ph['title']}", "", f"> {ph['tagline']}", "",
+    out = [f"# Phase {ph['number']:02d} · {ph['title']}", "", f"> {ph['tagline']}", ""] + (["Optional build-along track: it has its own phase test and certificate, and is not required for the full-course certificate.", ""] if ph.get("track") else []) + [
            f"- **Lessons:** {len(ph['lessons'])}",
            f"- **Maps to:** {c['title']}" + (" (ETH Zurich course title)" if c['eth'] else " (generic topic, not an exact ETH title)"),
            f"- **Main tool:** {ph['default_tool']} · **Default language:** {ph['lang']}", "",
@@ -95,8 +100,10 @@ def main():
     data = dict(name="Mechatronics from Scratch", version="0.2.0", license="MIT",
                 note="Course mappings flagged eth=true use real ETH Zurich course titles; others are generic topic names. Not affiliated with or endorsed by ETH Zurich.",
                 labs={"pendulum": "Self-balancing robot (inverted pendulum, PID)", "arm": "Robot arm inverse kinematics",
-                      "quad": "Quadcopter attitude control", "motor": "DC motor + encoder speed control"},
-                totals=dict(phases=len(phases), lessons=total), phases=phases)
+                      "quad": "Quadcopter attitude control", "motor": "DC motor + encoder speed control",
+                      "cable": "Cable-driven parallel robot (IK, tensions, workspace, swing, safety relax)"},
+                totals=dict(phases=len(phases), lessons=total, core_phases=sum(1 for p in phases if not p.get("track")),
+                            core_lessons=sum(len(p["lessons"]) for p in phases if not p.get("track"))), phases=phases)
     OUT.mkdir(exist_ok=True)
     (OUT / "curriculum.json").write_text(json.dumps(data, indent=1, ensure_ascii=False))
     idx = ["# Mechatronics from Scratch · Curriculum", "", f"{len(phases)} phases · {total} lessons. Generated from `tools/src/*.txt` by `tools/build_curriculum.py`; `curriculum.json` is the single source the site reads.", "",

@@ -1,10 +1,11 @@
 // Browser-only certificates: canvas PNG, a minimal hand-written PDF that embeds a JPEG, and a SHA-256 verification code.
-import { phases } from './course.js';
+import { corePhases } from './course.js';
 
 export const CERT_W = 2000, CERT_H = 1414; // A4 landscape ratio
 const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'; // Crockford base32
 export const normName = (s) => String(s || '').normalize('NFC').trim().replace(/\s+/g, ' ');
-export const phaseKeys = (key) => (key === 'course' ? phases.map((p) => p.id) : [key]);
+// the full-course code covers the 20 core phases only, so certificates issued before Phase 21 existed still verify
+export const phaseKeys = (key) => (key === 'course' ? corePhases.map((p) => p.id) : [key]);
 
 export async function certCode(name, key, date) {
   const payload = `MFS-CERT-1|${normName(name).toLowerCase()}|${key}|${phaseKeys(key).join(',')}|${date}`;

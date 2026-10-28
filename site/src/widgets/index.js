@@ -17,6 +17,7 @@ import VISION from './vision.js';
 import REALTIME from './realtime.js';
 import POWER from './power.js';
 import CAPSTONE from './capstone.js';
+import CABLE from './cable.js';
 
 const W = {};
 const log10 = Math.log10;
@@ -325,7 +326,7 @@ W.gd = (el) => {
   p.redraw();
 };
 
-Object.assign(W, MORE, CIRCUITS, DIGITAL, SENSORS, DSP, ACTUATORS, EMBEDDED, BUSES, DYNAMICS, CONTROL, MODERN, ROBOTS, PLANNING, VISION, REALTIME, POWER, CAPSTONE);
+Object.assign(W, MORE, CIRCUITS, DIGITAL, SENSORS, DSP, ACTUATORS, EMBEDDED, BUSES, DYNAMICS, CONTROL, MODERN, ROBOTS, PLANNING, VISION, REALTIME, POWER, CAPSTONE, CABLE);
 
 export function hydrateWidgets(root) {
   root.querySelectorAll('.widget[data-widget]').forEach((el) => {

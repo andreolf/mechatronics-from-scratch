@@ -15,7 +15,7 @@ const nFull = Object.keys(full).length;
 window.__mfs = Object.assign(window.__mfs || {}, { labs: {}, store });
 
 // ---------- static home content ----------
-$('stats').innerHTML = `<div><dt>Phases</dt><dd>${t.phases}</dd></div><div><dt>Lessons</dt><dd>${t.lessons}</dd></div><div><dt>Fully written</dt><dd data-testid="full-count">${nFull}</dd></div><div><dt>Live 3D labs</dt><dd>4</dd></div>`;
+$('stats').innerHTML = `<div><dt>Phases</dt><dd>${t.core_phases}<small> + 1 track</small></dd></div><div><dt>Lessons</dt><dd>${t.lessons}</dd></div><div><dt>Fully written</dt><dd data-testid="full-count">${nFull}</dd></div><div><dt>Live 3D labs</dt><dd>5</dd></div>`;
 $('build-info').textContent = `v${course.version} · ${t.phases} phases · ${t.lessons} lessons · ${nFull} fully written`;
 $('copy-cmd').addEventListener('click', async () => {
   const b = $('copy-cmd');
@@ -23,7 +23,7 @@ $('copy-cmd').addEventListener('click', async () => {
   setTimeout(() => (b.textContent = 'Copy'), 1600);
 });
 const xpPill = $('xp-pill');
-const updXP = () => { xpPill.textContent = `${fmtNum(store.get().xp)} XP`; xpPill.setAttribute('aria-label', `${store.get().xp} XP, ${store.streak()} day streak`); };
+const updXP = () => { xpPill.textContent = `${fmtNum(store.get().xp)} pts`; xpPill.setAttribute('aria-label', `${store.get().xp} points, ${store.streak()} day streak`); };
 store.on(updXP); updXP();
 
 const map = phaseMap({ grid: $('phase-grid'), search: $('search'), status: $('search-status'), bar: $('progress-bar'), label: $('progress-label'), reset: $('reset-progress') });
@@ -44,13 +44,14 @@ async function startHero() {
 }
 async function startLabs() {
   if (labsStarted) return; labsStarted = true;
-  let mods; try { mods = await retryImport(() => Promise.all([import('./labs/pendulumLab.js'), import('./labs/armLab.js'), import('./labs/quadLab.js'), import('./labs/motorLab.js')])); } catch (e) { labsStarted = false; console.warn('labs failed to load', e); return; }
-  const [{ pendulumLab }, { armLab }, { quadLab }, { motorLab }] = mods;
+  let mods; try { mods = await retryImport(() => Promise.all([import('./labs/pendulumLab.js'), import('./labs/armLab.js'), import('./labs/quadLab.js'), import('./labs/motorLab.js'), import('./labs/cableLab.js')])); } catch (e) { labsStarted = false; console.warn('labs failed to load', e); return; }
+  const [{ pendulumLab }, { armLab }, { quadLab }, { motorLab }, { cableLab }] = mods;
   const root = $('lab-root');
   window.__mfs.labs.pendulum = pendulumLab(root);
   window.__mfs.labs.arm = armLab(root);
   window.__mfs.labs.quad = quadLab(root);
   window.__mfs.labs.motor = motorLab(root);
+  window.__mfs.labs.cable = cableLab(root);
   document.documentElement.dataset.labs = 'ready';
 }
 const labIO = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { labIO.disconnect(); startLabs(); } }, { rootMargin: '600px 0px' });

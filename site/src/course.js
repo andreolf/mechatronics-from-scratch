@@ -9,6 +9,8 @@ const load = async (loaders, key) => { if (cache.has(key)) return cache.get(key)
 export const course = data;
 export const full = index;
 export const phases = data.phases;
+// optional build-along tracks (Phase 21) have their own test and certificate but do not gate the full-course certificate
+export const corePhases = data.phases.filter((p) => !p.track);
 export const allLessons = data.phases.flatMap((p) => p.lessons.map((l) => ({ ...l, phase: p })));
 export const byId = new Map(allLessons.map((l) => [l.id, l]));
 export const phaseById = new Map(data.phases.map((p) => [p.id, p]));

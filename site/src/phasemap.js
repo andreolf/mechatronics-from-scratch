@@ -21,7 +21,7 @@ export function phaseMap(els) {
           <span class="phase-num">${pad2(p.number)}</span>
           <span class="phase-title">${esc(p.title)}</span>
           <span class="phase-chev" aria-hidden="true">›</span>
-          <span class="phase-meta"><span data-count>${pDone(p)}</span> of ${p.lessons.length} done${f ? ` · <span class="full">${f === p.lessons.length ? 'all lessons written' : `${f} written`}</span>` : ''}</span>
+          <span class="phase-meta"><span data-count>${pDone(p)}</span> of ${p.lessons.length} done${f ? ` · <span class="full">${f === p.lessons.length ? 'all lessons written' : `${f} written`}</span>` : ''}${p.track ? ' · optional build-along track' : ''}</span>
         </button>
         <div class="phase-bar"><i style="width:${(100 * pDone(p)) / p.lessons.length}%"></i></div>
         <div class="phase-body" hidden></div>

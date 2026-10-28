@@ -46,7 +46,7 @@ export async function renderLesson(root, id) {
         <div class="lesson-end">
           <div class="complete-card" data-testid="complete-card">
             <h2>${store.isDone(id) ? 'Lesson complete' : 'Finished this lesson?'}</h2>
-            <p>Mark it complete to earn 50 XP and keep your streak. Progress stays in this browser.</p>
+            <p>Mark it complete to earn 50 points and keep your streak. Progress stays in this browser.</p>
             <div><button class="btn ${store.isDone(id) ? 'btn-quiet' : 'btn-primary'}" type="button" data-testid="mark-complete" aria-pressed="${store.isDone(id)}">${store.isDone(id) ? 'Completed ✓ (undo)' : 'Mark lesson complete'}</button></div>
           </div>
           <nav class="pn" aria-label="Lesson navigation">
@@ -67,7 +67,7 @@ export async function renderLesson(root, id) {
     btn.textContent = now ? 'Completed ✓ (undo)' : 'Mark lesson complete';
     btn.className = 'btn ' + (now ? 'btn-quiet' : 'btn-primary'); btn.setAttribute('aria-pressed', String(now));
     root.querySelector('.complete-card h2').textContent = now ? 'Lesson complete' : 'Finished this lesson?';
-    if (gained) toast(`+${gained} XP · lesson complete`);
+    if (gained) toast(`+${gained} points · lesson complete`);
     const k = store.doneCount(p.lessons.map((x) => x.id));
     root.querySelector('.lesson-bar .meter i').style.width = `${(100 * k) / p.lessons.length}%`;
     if (now && k === p.lessons.length && phaseFullCount(p) === p.lessons.length) toast('Phase finished. The phase test is unlocked.');
@@ -93,7 +93,7 @@ export async function renderLesson(root, id) {
     const upd = () => { const c = [...results.values()].filter(Boolean).length; score.textContent = `${c} of ${qs.length} correct`; score.dataset.correct = String(c); };
     qs.forEach((q, i) => {
       const prevState = store.quizState(q.id);
-      box.append(questionEl(q, i + 1, { onAnswer: (qq, ok) => { results.set(qq.id, ok); upd(); const g = store.answer(qq.id, ok); if (g) toast(`+${g} XP`); } }));
+      box.append(questionEl(q, i + 1, { onAnswer: (qq, ok) => { results.set(qq.id, ok); upd(); const g = store.answer(qq.id, ok); if (g) toast(`+${g} points`); } }));
       if (prevState?.correct) results.set(q.id, true);
     });
     box.append(score); upd();

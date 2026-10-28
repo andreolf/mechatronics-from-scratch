@@ -1,5 +1,5 @@
 // Phase overview, phase test, progress dashboard, certificate and verify routes.
-import { phases, phaseById, isFull, loadQuizBank, phaseFullCount, phaseComplete, allLessons, byId, course } from '../course.js';
+import { phases, corePhases, phaseById, isFull, loadQuizBank, phaseFullCount, phaseComplete, allLessons, byId, course } from '../course.js';
 import { store } from '../store.js';
 import { esc, pad2, toast, download, fmtDate, fmtNum } from '../util-dom.js';
 import { questionEl } from './quiz.js';
@@ -15,7 +15,7 @@ export function renderPhase(root, pid) {
   const done = store.doneCount(ids(p)), fullN = phaseFullCount(p), t = store.get().tests[pid];
   const testReady = phaseComplete(p);
   root.innerHTML = `<div class="page"><header class="page-head">
-      <p class="lesson-kicker"><a href="#/course">Course</a> · Phase ${pad2(p.number)} of ${phases.length}</p>
+      <p class="lesson-kicker"><a href="#/course">Course</a> · ${p.track ? `Phase ${pad2(p.number)} · optional build-along track` : `Phase ${pad2(p.number)} of ${corePhases.length}`}</p>
       <h1>${esc(p.title)}</h1><p>${esc(p.tagline)}</p>
       <div class="lesson-meta" style="margin-top:14px"><span class="chip">${p.lessons.length} lessons</span><span class="chip ${fullN ? 'full' : ''}">${fullN} fully written</span>${p.course.eth ? `<span class="chip eth">${esc(p.course.title)}</span>` : `<span class="chip">${esc(p.course.title)}</span>`}</div>
     </header>
@@ -62,9 +62,9 @@ export async function renderTest(root, pid) {
     const gained = store.testResult(pid, score, qs.length);
     const out = root.querySelector("[data-test-out]");
     out.innerHTML = `<div class="complete-card" style="margin-top:20px" data-testid="test-result" data-pass="${pass}"><h2>${pass ? 'Passed' : 'Not passed yet'}: ${score} of ${qs.length} (${Math.round(frac * 100)} %)</h2>
-      <p>${pass ? `You passed Phase ${pad2(p.number)}.${gained ? ` +${gained} XP.` : ''} Your certificate is ready.` : 'You need 80 %. Review the explanations above, revisit the linked lessons, and retake the test. Each attempt draws a new set of questions.'}</p>
+      <p>${pass ? `You passed Phase ${pad2(p.number)}.${gained ? ` +${gained} points.` : ''} Your certificate is ready.` : 'You need 80 %. Review the explanations above, revisit the linked lessons, and retake the test. Each attempt draws a new set of questions.'}</p>
       <div class="hero-actions">${pass ? `<a class="btn btn-primary" href="#/certificate/${p.id}" data-testid="to-cert">Get your certificate</a>` : ''}<a class="btn btn-quiet" href="#/test/${p.id}?a=${attempts + 1}" data-testid="retake">Retake with new questions</a></div></div>`;
-    if (gained) toast(`+${gained} XP · phase test passed`);
+    if (gained) toast(`+${gained} points · phase test passed`);
     out.scrollIntoView({ block: 'center' });
   });
   return `Phase ${pad2(p.number)} test`;
@@ -74,21 +74,21 @@ export function renderDashboard(root) {
   const s = store.get(); const done = allLessons.filter((l) => store.isDone(l.id)).length;
   const days = new Set(s.days); const grid = [];
   for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const k = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; grid.push(`<i class="${days.has(k) ? 'on' : ''}" title="${k}"></i>`); }
-  const passed = phases.filter((p) => s.tests[p.id]?.passed);
+  const passed = phases.filter((p) => s.tests[p.id]?.passed), passedCore = corePhases.filter((p) => s.tests[p.id]?.passed);
   const last = s.last && byId.get(s.last);
   const nextUp = last || allLessons.find((l) => !store.isDone(l.id));
   const xpInLevel = s.xp % 500;
   root.innerHTML = `<div class="page"><header class="page-head"><h1>Your progress</h1><p>Everything here lives in this browser’s local storage. There are no accounts and nothing is sent anywhere, so clearing site data resets it. Export a backup below.</p></header>
     <dl class="grid-cards" data-testid="dashboard">
-      <div class="stat"><dt>Experience</dt><dd data-testid="xp">${fmtNum(s.xp)} <small>XP · level ${store.level()}</small></dd><div class="phase-bar" style="margin-top:12px"><i style="width:${xpInLevel / 5}%"></i></div></div>
+      <div class="stat"><dt>Points</dt><dd data-testid="xp">${fmtNum(s.xp)} <small>points · level ${store.level()}</small></dd><div class="phase-bar" style="margin-top:12px"><i style="width:${xpInLevel / 5}%"></i></div></div>
       <div class="stat"><dt>Streak</dt><dd data-testid="streak">${store.streak()} <small>days · best ${store.bestStreak()}</small></dd><div class="week" aria-label="Activity in the last 14 days">${grid.join('')}</div></div>
       <div class="stat"><dt>Lessons done</dt><dd data-testid="dash-lessons">${done} <small>of ${allLessons.length}</small></dd></div>
-      <div class="stat"><dt>Phase tests passed</dt><dd>${passed.length} <small>of ${phases.length}</small></dd></div>
+      <div class="stat"><dt>Phase tests passed</dt><dd>${passedCore.length} <small>of ${corePhases.length} core${phases.length > corePhases.length ? ` · track ${phases.filter((p) => p.track && s.tests[p.id]?.passed).length} of ${phases.length - corePhases.length}` : ''}</small></dd></div>
     </dl>
     ${nextUp ? `<div class="panel"><h2>${last ? 'Pick up where you left off' : 'Start here'}</h2><p class="lede" style="margin:0 0 14px">Phase ${pad2(nextUp.phase.number)} · ${esc(nextUp.title)}</p><a class="btn btn-primary" href="#/learn/${nextUp.id}">Continue</a></div>` : ''}
     <section class="panel"><h2>Certificates</h2>
-      <p class="lede" style="margin:0 0 12px">Pass a phase test for a phase certificate. Pass all ${phases.length} for the full-course certificate. Free certificates of completion, not accredited, and not affiliated with or endorsed by ETH Zurich.</p>
-      <div class="hero-actions">${passed.map((p) => `<a class="btn btn-quiet btn-small" href="#/certificate/${p.id}">Phase ${pad2(p.number)}</a>`).join('') || '<span class="quiz-score">None yet. Phase 01’s test is a good first target.</span>'}<a class="btn btn-quiet btn-small" href="#/certificate/course">Full course${passed.length === phases.length ? '' : ' (locked)'}</a><a class="btn btn-quiet btn-small" href="#/verify">Verify a certificate</a></div>
+      <p class="lede" style="margin:0 0 12px">Pass a phase test for a phase certificate. Pass all ${corePhases.length} core phases for the full-course certificate; the optional build-along track has its own certificate. Free certificates of completion, not accredited, and not affiliated with or endorsed by ETH Zurich.</p>
+      <div class="hero-actions">${passed.map((p) => `<a class="btn btn-quiet btn-small" href="#/certificate/${p.id}">Phase ${pad2(p.number)}</a>`).join('') || '<span class="quiz-score">None yet. Phase 01’s test is a good first target.</span>'}<a class="btn btn-quiet btn-small" href="#/certificate/course">Full course${passedCore.length === corePhases.length ? '' : ' (locked)'}</a><a class="btn btn-quiet btn-small" href="#/verify">Verify a certificate</a></div>
     </section>
     <section class="panel"><h2>Phases</h2><div class="phase-rows">${phases.map((p) => { const k = store.doneCount(ids(p)); const t = s.tests[p.id]; return `<a class="phase-row" href="#/phase/${p.id}"><span class="n">${pad2(p.number)}</span><span class="t">${esc(p.title)}</span><span class="chip ${t?.passed ? 'full' : ''}">${t?.passed ? 'Test passed' : t ? `Best ${Math.round(t.best * 100)} %` : phaseComplete(p) ? 'Test open' : `${phaseFullCount(p)} written`}</span><span class="s">${k} of ${p.lessons.length} lessons done</span><span class="bar"><i style="width:${(100 * k) / p.lessons.length}%"></i></span></a>`; }).join('')}</div></section>
     <section class="panel"><h2>Backup</h2><div class="hero-actions"><button class="btn btn-quiet btn-small" type="button" data-export>Export progress (JSON)</button><label class="btn btn-quiet btn-small">Import progress<input type="file" accept="application/json" data-import class="sr" /></label><button class="btn btn-quiet btn-small" type="button" data-reset>Reset all progress</button></div><p class="quiz-score" data-msg aria-live="polite"></p></section></div>`;
@@ -106,15 +106,15 @@ export function renderDashboard(root) {
 export async function renderCert(root, key) {
   const s = store.get(); const isCourse = key === 'course'; const p = !isCourse && phaseById.get(key);
   if (!isCourse && !p) return notFound(root, 'Certificate');
-  const passed = isCourse ? phases.every((x) => s.tests[x.id]?.passed) : !!s.tests[key]?.passed;
+  const passed = isCourse ? corePhases.every((x) => s.tests[x.id]?.passed) : !!s.tests[key]?.passed;
   const title = isCourse ? 'Full-course certificate' : `Phase ${pad2(p.number)} certificate`;
   if (!passed) {
-    const n = phases.filter((x) => s.tests[x.id]?.passed).length;
-    root.innerHTML = `<div class="page" style="max-width:820px"><header class="page-head"><h1>${title}</h1><p data-testid="cert-locked">${isCourse ? `Locked. Pass all ${phases.length} phase tests to unlock it (${n} passed so far).` : `Locked. Pass the Phase ${pad2(p.number)} test with 80 % or more to unlock it.`}</p>
+    const n = corePhases.filter((x) => s.tests[x.id]?.passed).length;
+    root.innerHTML = `<div class="page" style="max-width:820px"><header class="page-head"><h1>${title}</h1><p data-testid="cert-locked">${isCourse ? `Locked. Pass all ${corePhases.length} core phase tests to unlock it (${n} passed so far).` : `Locked. Pass the Phase ${pad2(p.number)} test with 80 % or more to unlock it.`}</p>
       <div class="hero-actions" style="margin-top:16px"><a class="btn btn-primary" href="${isCourse ? '#/progress' : `#/phase/${key}`}">${isCourse ? 'See your progress' : 'Go to the phase'}</a></div></header></div>`;
     return title;
   }
-  const date = isCourse ? phases.map((x) => s.tests[x.id].date).sort().pop() : s.tests[key].date;
+  const date = isCourse ? corePhases.map((x) => s.tests[x.id].date).sort().pop() : s.tests[key].date;
   root.innerHTML = `<div class="page" style="max-width:980px"><header class="page-head"><h1>${title}</h1><p>Type your name as you want it printed. The certificate is drawn in your browser; nothing is uploaded. Free certificate of completion, not accredited, and not affiliated with or endorsed by ETH Zurich.</p></header>
     <div class="panel"><label class="field">Name on the certificate<input type="text" name="name" autocomplete="name" maxlength="80" value="${esc(s.name)}" placeholder="e.g. Ada Lovelace…" data-testid="cert-name" /></label>
       <div class="hero-actions"><button class="btn btn-primary" type="button" data-png data-testid="cert-png">Download PNG</button><button class="btn btn-quiet" type="button" data-pdf data-testid="cert-pdf">Download PDF</button></div>

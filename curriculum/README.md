@@ -1,6 +1,6 @@
 # Mechatronics from Scratch · Curriculum
 
-20 phases · 352 lessons. Generated from `tools/src/*.txt` by `tools/build_curriculum.py`; `curriculum.json` is the single source the site reads.
+21 phases · 363 lessons. Generated from `tools/src/*.txt` by `tools/build_curriculum.py`; `curriculum.json` is the single source the site reads.
 
 | # | Phase | Lessons | Maps to |
 |---|---|---|---|
@@ -24,3 +24,4 @@
 | 18 | [Real-Time Software & ROS 2](18-realtime-ros2.md) | 17 | Real-time systems (generic) |
 | 19 | [Power Electronics, Batteries & Safety](19-power-safety.md) | 22 | Power Electronics (ETH) |
 | 20 | [Capstones](20-capstones.md) | 16 | Project work (generic) |
+| 21 | [Build-along: a Room-Scale Cable Robot](21-cable-robot-build.md) | 11 | Cable-driven parallel robots (generic) |

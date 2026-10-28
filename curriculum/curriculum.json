@@ -7,11 +7,14 @@
   "pendulum": "Self-balancing robot (inverted pendulum, PID)",
   "arm": "Robot arm inverse kinematics",
   "quad": "Quadcopter attitude control",
-  "motor": "DC motor + encoder speed control"
+  "motor": "DC motor + encoder speed control",
+  "cable": "Cable-driven parallel robot (IK, tensions, workspace, swing, safety relax)"
  },
  "totals": {
-  "phases": 20,
-  "lessons": 352
+  "phases": 21,
+  "lessons": 363,
+  "core_phases": 20,
+  "core_lessons": 352
  },
  "phases": [
   {
@@ -7417,6 +7420,242 @@
      "anchors": []
     }
    ]
+  },
+  {
+   "id": "p21",
+   "number": 21,
+   "slug": "cable-robot-build",
+   "title": "Build-along: a Room-Scale Cable Robot",
+   "tagline": "Four winches, four lines and a gripper on a pole: derive, simulate and build a cable-driven parallel robot in the spirit of the open-source Stringman.",
+   "course": {
+    "title": "Cable-driven parallel robots (generic)",
+    "eth": false
+   },
+   "default_tool": "NumPy",
+   "lang": "Python",
+   "lessons": [
+    {
+     "id": "p21-l01",
+     "n": 1,
+     "title": "Cable robots, from RoboCrane to Stringman",
+     "goal": "Know what a cable-driven parallel robot is and where they have been used.",
+     "math": "Count actuators and degrees of freedom; why four cables can hold a point but not a full pose.",
+     "code": {
+      "lang": "Python",
+      "task": "Model a CDPR as anchors plus a platform point in NumPy and print its parts."
+     },
+     "lab": "The cable lab in a 7 x 7 x 3 m room.",
+     "live_lab": "cable",
+     "test": "Lengths and counts match the geometry.",
+     "tool": "NumPy",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l02",
+     "n": 2,
+     "title": "Geometry and inverse kinematics",
+     "goal": "Turn a gripper position into four cable lengths.",
+     "math": "l_i = ‖a_i − p‖, the Jacobian of the lengths, and forward kinematics by Gauss-Newton.",
+     "code": {
+      "lang": "Python",
+      "task": "Implement IK, its Jacobian and an FK solver that inverts it."
+     },
+     "lab": "Drag the target and read the lengths.",
+     "live_lab": "cable",
+     "test": "FK(IK(p)) = p to 1e-9 m; Jacobian matches finite differences.",
+     "tool": "NumPy",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l03",
+     "n": 3,
+     "title": "Cables only pull: tension distribution",
+     "goal": "Find non-negative cable tensions that hold the load.",
+     "math": "U t = f with a one-dimensional null space; the feasible interval for λ; minimum-norm choice.",
+     "code": {
+      "lang": "Python",
+      "task": "Write the tension solver and check it against closed-form cases."
+     },
+     "lab": "Tensions coloured by load, coral when slack or over the limit.",
+     "live_lab": "cable",
+     "test": "Equal tensions at the centre; vertical components sum to the weight.",
+     "tool": "NumPy",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l04",
+     "n": 4,
+     "title": "Workspace and payload capacity",
+     "goal": "Map where the robot can hold a given payload.",
+     "math": "Capacity m_max = T_max / (g · min_λ max_i τ_i); the wrench-feasible workspace.",
+     "code": {
+      "lang": "Python",
+      "task": "Compute capacity on a grid and the mean over the room."
+     },
+     "lab": "Capacity heat map at the pivot height.",
+     "live_lab": "cable",
+     "test": "Closed form at the centre; capacity falls towards walls and ceiling.",
+     "tool": "NumPy",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l05",
+     "n": 5,
+     "title": "Motors, spools and encoders",
+     "goal": "Size the winch: spool, gearing, motor torque and length resolution.",
+     "math": "Line length per revolution with layering, tension from torque, encoder counts per millimetre.",
+     "code": {
+      "lang": "Python",
+      "task": "Model a spool with layers and an encoder, and size a motor for a tension."
+     },
+     "lab": "Spool and encoder calculator.",
+     "live_lab": null,
+     "test": "Length from counts matches the layered model.",
+     "tool": "NumPy",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l06",
+     "n": 6,
+     "title": "Calibration: finding the anchors",
+     "goal": "Recover anchor positions from line-length measurements.",
+     "math": "Nonlinear least squares, Gauss-Newton, observability and why one pose is not enough.",
+     "code": {
+      "lang": "Python",
+      "task": "Estimate four anchors from noisy lengths at known poses."
+     },
+     "lab": "Anchor estimate converging from a rough tape-measure guess.",
+     "live_lab": null,
+     "test": "Recovered anchors within a few millimetres in simulation.",
+     "tool": "NumPy",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l07",
+     "n": 7,
+     "title": "Swing and its cancellation",
+     "goal": "Stop a gripper on a pole from swinging.",
+     "math": "Pendulum on a moving pivot, d'' = −(g/l) d − a; PD on the pivot acceleration; eigenvalues of the coupled loop.",
+     "code": {
+      "lang": "Python",
+      "task": "Simulate the swing with and without damping and check the poles."
+     },
+     "lab": "Kick the swing and toggle damping.",
+     "live_lab": "cable",
+     "test": "Damped swing decays below 1 % in 4 s; undamped keeps ringing.",
+     "tool": "NumPy",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l08",
+     "n": 8,
+     "title": "Safety: a tension limit that lets go",
+     "goal": "Design a supervisor that relaxes every motor when a line is overloaded.",
+     "math": "Force from a person pushing; tension rise; latching and re-arming logic.",
+     "code": {
+      "lang": "Python",
+      "task": "Write the relax supervisor and test it exhaustively."
+     },
+     "lab": "Push the gripper until the lines relax at 28 N.",
+     "live_lab": "cable",
+     "test": "Every overload ends relaxed; re-arm refuses while the overload persists.",
+     "tool": "Python",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l09",
+     "n": 9,
+     "title": "Electronics and communication",
+     "goal": "Choose controllers, drivers and the network between them.",
+     "math": "Latency budget: position error v·τ, and the phase lag a delay adds to swing damping.",
+     "code": {
+      "lang": "Python",
+      "task": "Simulate delayed swing damping and find the latency it tolerates."
+     },
+     "lab": "Swing damping with a delay slider.",
+     "live_lab": null,
+     "test": "Damping still works at 100 ms delay; the margin shrinks as delay grows.",
+     "tool": "Python",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l10",
+     "n": 10,
+     "title": "Software: a Python API and imitation learning",
+     "goal": "Drive the robot from Python and learn a task from demonstrations.",
+     "math": "Behaviour cloning as supervised regression; covariate shift and why corrections matter.",
+     "code": {
+      "lang": "Python",
+      "task": "Write a small robot API and train a linear policy from demonstrations."
+     },
+     "lab": "Behaviour cloning on a top-down pick task.",
+     "live_lab": null,
+     "test": "The cloned policy reaches the bin from new starts.",
+     "tool": "Python",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    },
+    {
+     "id": "p21-l11",
+     "n": 11,
+     "title": "Build plan and bill of materials",
+     "goal": "Plan a desk-scale cable robot you can build in a weekend.",
+     "math": "Scale the design: capacity, motor torque and speed at desk size.",
+     "code": {
+      "lang": "Python",
+      "task": "Check a BOM against the requirements and print the build plan."
+     },
+     "lab": "The lab in desk-frame mode.",
+     "live_lab": "cable",
+     "test": "Every requirement is met by the BOM, with margins printed.",
+     "tool": "Python",
+     "course": {
+      "title": "Cable-driven parallel robots (generic)",
+      "eth": false
+     },
+     "anchors": []
+    }
+   ],
+   "track": true
   }
  ]
 }

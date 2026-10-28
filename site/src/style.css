@@ -403,3 +403,28 @@ code, pre, kbd, .readout, .widget-read { font-variant-ligatures: none; font-feat
 .bit-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; grid-column: 1 / -1; }
 .bit-grid .tog { padding: 0 4px; font-family: var(--mono); }
 .btn-row { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; }
+
+/* lab 05: cable robot */
+.cable-extra { display: grid; gap: 12px; padding: 12px; border-top: 1px solid var(--rule); background: #050604; }
+@media (min-width: 700px) { .cable-extra { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.cable-bars { display: grid; gap: 6px; --lim: 80%; }
+.cable-bar { display: grid; grid-template-columns: 52px minmax(0, 1fr) 62px; grid-template-rows: auto auto; align-items: center; gap: 0 10px; font: 500 12px var(--mono); color: var(--fog); font-variant-numeric: tabular-nums; }
+.cable-bar .nm { font-family: var(--sans); font-weight: 600; }
+.cable-bar .track { position: relative; height: 12px; border-radius: 6px; background: var(--rule); overflow: hidden; }
+.cable-bar .track i { position: absolute; inset: 0 auto 0 0; border-radius: 6px; transition: width .08s linear; }
+.cable-bar .lim { position: absolute; top: -2px; bottom: -2px; left: var(--lim); width: 2px; background: var(--bad); opacity: .8; }
+.cable-bar b { text-align: right; font-weight: 600; }
+.cable-bar .len { grid-column: 2 / 4; color: var(--dim); font-size: 11px; }
+.cable-map { min-width: 0; }
+.cable-map canvas { display: block; max-width: 100%; border-radius: 8px; touch-action: pan-y; margin: 0 auto; }
+.lab-cable.interacting .cable-map canvas { touch-action: none; cursor: crosshair; }
+.cable-map-note { margin: 8px 0 0; font-size: 12px; line-height: 1.45; color: var(--fog); }
+.cable-map-note b { color: var(--bone); font-variant-numeric: tabular-nums; }
+.lab-cable .lesson-links a { min-height: 44px; }
+.lab-cable .readouts { font-size: 11px; }
+.lab-embedded { padding: 0; max-width: none; }
+.lab-embedded .lab-head { padding: 14px 14px 0; }
+.lab-embedded .lab-head h3 { font-size: var(--t-3, 20px); }
+.lab-embedded .lab-body { border: 0; border-radius: 0; grid-template-columns: minmax(0, 1fr); }
+.lab-embedded .controls-wrap { border-left: 0; border-top: 1px solid var(--rule); }
+@media (min-width: 700px) { .lab-embedded .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; } }
