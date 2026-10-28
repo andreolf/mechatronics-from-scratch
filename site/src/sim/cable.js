@@ -141,7 +141,13 @@ export class CableSim {
     this.solve();
   }
   kick(v = 0.6) { this.rv[0] += v; this.rv[1] += v * 0.4; }
-  rearm() { this.relaxed = false; this.relaxReason = ''; this.onFloor = false; this.db = [this.r[0] - this.p[0], this.r[1] - this.p[1]]; }
+  // re-arming takes the load where the gripper is: the pivot stops and holds there, so the winches do not jerk a falling,
+  // swinging load back up to the old target (which can trip the limit again straight away)
+  rearm() {
+    this.relaxed = false; this.relaxReason = ''; this.onFloor = false; this.pv = [0, 0, 0];
+    this.setTarget(this.r[0], this.r[1], Math.max(this.r[2], this.limits().z[0]));
+    this.db = [this.r[0] - this.p[0], this.r[1] - this.p[1]];
+  }
   swingAngle() { const d = sub(this.r, this.p); return Math.atan2(Math.hypot(d[0], d[1]), -d[2]); }
   step(dt) {
     const n = Math.max(1, Math.ceil(dt / 0.002)), h = dt / n;

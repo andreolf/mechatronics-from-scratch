@@ -1,5 +1,5 @@
 // Browser-only certificates: canvas PNG, a minimal hand-written PDF that embeds a JPEG, and a SHA-256 verification code.
-import { corePhases } from './course.js';
+import { phases, corePhases } from './course.js';
 
 export const CERT_W = 2000, CERT_H = 1414; // A4 landscape ratio
 const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'; // Crockford base32

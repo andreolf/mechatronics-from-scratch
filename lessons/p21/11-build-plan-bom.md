@@ -27,7 +27,11 @@ The target, which the simulator's desk preset uses:
 
 **Tension at rest (Lesson 3).** In the middle at 0.2 m each line carries 0.95 N. That is what your tension sensors should read when nothing is happening, and a reading of zero on one of them means a slack line.
 
-**Winches (Lesson 5).** A 10 mm spool radius on a NEMA 17 stepper with 0.4 N·m of holding torque pulls 40 N, eight times the limit, which is the margin a stepper wants because its torque falls with speed and a lost step is a silent length error. 0.2 m/s is 191 rpm. At 1/16 microstepping, 3,200 steps per turn, one step is 0.020 mm of line. The longest line, from an anchor to the opposite bottom corner, is 1.12 m, so 1.5 m per spool is enough, and 1.5 m of 0.5 mm line fits in one layer on a 12 mm wide drum, so you never need the pile model.
+**Winches (Lesson 5).** The three spool numbers come straight from $T = \tau/r$, $v = \omega r$ and one step of arc:
+
+$$ T = \frac{0.4\ \text{N·m}}{0.010\ \text{m}} = 40\ \text{N}, \qquad \omega = \frac{0.2\ \text{m/s}}{0.010\ \text{m}} = 20\ \text{rad/s} \approx 191\ \text{rpm}, \qquad \Delta l = \frac{2\pi r}{3200} \approx 0.020\ \text{mm} . $$
+
+So a 10 mm spool radius on a NEMA 17 stepper with 0.4 N·m of holding torque pulls 40 N, eight times the limit, which is the margin a stepper wants because its torque falls with speed and a lost step is a silent length error. At 1/16 microstepping, 3,200 steps per turn, one step is 0.020 mm of line. The longest line, from an anchor to the opposite bottom corner, is 1.12 m, so 1.5 m per spool is enough, and 1.5 m of 0.5 mm line fits in one layer on a 12 mm wide drum, so you never need the pile model.
 
 **Tension sensing (Lessons 5 and 8).** Steppers do not report torque. The simplest honest option is a small load cell under each anchor pulley, read through a load-cell amplifier, which gives you the 5 N trip, the slack-line check and real data for the null-space problem of Lesson 3. The alternative is to use small direct-drive or geared BLDC motors with current sensing, Stringman's route, at more cost and complexity.
 
