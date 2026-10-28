@@ -96,5 +96,91 @@ W.anchorcal = (el) => {
   p.redraw();
 };
 
+// p21-l09: swing damping through a delay. The controller sees the swing tau seconds late; optionally it rotates that old
+// state forward by omega*tau (free-pendulum prediction, as Stringman's swing.py does) before applying the PD law.
+export function delayedSwing({ tau, gain = 1, predict = false, l = 0.5, T = 10, dt = 0.002, d0 = 0.09 }) {
+  const w = Math.sqrt(9.81 / l), kp = 0.5 * w * w * gain, kd = 0.9 * w * gain, lag = Math.round(tau / dt);
+  let d = d0, v = 0; const hd = [d], hv = [v], out = [];
+  const c = Math.cos(w * tau), sn = Math.sin(w * tau);
+  for (let k = 0; k < Math.round(T / dt); k++) {
+    const j = Math.max(0, hd.length - 1 - lag); let dm = hd[j], vm = hv[j];
+    if (predict && lag > 0) { const d2 = dm * c + (vm / w) * sn; vm = -dm * w * sn + vm * c; dm = d2; }
+    const a = kp * dm + kd * vm;
+    v += (-w * w * d - a) * dt; d += v * dt;
+    if (!Number.isFinite(d) || Math.abs(d) > 10) { d = Math.sign(d) * 10; v = 0; }
+    hd.push(d); hv.push(v); out.push(d);
+  }
+  return out;
+}
+W.swingdelay = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { tau: 0.2, gain: 1, predict: false };
+  const p = new Plot(body, { aspect: 0.55, maxH: 300, x: [0, 10], y: [-12, 12], label: 'Swing against time with a delayed damping loop' });
+  p.draw = (P) => {
+    const dt = 0.002, out = delayedSwing({ ...s, dt });
+    P.axes({ xl: 'time (s)', yl: 'swing (cm)' });
+    const xs = [], ys = []; for (let k = 0; k < out.length; k += 5) { xs.push(k * dt); ys.push(Math.max(-13, Math.min(13, out[k] * 100))); }
+    P.line(xs, ys, C.lime, 2);
+    const tail = out.slice(-Math.round(2 / dt)).reduce((m, x) => Math.max(m, Math.abs(x)), 0) * 100;
+    const verdict = tail > 9 ? `<b style="color:${C.bad}">growing</b>: the correction arrives so late that it pumps the swing` : tail > 0.5 ? `<b style="color:${C.warn}">still swinging</b> after 8 s` : '<b>damped</b>';
+    read.innerHTML = `delay ${(s.tau * 1000).toFixed(0)} ms · gain ×${s.gain.toFixed(2)} · ${s.predict ? 'state projected forward by the delay' : 'acting on the old state'} · swing in the last 2 s: ${tail > 99 ? '>1 m' : tail.toFixed(2) + ' cm'} · ${verdict}`;
+  };
+  ctrls.append(
+    slider('Loop delay', { min: 0, max: 0.7, step: 0.01, value: s.tau, fmt: (v) => (v * 1000).toFixed(0) + ' ms', id: 'sd-tau' }, (v) => { s.tau = v; p.redraw(); }),
+    slider('Damping gain', { min: 0.1, max: 1, step: 0.05, value: s.gain, fmt: (v) => '×' + v.toFixed(2), id: 'sd-gain' }, (v) => { s.gain = v; p.redraw(); }),
+    toggle('Project the swing forward by the delay', s.predict, (v) => { s.predict = v; p.redraw(); }, { id: 'sd-predict' }),
+  );
+  p.redraw();
+};
+
+// p21-l10: behaviour cloning in a corridor. The expert steers back to the centre line; the clone is a k-nearest-neighbour
+// regression on what the expert did. Clean demos never leave the centre, so the clone never learns to correct.
+function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function gauss(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
+const BC = { V: 0.4, DT: 0.1, STEPS: 100, WALL: 0.15 };
+const expertAct = (y) => Math.max(-0.4, Math.min(0.4, -2 * y));
+function knnPolicy(data, k = 5) {
+  const pts = [...data].sort((a, b) => a[0] - b[0]), Y = pts.map((p) => p[0]);
+  return (y) => {
+    let lo = 0, hi = Y.length; while (lo < hi) { const m = (lo + hi) >> 1; if (Y[m] < y) lo = m + 1; else hi = m; }
+    const cand = []; for (let i = Math.max(0, lo - k); i < Math.min(Y.length, lo + k); i++) cand.push(i);
+    cand.sort((a, b) => Math.abs(Y[a] - y) - Math.abs(Y[b] - y));
+    const use = cand.slice(0, k); return use.reduce((s, i) => s + pts[i][1], 0) / use.length;
+  };
+}
+export function bcExperiment({ demos = 50, demoNoise = 0, dagger = 0, noise = 0.015, trials = 40, seed = 1 }) {
+  const r = mulberry(seed), data = [];
+  const roll = (pol, label) => { let y = 0; const ys = [0]; for (let k = 0; k < BC.STEPS; k++) { if (label) label.push([y, expertAct(y)]); y += pol(y) * BC.DT + gauss(r) * noise; ys.push(y); } return ys; };
+  for (let d = 0; d < demos; d++) { let y = 0; for (let k = 0; k < BC.STEPS; k++) { data.push([y, expertAct(y)]); y += expertAct(y) * BC.DT + gauss(r) * demoNoise; } }
+  for (let g = 0; g < dagger; g++) { const pol = knnPolicy(data); for (let j = 0; j < 5; j++) roll(pol, data); }
+  const pol = knnPolicy(data), runs = []; let ok = 0;
+  for (let t = 0; t < trials; t++) { const ys = roll(pol); runs.push(ys); if (Math.max(...ys.map(Math.abs)) < BC.WALL) ok++; }
+  return { runs, ok, trials, spread: Math.sqrt(data.reduce((s, p) => s + p[0] * p[0], 0) / data.length) };
+}
+W.bc = (el) => {
+  const { body, read, ctrls } = frame(el);
+  const s = { demos: 50, demoNoise: 0, dagger: 0, noise: 0.015, seed: 1 };
+  const p = new Plot(body, { aspect: 0.5, maxH: 280, x: [0, 4], y: [-0.3, 0.3], label: 'Clone rollouts along a corridor' });
+  p.draw = (P) => {
+    const res = bcExperiment(s);
+    P.axes({ xl: 'distance along the corridor (m)', yl: 'sideways (m)' });
+    P.poly([[0, 0.15], [4, 0.15], [4, 0.3], [0, 0.3]], 'rgba(255,107,91,0.12)'); P.poly([[0, -0.15], [4, -0.15], [4, -0.3], [0, -0.3]], 'rgba(255,107,91,0.12)');
+    const xs = res.runs[0].map((_, k) => k * BC.V * BC.DT);
+    for (const ys of res.runs) { const bad = Math.max(...ys.map(Math.abs)) >= BC.WALL; P.line(xs, ys.map((y) => Math.max(-0.3, Math.min(0.3, y))), bad ? 'rgba(255,107,91,0.7)' : 'rgba(198,255,26,0.55)', 1.2); }
+    read.innerHTML = `<b>${res.ok} of ${res.trials}</b> clone runs stay inside the corridor · the training states spread ${(res.spread * 100).toFixed(1)} cm either side of the centre line · ${s.demos} demos, ${(s.demoNoise * 100).toFixed(1)} cm of disturbance while demonstrating, ${s.dagger} DAgger round${s.dagger === 1 ? '' : 's'}`;
+  };
+  const redo = () => p.redraw();
+  ctrls.append(
+    slider('Demonstrations', { min: 1, max: 50, step: 1, value: s.demos, fmt: (v) => String(v), id: 'bc-demos' }, (v) => { s.demos = v; redo(); }),
+    slider('Disturb the demonstrations', { min: 0, max: 0.03, step: 0.0025, value: s.demoNoise, fmt: (v) => (v * 100).toFixed(1) + ' cm', id: 'bc-dart' }, (v) => { s.demoNoise = v; redo(); }),
+    slider('DAgger rounds', { min: 0, max: 3, step: 1, value: s.dagger, fmt: (v) => String(v), id: 'bc-dagger' }, (v) => { s.dagger = v; redo(); }),
+    slider('Disturbance while running', { min: 0, max: 0.03, step: 0.0025, value: s.noise, fmt: (v) => (v * 100).toFixed(1) + ' cm', id: 'bc-noise' }, (v) => { s.noise = v; redo(); }),
+  );
+  const seedBtn = h('button', { class: 'btn small', type: 'button', 'data-testid': 'bc-seed' }, 'New random seed');
+  seedBtn.addEventListener('click', () => { s.seed++; redo(); });
+  ctrls.append(seedBtn);
+  p.redraw();
+};
+
 export default W;
 void Plot; void frame; void slider; void toggle; void h; void C;
