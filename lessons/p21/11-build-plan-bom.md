@@ -55,6 +55,9 @@ Prices and part numbers go out of date; requirements do not. Write the list like
 | 1 | Power supply and a physical stop switch | Switch cuts motor power, not just the software | Lesson 8: independent layers |
 | 1 | Camera (optional) | Fixed above the desk, sees the whole workspace | Lesson 6 calibration, Lesson 10 datasets |
 
+:::figure widget=cableparts caption="Lab 06, the same parts list as a robot you can take apart. Isolate an assembly or switch on Exploded, then tap a part for what it does, the number this track gives for it and the lesson it comes from. The robot runs a short scripted job underneath: calibrate, move, pick, hold, teardown."
+:::end
+
 ## Build in stages, each ending with a test
 
 1. **One winch on the bench.** Wind line onto the spool with a known weight hanging from it. Test: commanding 1 m of line moves the weight 1 m within 1 mm; the load cell reads the weight within 2 %.

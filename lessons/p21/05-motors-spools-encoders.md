@@ -33,6 +33,8 @@ How much does ignoring this cost?
 
 So the one line that carries power to the gripper needs the pile model the most.
 
+To see where each of these parts sits, open [Lab 06, the cable robot take-apart](#/labs/teardown). Isolate *Spool + encoder* and the spool and the AS5600 slide off the motor shaft; the telemetry panel turns line 1's length into spool turns and encoder counts with the same 72 mm and 4096 used here.
+
 :::figure widget=spool caption="Line on the spool against motor revolutions. The solid curve includes the growing diameter, the dashed line assumes the empty diameter throughout. Switch between the power line and the fishing line, and see what the torque and encoder figures become at each fill."
 :::end
 

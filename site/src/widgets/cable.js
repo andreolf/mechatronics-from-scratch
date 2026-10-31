@@ -5,6 +5,8 @@ import { cableLab } from '../labs/cableLab.js';
 const W = {};
 let n = 0;
 W.cablebot = (el, args) => { el.classList.add('widget'); cableLab(el, { embedded: true, id: `cable-w${++n}`, preset: args.preset || 'room' }); };
+// Lab 06 inline: the take-apart viewer. Loaded on demand so lessons without it don't pay for three.js.
+W.cableparts = (el) => { el.classList.add('widget'); const id = `teardown-w${++n}`; import('../labs/cableTeardown.js').then(({ cableTeardown }) => cableTeardown(el, { embedded: true, id })).catch((e) => console.warn('take-apart failed to load', e)); };
 // p21-l05: line piling up on a spool. Diameter grows linearly with the line wound on, as in Stringman's SpiralCalculator,
 // so wound length is exponential in shaft angle. Compares that with a constant-diameter assumption.
 const LINES = { fishing: [72, 73.1, 7.5, 'fishing line'], power: [72, 86.1, 7.5, 'power line'] };

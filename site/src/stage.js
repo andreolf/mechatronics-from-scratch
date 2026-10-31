@@ -18,7 +18,7 @@ export class Stage {
     r.setClearColor(clear, 0);
     r.outputColorSpace = THREE.SRGBColorSpace;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05;
-    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFShadowMap;
     el.appendChild(r.domElement);
     el.dataset.webgl = 'on';
     this.scene = new THREE.Scene();

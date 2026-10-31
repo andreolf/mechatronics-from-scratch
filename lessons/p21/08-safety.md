@@ -42,6 +42,8 @@ The simulator below shows the same effect with all four lines and the swing damp
 :::figure widget=cablebot args={"preset":"safety"} caption="Relax at the limit. Raise Push on the gripper until a line crosses 28 N: every line goes slack and the gripper is lowered to the floor. Re-arm with the push still applied and it trips again. Turn Relax at the limit off to see the tension the lines would otherwise reach."
 :::end
 
+Lab 06 has the same trip on a model you can take apart: press *Push 40 N · trip* and the lines turn coral, the status reads RELAXED and the status strip on the electronics lid goes coral until you re-arm. See [Lab 06](#/labs/teardown).
+
 ## Letting go gently
 
 "All motors relax" is the right idea and needs one more decision: what happens to the gripper? A fully limp, back-drivable motor lets the weight pull line off its spool, and the gripper falls. From 2.5 m that is 7.0 m/s and 30.7 J at the floor for 1.25 kg. A motor that keeps a few newtons of holding force and pays out at a capped speed lowers it instead: at 0.3 m/s the gripper arrives with 56 mJ, five hundred times less.

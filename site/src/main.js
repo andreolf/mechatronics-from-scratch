@@ -15,7 +15,7 @@ const nFull = Object.keys(full).length;
 window.__mfs = Object.assign(window.__mfs || {}, { labs: {}, store });
 
 // ---------- static home content ----------
-$('stats').innerHTML = `<div><dt>Phases</dt><dd>${t.core_phases}<small> + 1 track</small></dd></div><div><dt>Lessons</dt><dd>${t.lessons}</dd></div><div><dt>Fully written</dt><dd data-testid="full-count">${nFull}</dd></div><div><dt>Live 3D labs</dt><dd>5</dd></div>`;
+$('stats').innerHTML = `<div><dt>Phases</dt><dd>${t.core_phases}<small> + 1 track</small></dd></div><div><dt>Lessons</dt><dd>${t.lessons}</dd></div><div><dt>Fully written</dt><dd data-testid="full-count">${nFull}</dd></div><div><dt>Live 3D labs</dt><dd>6</dd></div>`;
 $('build-info').textContent = `v${course.version} · ${t.phases} phases · ${t.lessons} lessons · ${nFull} fully written`;
 $('copy-cmd').addEventListener('click', async () => {
   const b = $('copy-cmd');
@@ -44,14 +44,15 @@ async function startHero() {
 }
 async function startLabs() {
   if (labsStarted) return; labsStarted = true;
-  let mods; try { mods = await retryImport(() => Promise.all([import('./labs/pendulumLab.js'), import('./labs/armLab.js'), import('./labs/quadLab.js'), import('./labs/motorLab.js'), import('./labs/cableLab.js')])); } catch (e) { labsStarted = false; console.warn('labs failed to load', e); return; }
-  const [{ pendulumLab }, { armLab }, { quadLab }, { motorLab }, { cableLab }] = mods;
+  let mods; try { mods = await retryImport(() => Promise.all([import('./labs/pendulumLab.js'), import('./labs/armLab.js'), import('./labs/quadLab.js'), import('./labs/motorLab.js'), import('./labs/cableLab.js'), import('./labs/cableTeardown.js')])); } catch (e) { labsStarted = false; console.warn('labs failed to load', e); return; }
+  const [{ pendulumLab }, { armLab }, { quadLab }, { motorLab }, { cableLab }, { cableTeardown }] = mods;
   const root = $('lab-root');
   window.__mfs.labs.pendulum = pendulumLab(root);
   window.__mfs.labs.arm = armLab(root);
   window.__mfs.labs.quad = quadLab(root);
   window.__mfs.labs.motor = motorLab(root);
   window.__mfs.labs.cable = cableLab(root);
+  window.__mfs.labs.teardown = cableTeardown(root);
   document.documentElement.dataset.labs = 'ready';
 }
 const labIO = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { labIO.disconnect(); startLabs(); } }, { rootMargin: '600px 0px' });
@@ -66,10 +67,10 @@ function setNav(key) { document.querySelectorAll('.site-nav a').forEach((a) => (
 function showHome(anchor) {
   page.hidden = true; page.innerHTML = ''; home.hidden = false;
   document.title = 'Mechatronics from Scratch: learn robotics by building it';
-  setNav(anchor === 'course' ? 'course' : anchor === 'labs' ? 'labs' : '');
+  setNav(anchor === 'course' ? 'course' : anchor === 'labs' || anchor?.startsWith('lab-') ? 'labs' : '');
   startHero(); labIO.observe($('labs'));
   map.refresh();
-  if (anchor) { if (anchor.startsWith('lab-')) startLabs(); requestAnimationFrame(() => { const el = document.getElementById(anchor); if (el) el.scrollIntoView({ block: 'start' }); }); }
+  if (anchor) { const go = () => requestAnimationFrame(() => { const el = document.getElementById(anchor); if (el) el.scrollIntoView({ block: 'start' }); }); if (anchor.startsWith('lab-')) startLabs().then(go); else go(); }
   else window.scrollTo({ top: 0, behavior: 'instant' });
 }
 let routeSeq = 0;
@@ -82,6 +83,8 @@ async function route() {
   if (!hash.startsWith('#/')) { showHome(hash.slice(1)); return; }
   const path = hash.slice(2).split('?')[0].replace(/\/$/, '');
   if (path === '' || HOME_ANCHORS['#/' + path]) { showHome(HOME_ANCHORS['#/' + path]); return; }
+  const labM = path.match(/^labs\/([a-z0-9-]+)$/); // #/labs/teardown opens the labs band at that lab
+  if (labM) { showHome('lab-' + labM[1]); return; }
   const [seg, arg] = path.split('/');
   const [{ renderLesson }, P] = await loadPages();
   if (seq !== routeSeq) return;
