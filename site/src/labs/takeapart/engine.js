@@ -305,12 +305,12 @@ export function takeApart(root, spec) {
       <h5>${esc(i.name)}</h5><p>${esc(i.what || '')}</p>
       ${i.spec?.length ? `<ul>${i.spec.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
       ${i.lessons?.length ? `<div class="ta-card-links">${i.lessons.map(([lid, t]) => `<a href="#/learn/${lid}" data-lesson="${lid}">${esc(t)} →</a>`).join('')}</div>` : ''}`;
-    card.hidden = false; card.dataset.part = p.id; sec.dataset.card = p.id;
+    card.hidden = false; card.dataset.part = p.id; sec.dataset.card = p.id; view.classList.add('carded');
     card.querySelector('.ta-x').addEventListener('click', closeCard);
     for (const q of parts) q.hlT = q.info === p.info ? 1 : 0;
     spec.onPick?.(p, api);
   }
-  function closeCard() { card.hidden = true; S.card = null; sec.dataset.card = ''; for (const q of parts) q.hlT = 0; }
+  function closeCard() { view.classList.remove('carded'); card.hidden = true; S.card = null; sec.dataset.card = ''; for (const q of parts) q.hlT = 0; }
   api.openCard = (pid) => openCard(parts.find((p) => p.id === pid)); api.closeCard = closeCard;
 
   // ---------- picking ----------

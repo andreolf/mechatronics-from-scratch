@@ -61,7 +61,7 @@
 .ta-card-links { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .ta-card-links a { display: inline-flex; align-items: center; min-height: var(--ta-hit); font: 600 12px/1.2 var(--ta-sans); color: var(--ta-accent); text-decoration: none; }
 .ta-card-links a:hover { text-decoration: underline; }
-@media (max-width: 760px) { .ta-card { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 64%; } }
+@media (max-width: 760px) { .ta-view.carded .ta-labels, .ta-view.carded .ta-leaders { opacity: 0; transition: opacity .2s; } .ta-card { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 64%; } }
 
 /* chips and ranges */
 .ta-chips { display: flex; flex-wrap: wrap; gap: 6px; }

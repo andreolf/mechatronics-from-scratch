@@ -34,7 +34,7 @@ Lessons are Markdown files in `lessons/pNN/*.md` with a few fenced blocks:
 
 ## Routes
 
-`#/` home · `#/course` · `#/labs` · `#/learn/pNN-lMM` · `#/phase/pNN` · `#/test/pNN` · `#/progress` · `#/certificate/pNN|course` · `#/verify`. Old `#lesson-pNN-lMM` links redirect.
+`#/` home · `#/course` · `#/labs` · `#/labs/teardown` · `#/learn/pNN-lMM` · `#/phase/pNN` · `#/test/pNN` · `#/progress` · `#/certificate/pNN|course` · `#/verify`. Old `#lesson-pNN-lMM` links redirect.
 
 ## What every lesson contains
 
@@ -45,7 +45,7 @@ Each of the 363 lessons in `curriculum/curriculum.json` has:
 | `id`, `title`, `goal` | e.g. `p13-l07` · PID control · one-line goal |
 | `math` | what you derive by hand |
 | `code` | `{lang, task}`: the from-scratch exercise (Python/NumPy or C) |
-| `lab` / `live_lab` | the interactive visual idea; `live_lab` links to one of the five labs running on the site |
+| `lab` / `live_lab` | the interactive visual idea; `live_lab` links to one of the labs running on the site |
 | `test` | the test that proves your implementation works |
 | `tool` | the open-source / professional tool it maps to (ngspice, KiCad, python-control, ROS 2, MuJoCo, Gazebo, PlatformIO…) |
 | `course` | `{title, eth}`: `eth: true` only where the title is a real ETH Zurich course name we are confident about; otherwise a generic topic |
@@ -92,7 +92,7 @@ site/                  Vite + vanilla JS + three.js (bundled from npm, no CDN at
   src/widgets/         touch-friendly interactive figures used inside lessons
   src/cert.js          certificate drawing, verification code, PNG/PDF export
   src/sim/             pure-JS physics + control models used by the labs (no rendering code)
-  src/labs/            the five "break the machine" labs (three.js scenes + controls + oscilloscope)
+  src/labs/            the six labs (three.js scenes + controls + oscilloscope); takeapart/ is the reusable take-apart viewer
   src/hero.js          hero scene: 3-DOF arm solving IK to follow the cursor
   src/phasemap.js      phase map, lesson search, localStorage progress
   tests/               Playwright e2e on a desktop + phone matrix, plus screenshot capture
@@ -123,7 +123,7 @@ SHOTS=1 npx playwright test screenshots --project=desktop --project=iphone-14 --
 BASE_URL=https://andreolf.github.io/mechatronics-from-scratch/ npx playwright test   # against the live site
 ```
 
-Playwright projects: desktop Chrome (1280), iPhone 13 and iPhone 14 (WebKit), Pixel 7 (Chromium), a 360 px Android, and iPhone 14 landscape. Every test fails on a console error or horizontal overflow. The suite covers: the hero canvas renders; each lab reacts to input, including tap-to-place in the arm lab's explicit drag mode on touch; the course map, search and checkbox progress; a lesson renders KaTeX, code, widgets and hidden solutions; code downloads; quiz grading for multiple choice, numeric tolerance and invalid input; lesson progress and points survive a reload; prev/next; the whole course is written (363 lessons, no outlines, every phase test open); a failed then passed phase test unlocks a certificate whose PNG and PDF download and whose code verifies (and fails for a different name); passing all 20 phase tests through the UI unlocks the full-course certificate, whose PDF downloads and whose code verifies (and fails for a different credential); every key route has no overflow and touch targets of at least 44 px on phones; the `?nowebgl=1` fallback. Headless Chromium uses SwiftShader (`--enable-unsafe-swiftshader`).
+Playwright projects: desktop Chrome (1280), iPhone 13 and iPhone 14 (WebKit), Pixel 7 (Chromium), a 360 px Android, and iPhone 14 landscape. Every test fails on a console error or horizontal overflow. The suite covers: the hero canvas renders; each lab reacts to input, including tap-to-place in the arm lab's explicit drag mode on touch; the Lab 06 take-apart renders, explodes and reassembles, isolates an assembly, opens a part card by tapping the model and follows its lesson link, trips and re-arms, scrubs the operation log, deep-links from `#/labs/teardown` and runs inline in Lesson 11; the course map, search and checkbox progress; a lesson renders KaTeX, code, widgets and hidden solutions; code downloads; quiz grading for multiple choice, numeric tolerance and invalid input; lesson progress and points survive a reload; prev/next; the whole course is written (363 lessons, no outlines, every phase test open); a failed then passed phase test unlocks a certificate whose PNG and PDF download and whose code verifies (and fails for a different name); passing all 20 phase tests through the UI unlocks the full-course certificate, whose PDF downloads and whose code verifies (and fails for a different credential); every key route has no overflow and touch targets of at least 44 px on phones; the `?nowebgl=1` fallback. Headless Chromium uses SwiftShader (`--enable-unsafe-swiftshader`).
 
 ## The labs (educational approximations)
 
@@ -132,12 +132,13 @@ Playwright projects: desktop Chrome (1280), iPhone 13 and iPhone 14 (WebKit), Pi
 3. **Quadcopter attitude**: rigid body with quaternions, motor lag, simulated IMU (gyro noise/bias, accel noise + vibration), complementary filter vs gyro-only vs accel-only, cascaded position → attitude control, kill any motor, gusts.
 4. **DC motor + encoder**: electrical + mechanical ODE (RK4 20 kHz), quadrature encoder quantisation (4–4096 CPR), 1 kHz PI with anti-windup, load torque.
 5. **Cable robot (after Stringman)**: four top-corner winches, closed-form IK and live line lengths, static tension distribution in the null space (non-negative, within the limit, min-norm or minimax), lines coloured by tension (coral when slack or over), a payload-capacity slice of the workspace, a 0.5 m pole pendulum on a moving pivot with switchable swing damping (PD on pivot acceleration), and a latching 28 N relax-at-the-limit demo with re-arm. Adjustable room size.
+6. **Cable robot take-apart** (`#/labs/teardown`): a procedural room-scale four-line robot built from the Phase 21 parts list in a take-apart viewer. Six assemblies (anchors, spool + encoder, effector, gripper, electronics, cables) glide out on their own, Exploded spreads every part with leader-line labels that follow the camera, and a tap on any part opens a card with what it does, the number the track gives for it and a link to the lesson. A 40 s scripted job (idle, calibrating, moving, holding, teardown) drives the same `CableSim` as Lab 05, so the line lengths, tensions, spool turns and AS5600 counts in the side panel are real outputs; a 40 N push trips the 28 N relax. On phones the side panels fold into tabs under the view. Embedded inline in Lesson 11 and linked from Lessons 5 and 8. The viewer itself (`site/src/labs/takeapart/`) is self-contained and reusable.
 
 Parameters are illustrative, not validated against specific hardware.
 
 ## Known limitations
 
-- Only 5 live 3D labs exist; lessons also have 2D interactive figures. Other lessons' "lab" field is a design idea.
+- Only 6 live 3D labs exist; lessons also have 2D interactive figures. Other lessons' "lab" field is a design idea.
 - Certificate codes show integrity, not identity: there is no server, so anyone could compute one.
 - Course mappings are orientation only; this project is not affiliated with or endorsed by ETH Zurich.
 
