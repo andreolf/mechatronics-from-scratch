@@ -56,7 +56,7 @@ test('quiz grades multiple choice and numeric answers with tolerance', async ({ 
   await expect(n.locator('.q-feedback')).toContainText('Expected');
 });
 
-test('lesson progress and XP persist across reloads; prev/next navigation works', async ({ page }) => {
+test('lesson progress and points persist across reloads; prev/next navigation works', async ({ page }) => {
   await page.goto('./#/learn/p01-l03');
   await page.getByTestId('mark-complete').click();
   await expect(page.getByTestId('mark-complete')).toHaveAttribute('aria-pressed', 'true');
