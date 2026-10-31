@@ -80,7 +80,7 @@ export function cableTeardown(root, opts = {}) {
     blurb: 'Every part of a room-scale four-line robot, built from the Phase 21 parts list. Isolate an assembly, explode the whole thing, tap any part for what it does and the lesson behind it. The line lengths and tensions on the right are the same maths as Lab 05.',
     theme: { accent: LIME, danger: CORAL, warn: AMBER, panel: 0xcfd3c7, grid: 0x24291c, grid2: 0x12150d },
     lessons: [LES.spool, LES.bom, LES.ik, LES.ten, LES.safe],
-    camera: { pos: [1.6, 5.0, 11.6], target: [0, 1.2, 0], dist: 12.4, fov: 36, minDist: 1.6, maxDist: 34, floor: 16, shadow: 6, aspectRef: 1.45 },
+    camera: { pos: [1.6, 5.0, 11.6], target: [0, 1.2, 0], dist: 13.8, fov: 36, minDist: 1.6, maxDist: 34, floor: 16, shadow: 6, aspectRef: 1.45 },
     assemblies: [
       { id: 'anchors', label: 'Anchors', focus: () => model.anchorFocus(0.9), dist: 4.6 },
       { id: 'spool', label: 'Spool + encoder', focus: () => model.anchorFocus(0.5), dist: 3.2 },

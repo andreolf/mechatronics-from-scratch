@@ -401,36 +401,47 @@ export function takeApart(root, spec) {
     }
   }
   const ACC = new THREE.Color(theme.accent);
+  document.fonts?.ready?.then(() => { for (const p of parts) { p.lw = 0; p.lh = 0; } }); // re-measure label boxes once the web fonts are in
+  function hideLabel(p) { if (p.lab.dataset.on !== '0') { p.lab.dataset.on = '0'; p.line.setAttribute('opacity', 0); p.dot.setAttribute('opacity', 0); } }
   function updateLabels() {
     const show = S.labels; const w = S.w, hh = S.h; lblPos.length = 0;
     const mob = narrow();
+    let cardBox = null;
+    if (!card.hidden && !mob) { const v = view.getBoundingClientRect(), c = card.getBoundingClientRect(); cardBox = { l: c.left - v.left - 8, r: c.right - v.left + 8, t: c.top - v.top - 8, b: c.bottom - v.top + 8 }; }
     for (const p of parts) {
       if (!p.lab) continue;
       const iso = S.assembly && inAssembly(p, S.assembly);
       const vis = show && p.ghost < 0.5 && (p.label === 1 || iso || (S.exploded && !mob)) && (!p.labelWhen || p.labelWhen(S));
-      if (!vis) { if (p.lab.dataset.on !== '0') { p.lab.dataset.on = '0'; p.line.setAttribute('opacity', 0); p.dot.setAttribute('opacity', 0); } continue; }
+      if (!vis) { hideLabel(p); continue; }
       tmpV.copy(p.labelAt); p.obj.localToWorld(tmpV); tmpV.project(camera);
-      if (tmpV.z > 1 || tmpV.z < -1) { p.lab.dataset.on = '0'; p.line.setAttribute('opacity', 0); p.dot.setAttribute('opacity', 0); continue; }
+      if (tmpV.z > 1 || tmpV.z < -1) { hideLabel(p); continue; }
       const x = ((tmpV.x + 1) / 2) * w, y = ((1 - tmpV.y) / 2) * hh;
-      const side = x < w / 2 ? -1 : 1;
-      lblPos.push({ p, x, y, side, ly: y - (mob ? 22 : 30) * (y < hh / 2 ? 1 : -0.4) });
-    }
-    // de-overlap per side
-    for (const sd of [-1, 1]) {
-      const L = lblPos.filter((l) => l.side === sd); const gap = mob ? 22 : 28, top = 30, bot = hh - 64;
-      L.forEach((l) => { l.ly = Math.max(top, Math.min(bot, l.ly)); }); L.sort((a, b) => a.ly - b.ly);
-      for (let i = 1; i < L.length; i++) if (L[i].ly < L[i - 1].ly + gap) L[i].ly = L[i - 1].ly + gap;
-      const over = L.length ? L[L.length - 1].ly - bot : 0;
-      if (over > 0) { L[L.length - 1].ly = bot; for (let i = L.length - 2; i >= 0; i--) if (L[i].ly > L[i + 1].ly - gap) L[i].ly = L[i + 1].ly - gap; }
-    }
-    for (const l of lblPos) {
-      let { p, x, y, side, ly } = l; const reach = (mob ? 26 : 44);
-      const lw = p.lw || (p.lw = p.lab.offsetWidth) || 90;
-      // flip a label to the other side rather than let it run off the edge
+      // pick the side first (flip rather than run off the edge); then the label box is fixed in x and only moves in y
+      const reach = mob ? 26 : 44, lw = p.lw || (p.lw = p.lab.offsetWidth) || 90, lh = p.lh || (p.lh = p.lab.offsetHeight) || 18;
+      let side = x < w / 2 ? -1 : 1;
       if (side < 0 && x - reach - 16 - lw < 4) side = 1; else if (side > 0 && x + reach + 16 + lw > w - 4) side = -1;
-      let ex = x + side * reach; ex = Math.max(8, Math.min(w - 8, ex));
+      const ex = Math.max(8, Math.min(w - 8, x + side * reach));
       let tx = ex + side * (mob ? 10 : 16);
       if (side < 0) tx = Math.max(lw + 8, tx); else tx = Math.min(w - lw - 8, tx);
+      const x0 = side < 0 ? tx - 4 - lw : tx + 4;
+      lblPos.push({ p, x, y, side, ex, tx, lw, lh, x0, x1: x0 + lw, ly: y - (mob ? 22 : 30) * (y < hh / 2 ? 1 : -0.4) });
+    }
+    // de-overlap: each label takes the free slot nearest where it wants to be, clear of every placed label it shares x with
+    // and of the open part card; a label with no free slot nearby is hidden rather than drawn over another
+    const top = 30, bot = hh - 64, placed = [];
+    lblPos.sort((a, b) => a.p.label - b.p.label || a.ly - b.ly);
+    const clash = (l, ly) => placed.some((q) => l.x1 + 6 > q.x0 && l.x0 - 6 < q.x1 && Math.abs(ly - q.ly) < (l.lh + q.lh) / 2 + 3);
+    const underCard = (l, ly) => !!cardBox && ((l.x1 > cardBox.l && l.x0 < cardBox.r && ly + l.lh / 2 > cardBox.t && ly - l.lh / 2 < cardBox.b) || (l.x > cardBox.l && l.x < cardBox.r && l.y > cardBox.t && l.y < cardBox.b));
+    for (const l of lblPos) {
+      const want = Math.max(top, Math.min(bot, l.ly)); let best = null;
+      const cands = [want]; for (const q of placed) { const d = (l.lh + q.lh) / 2 + 3.5; cands.push(q.ly - d, q.ly + d); }
+      for (const c of cands) { if (c < top || c > bot || clash(l, c) || underCard(l, c)) continue; if (best === null || Math.abs(c - want) < Math.abs(best - want)) best = c; }
+      if (best === null || Math.abs(best - want) > hh * 0.3) { l.hide = true; continue; }
+      l.ly = best; placed.push(l);
+    }
+    for (const l of lblPos) {
+      const { p, x, y, side, ly, ex, tx } = l;
+      if (l.hide) { hideLabel(p); continue; }
       p.line.setAttribute('points', `${x.toFixed(1)},${y.toFixed(1)} ${ex.toFixed(1)},${ly.toFixed(1)} ${tx.toFixed(1)},${ly.toFixed(1)}`);
       p.dot.setAttribute('cx', x.toFixed(1)); p.dot.setAttribute('cy', y.toFixed(1));
       p.line.setAttribute('opacity', 1); p.dot.setAttribute('opacity', 1);
