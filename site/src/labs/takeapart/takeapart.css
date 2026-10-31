@@ -40,7 +40,7 @@
 .ta-hud-tl, .ta-hud-tr, .ta-az { position: absolute; font: 500 9px/1 var(--ta-mono); letter-spacing: .16em; color: var(--ta-dim); text-transform: uppercase; }
 .ta-hud-tl { left: 30px; top: 14px; } .ta-hud-tr { right: 30px; top: 14px; } .ta-az { right: 30px; bottom: 14px; }
 .ta-status { position: absolute; left: 18px; bottom: 16px; pointer-events: none; display: flex; flex-direction: column; gap: 2px; }
-.ta-status-word { font: 800 clamp(22px, 5.4vw, 38px)/1 var(--ta-sans); letter-spacing: -.01em; color: var(--ta-accent); text-transform: uppercase; transition: color .3s; }
+.ta-status-word { font: 800 clamp(22px, 5.4vw, 38px)/1 var(--ta-sans); font-stretch: var(--ta-stretch, 100%); letter-spacing: -.01em; color: var(--ta-accent); text-transform: uppercase; transition: color .3s; }
 .ta-status[data-kind="warn"] .ta-status-word { color: var(--ta-warn); }
 .ta-status[data-kind="danger"] .ta-status-word { color: var(--ta-danger); }
 .ta-status-sub { font: 500 9px/1.3 var(--ta-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ta-fog); }
@@ -54,7 +54,7 @@
 .ta-card-head { display: flex; justify-content: space-between; align-items: center; margin: -6px -8px 2px 0; }
 .ta-x { min-width: var(--ta-hit); min-height: var(--ta-hit); border: 0; background: none; color: var(--ta-fog); font-size: 20px; line-height: 1; cursor: pointer; border-radius: 999px; }
 .ta-x:hover { color: var(--ta-text); }
-.ta-card h5 { margin: 0 0 6px; font: 700 17px/1.2 var(--ta-sans); color: var(--ta-text); letter-spacing: -.01em; }
+.ta-card h5 { margin: 0 0 6px; font: 700 17px/1.2 var(--ta-sans); font-stretch: var(--ta-stretch, 100%); color: var(--ta-text); letter-spacing: -.01em; }
 .ta-card p { margin: 0 0 10px; font: 400 13px/1.45 var(--ta-sans); color: var(--ta-fog); }
 .ta-card ul { margin: 0 0 10px; padding: 0; list-style: none; border-top: 1px solid var(--ta-rule); }
 .ta-card li { font: 400 11.5px/1.45 var(--ta-mono); color: var(--ta-text); padding: 6px 0; border-bottom: 1px solid var(--ta-rule); }

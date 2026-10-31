@@ -211,8 +211,8 @@ test('every full lesson renders its maths, code, quiz and widgets without errors
     const body = page.getByTestId('lesson-body');
     expect(await body.locator('.katex').count(), id).toBeGreaterThan(0);
     await expect(page.getByTestId('quiz').getByTestId('question').first()).toBeVisible();
-    const missing = await body.locator('.widget').evaluateAll((els) => els.filter((e) => !e.querySelector('canvas') || /Missing widget/.test(e.textContent)).length);
-    expect(missing, id + ' widgets').toBe(0);
+    // the take-apart widget loads its 3D viewer lazily, so give widgets a moment to draw their canvas
+    await expect.poll(() => body.locator('.widget').evaluateAll((els) => els.filter((e) => !e.querySelector('canvas') || /Missing widget/.test(e.textContent)).length), { message: id + ' widgets', timeout: 15_000 }).toBe(0);
     expect(await overflow(page), id + ' overflow').toBeLessThanOrEqual(0);
     expect(errors, id + ' console').toEqual([]);
   }

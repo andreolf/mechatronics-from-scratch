@@ -42,9 +42,11 @@ async function startHero() {
   const { hero } = mod;
   hero($('hero-canvas'), $('hero-readout'), $('hero-pause'));
 }
-async function startLabs() {
-  if (labsStarted) return; labsStarted = true;
-  let mods; try { mods = await retryImport(() => Promise.all([import('./labs/pendulumLab.js'), import('./labs/armLab.js'), import('./labs/quadLab.js'), import('./labs/motorLab.js'), import('./labs/cableLab.js'), import('./labs/cableTeardown.js')])); } catch (e) { labsStarted = false; console.warn('labs failed to load', e); return; }
+let labsReady = null; // one shared promise, so a deep link waits for labs that are already loading
+function startLabs() { if (!labsReady) labsReady = loadLabs().then((ok) => { if (!ok) labsReady = null; }); return labsReady; }
+async function loadLabs() {
+  if (labsStarted) return true; labsStarted = true;
+  let mods; try { mods = await retryImport(() => Promise.all([import('./labs/pendulumLab.js'), import('./labs/armLab.js'), import('./labs/quadLab.js'), import('./labs/motorLab.js'), import('./labs/cableLab.js'), import('./labs/cableTeardown.js')])); } catch (e) { labsStarted = false; console.warn('labs failed to load', e); return false; }
   const [{ pendulumLab }, { armLab }, { quadLab }, { motorLab }, { cableLab }, { cableTeardown }] = mods;
   const root = $('lab-root');
   window.__mfs.labs.pendulum = pendulumLab(root);
@@ -54,6 +56,7 @@ async function startLabs() {
   window.__mfs.labs.cable = cableLab(root);
   window.__mfs.labs.teardown = cableTeardown(root);
   document.documentElement.dataset.labs = 'ready';
+  return true;
 }
 const labIO = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { labIO.disconnect(); startLabs(); } }, { rootMargin: '600px 0px' });
 
@@ -70,7 +73,7 @@ function showHome(anchor) {
   setNav(anchor === 'course' ? 'course' : anchor === 'labs' || anchor?.startsWith('lab-') ? 'labs' : '');
   startHero(); labIO.observe($('labs'));
   map.refresh();
-  if (anchor) { const go = () => requestAnimationFrame(() => { const el = document.getElementById(anchor); if (el) el.scrollIntoView({ block: 'start' }); }); if (anchor.startsWith('lab-')) startLabs().then(go); else go(); }
+  if (anchor) { const go = () => { const to = () => document.getElementById(anchor)?.scrollIntoView({ block: 'start' }); requestAnimationFrame(to); if (anchor.startsWith('lab-')) setTimeout(to, 400); }; if (anchor.startsWith('lab-')) startLabs().then(go); else go(); }
   else window.scrollTo({ top: 0, behavior: 'instant' });
 }
 let routeSeq = 0;

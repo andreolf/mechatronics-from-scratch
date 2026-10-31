@@ -59,6 +59,7 @@ function frame(now) {
 
 export function takeApart(root, spec) {
   const id = spec.id;
+  const href = spec.lessonHref || ((lid) => `#/learn/${lid}`); // how this site links to a lesson
   const theme = Object.assign({ accent: '#c6ff1a', danger: '#ff6b81', warn: '#ffb547', panel: 0xd9dcd2 }, spec.theme || {});
   const S = { exploded: false, explodeK: 1, labels: true, turntable: !reduced(), spin: 0.6, assembly: null, card: null, playing: !reduced(), t: 0, actions: 0, status: '', statusKind: '' };
 
@@ -144,9 +145,9 @@ export function takeApart(root, spec) {
   const right = h('div', { class: 'ta-col ta-right' }, paneSubs, paneTele);
   const center = h('div', { class: 'ta-center' }, view, oplog);
   const body = h('div', { class: 'ta-body', 'data-tab': 'parts' }, left, center, tabs, right);
-  const links = h('div', { class: 'ta-links' }, h('span', { text: 'Lessons:' }), ...(spec.lessons || []).map(([lid, t]) => h('a', { href: `#/learn/${lid}`, 'data-lesson': lid, text: t })));
-  const sec = h('article', { class: `ta lab ta-${id}${spec.wide ? ' ta-wide' : ''}`, id: `lab-${id}`, 'data-testid': `lab-${id}`, 'aria-labelledby': `lab-${id}-title` },
-    h('div', { class: 'lab-head' }, h('span', { class: 'lab-num', text: `Lab ${spec.num}` }), h('h3', { id: `lab-${id}-title`, text: spec.title }), h('p', { text: spec.blurb })),
+  const links = h('div', { class: 'ta-links' }, h('span', { text: 'Lessons:' }), ...(spec.lessons || []).map(([lid, t]) => h('a', { href: href(lid), 'data-lesson': lid, text: t })));
+  const sec = h('article', { class: `ta ${spec.cls ?? 'lab'} ta-${id}${spec.wide ? ' ta-wide' : ''}`, id: `lab-${id}`, 'data-testid': `lab-${id}`, 'aria-labelledby': `lab-${id}-title` },
+    h('div', { class: 'lab-head' }, h('span', { class: 'lab-num', text: spec.numLabel || `Lab ${spec.num}` }), h('h3', { id: `lab-${id}-title`, text: spec.title }), h('p', { text: spec.blurb })),
     h('div', { class: 'ta-frame' },
       h('header', { class: 'ta-top' }, h('span', { class: 'ta-micro', text: spec.kicker || 'Take-apart · procedural model' }), h('span', { class: 'ta-micro ta-top-r', html: `<span>SIM <b class="tnum" data-clock>00:00</b></span><span>PARTS <b class="tnum" data-parts>0</b></span>` })),
       body),
@@ -304,7 +305,7 @@ export function takeApart(root, spec) {
     card.innerHTML = `<div class="ta-card-head"><span class="ta-micro">${esc(i.kicker || spec.assemblies.find((a) => a.id === p.assembly)?.label || '')}${i.qty ? ` · ×${i.qty}` : ''}</span><button type="button" class="ta-x" aria-label="Close" data-testid="ta-${id}-card-close">×</button></div>
       <h5>${esc(i.name)}</h5><p>${esc(i.what || '')}</p>
       ${i.spec?.length ? `<ul>${i.spec.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
-      ${i.lessons?.length ? `<div class="ta-card-links">${i.lessons.map(([lid, t]) => `<a href="#/learn/${lid}" data-lesson="${lid}">${esc(t)} →</a>`).join('')}</div>` : ''}`;
+      ${i.lessons?.length ? `<div class="ta-card-links">${i.lessons.map(([lid, t]) => `<a href="${href(lid)}" data-lesson="${lid}">${esc(t)} →</a>`).join('')}</div>` : ''}`;
     card.hidden = false; card.dataset.part = p.id; sec.dataset.card = p.id; view.classList.add('carded');
     card.querySelector('.ta-x').addEventListener('click', closeCard);
     for (const q of parts) q.hlT = q.info === p.info ? 1 : 0;
