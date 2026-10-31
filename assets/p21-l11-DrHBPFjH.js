@@ -123,6 +123,8 @@ var e=`p21-l11`,t=50,n=`Put the track together into a desk-sized four-line robot
 <td>Lesson 6 calibration, Lesson 10 datasets</td>
 </tr>
 </tbody></table></div>
+
+<figure class="fig"><div class="fig-body"><div class="widget" data-widget="cableparts" data-args="{}"></div></div><figcaption>Lab 06, the same parts list as a robot you can take apart. Isolate an assembly or switch on Exploded, then tap a part for what it does, the number this track gives for it and the lesson it comes from. The robot runs a short scripted job underneath: calibrate, move, pick, hold, teardown.</figcaption></figure>
 <h2 id="build-in-stages-each-ending-with-a-test">Build in stages, each ending with a test</h2>
 <ol>
 <li><strong>One winch on the bench.</strong> Wind line onto the spool with a known weight hanging from it. Test: commanding 1 m of line moves the weight 1 m within 1 mm; the load cell reads the weight within 2 %.</li>

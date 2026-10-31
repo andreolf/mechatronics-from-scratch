@@ -15,6 +15,7 @@ var e=`p21-l05`,t=40,n=`A winch turns torque into tension and shaft angle into l
 <li><strong>Power line</strong>: 30.3 revolutions, and the constant-diameter guess says 6.85 m: 65 cm wrong. The pull per newton-metre also drops from 27.8 N to 23.2 N on a full spool.</li>
 </ul>
 <p>So the one line that carries power to the gripper needs the pile model the most.</p>
+<p>To see where each of these parts sits, open <a href="#/labs/teardown">Lab 06, the cable robot take-apart</a>. Isolate <em>Spool + encoder</em> and the spool and the AS5600 slide off the motor shaft; the telemetry panel turns line 1’s length into spool turns and encoder counts with the same 72 mm and 4096 used here.</p>
 
 <figure class="fig"><div class="fig-body"><div class="widget" data-widget="spool" data-args="{}"></div></div><figcaption>Line on the spool against motor revolutions. The solid curve includes the growing diameter, the dashed line assumes the empty diameter throughout. Switch between the power line and the fishing line, and see what the torque and encoder figures become at each fill.</figcaption></figure>
 <h2 id="tension-from-torque">Tension from torque</h2>
